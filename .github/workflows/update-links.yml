@@ -1,0 +1,60 @@
+name: Update GAO Links
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # daily at 6am UTC
+  workflow_dispatch:       # allow manual trigger
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install curl-impersonate
+        run: |
+          curl -L -o curl-impersonate.tar.gz \
+            https://github.com/lexiforest/curl-impersonate/releases/download/v1.5.1/curl-impersonate-v1.5.1.x86_64-linux-gnu.tar.gz
+          mkdir -p $HOME/.local/bin
+          tar -xzf curl-impersonate.tar.gz -C $HOME/.local/bin
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          curl_firefox147 --version
+
+      - uses: r-lib/actions/setup-r@v2
+
+      - name: Install R dependencies
+        run: |
+          install.packages(c("rvest", "remotes"), repos = "https://cloud.r-project.org")
+          remotes::install_local(".", dependencies = FALSE)
+        shell: Rscript {0}
+
+      - name: Update links
+        run: |
+          library(gao)
+          known <- gao_links()
+          updated <- update_links(verbose = TRUE, sleep_timer = 1)
+          n.new <- length(updated) - length(known)
+          if (n.new > 0) {
+            writeLines(sort(unique(updated)), "inst/extdata/gao_links.csv")
+            message("Added ", n.new, " new links")
+          } else {
+            message("No new links found")
+          }
+          # Write output for conditional commit step
+          writeLines(as.character(n.new), "n_new.txt")
+        shell: Rscript {0}
+
+      - name: Commit and push if updated
+        run: |
+          N_NEW=$(cat n_new.txt)
+          rm -f n_new.txt
+          if [ "$N_NEW" -gt 0 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add inst/extdata/gao_links.csv
+            git commit -m "update gao links (+${N_NEW} new)"
+            git push
+          else
+            echo "No changes to commit"
+          fi

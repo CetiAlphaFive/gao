@@ -7,7 +7,8 @@
 extract_links(
   base_url = "https://www.gao.gov/reports-testimonies",
   last_page = NULL,
-  save_to_file = TRUE,
+  verbose = TRUE,
+  save_to_file = FALSE,
   sleep_timer = 0.5,
   output_file = "gao_report_links.csv"
 )
@@ -19,7 +20,10 @@ extract_links(
 \item{last_page}{Integer. Last page number to scrape. If \code{NULL}, detected
 automatically from the pagination.}
 
-\item{save_to_file}{Logical. If \code{TRUE}, saves links to a CSV file.}
+\item{verbose}{Logical. If \code{TRUE}, shows a progress bar (default: \code{TRUE}).}
+
+\item{save_to_file}{Logical. If \code{TRUE}, saves links to a CSV file
+(default: \code{FALSE}).}
 
 \item{sleep_timer}{Numeric. Seconds to pause between page requests.}
 

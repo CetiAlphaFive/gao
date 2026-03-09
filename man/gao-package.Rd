@@ -6,8 +6,22 @@
 \alias{gao-package}
 \title{gao: Harvest Government Accountability Office Reports}
 \description{
-Automates the harvesting and downloading of reports published by the United States Government Accountability Office (GAO). Provides functions for scraping report page URLs, extracting PDF download links, and downloading report files in PDF or HTML format. Requires 'curl-impersonate' to be installed on the system to bypass TLS fingerprint filtering.
+Tools for harvesting reports published by the U.S. Government
+Accountability Office (GAO). Ships with a bundled dataset of all GAO
+report URLs and provides functions for downloading reports as PDF or HTML.
 }
+\details{
+This package is not affiliated with or endorsed by the U.S. Government
+Accountability Office. All data is obtained from public web pages at
+\url{https://www.gao.gov}.
+}
+\section{System requirements}{
+
+Requires \href{https://github.com/lexiforest/curl-impersonate}{curl-impersonate}
+to be installed. GAO.gov uses TLS fingerprint filtering that blocks
+standard HTTP clients.
+}
+
 \seealso{
 Useful links:
 \itemize{

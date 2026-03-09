@@ -18,15 +18,31 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-`gao` automates the harvesting and downloading of reports published by the
-United States Government Accountability Office (GAO). It provides functions for
-scraping report page URLs, extracting PDF download links, and downloading report
-files in PDF or HTML format using parallel processing.
+`gao` provides tools for harvesting reports published by the United States
+Government Accountability Office (GAO). It ships with a bundled dataset of
+all GAO report URLs (updated daily via GitHub Actions) and functions for
+downloading reports as PDF or HTML files.
+
+**Disclaimer:** This package is not affiliated with, endorsed by, or in any
+way officially connected to the U.S. Government Accountability Office. "GAO"
+refers to the publicly available reports hosted at
+[gao.gov](https://www.gao.gov). All data is obtained from public web pages.
 
 ## Installation
 
-You can install the development version of gao from
-[GitHub](https://github.com/CetiAlphaFive/gao) with:
+`gao` requires [curl-impersonate](https://github.com/lexiforest/curl-impersonate)
+as a system dependency (GAO.gov uses TLS fingerprint filtering that blocks
+standard HTTP clients).
+
+```bash
+# Arch Linux
+sudo pacman -S curl-impersonate
+
+# macOS
+brew install lexiforest/curl-impersonate/curl-impersonate
+```
+
+Then install the package from GitHub:
 
 ```r
 # install.packages("pak")
@@ -35,34 +51,54 @@ pak::pak("CetiAlphaFive/gao")
 
 ## Usage
 
-The package provides a three-step pipeline for harvesting GAO reports:
+### Browse the bundled dataset
 
-### 1. Scrape report page URLs
+The package ships with a pre-built list of all GAO report URLs:
 
 ```{r, eval = FALSE}
 library(gao)
 
-# Scrape all report page links from the GAO website
-links <- extract_links(use_multicore = TRUE, workers = 4)
+links <- gao_links()
+length(links)
+head(links)
 ```
 
-### 2. Extract PDF download links
+### Update the link list
+
+Fetch any reports published since the last package update:
 
 ```{r, eval = FALSE}
-# Extract the actual PDF download links from each report page
-pdf_links <- extract_pdf_links(links, workers = 4)
+all_links <- update_links()
 ```
 
-### 3. Download reports
+### Extract PDF download links
+
+```{r, eval = FALSE}
+pdf_links <- extract_pdf_links(links[1:10])
+```
+
+### Download reports
 
 Download as PDFs:
 
 ```{r, eval = FALSE}
-download_pdfs(pdf_links, download_dir = "gao_pdfs", workers = 4)
+download_pdfs(pdf_links, download_dir = "gao_pdfs")
 ```
 
-Or download as HTML:
+Or download report pages as HTML:
 
 ```{r, eval = FALSE}
-download_htmls(links, target_directory = "gao_htmls", workers = 4)
+download_htmls(links[1:10], target_directory = "gao_htmls")
 ```
+
+### Full pipeline from scratch
+
+If you need to re-scrape the entire report listing (not usually necessary):
+
+```{r, eval = FALSE}
+links <- extract_links(save_to_file = FALSE)
+```
+
+## License
+
+MIT

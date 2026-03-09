@@ -6,13 +6,15 @@
 #'   (default: `"https://www.gao.gov/reports-testimonies"`).
 #' @param last_page Integer. Last page number to scrape. If `NULL`, detected
 #'   automatically from the pagination.
-#' @param save_to_file Logical. If `TRUE`, saves links to a CSV file.
+#' @param verbose Logical. If `TRUE`, shows a progress bar (default: `TRUE`).
+#' @param save_to_file Logical. If `TRUE`, saves links to a CSV file
+#'   (default: `FALSE`).
 #' @param output_file Character. File path for the CSV output.
 #' @param sleep_timer Numeric. Seconds to pause between page requests.
 #'
 #' @return A character vector of full GAO report URLs.
 #' @import rvest
-#' @importFrom utils write.csv
+#' @importFrom utils write.csv txtProgressBar setTxtProgressBar
 #' @export
 #' @examples
 #' \dontrun{
@@ -20,19 +22,23 @@
 #' }
 extract_links <- function(base_url = "https://www.gao.gov/reports-testimonies",
                           last_page = NULL,
-                          save_to_file = TRUE,
+                          verbose = TRUE,
+                          save_to_file = FALSE,
                           sleep_timer = 0.5,
                           output_file = "gao_report_links.csv") {
 
   if (is.null(last_page)) {
     last_page <- .get_last_page(base_url)
-    message("Detected last page: ", last_page)
+    if (verbose) message("Detected last page: ", last_page)
   } else {
-    message("Using manually specified last page: ", last_page)
+    if (verbose) message("Using manually specified last page: ", last_page)
   }
 
   # Pages are 0-indexed on GAO's site
   pages <- 0:last_page
+  n.pages <- length(pages)
+
+  if (verbose) pb <- txtProgressBar(min = 0, max = n.pages, style = 3)
 
   report.links <- character(0)
 
@@ -44,7 +50,7 @@ extract_links <- function(base_url = "https://www.gao.gov/reports-testimonies",
     }
 
     page <- tryCatch(.fetch_html(url), error = function(e) {
-      message("Failed to fetch page ", pages[i], ": ", e$message)
+      if (verbose) message("\nFailed to fetch page ", pages[i], ": ", e$message)
       NULL
     })
 
@@ -54,16 +60,20 @@ extract_links <- function(base_url = "https://www.gao.gov/reports-testimonies",
       report.links <- c(report.links, product.links)
     }
 
-    if (i < length(pages)) Sys.sleep(sleep_timer)
-    if (i %% 50 == 0) message("Scraped ", i, " of ", length(pages), " pages")
+    if (verbose) setTxtProgressBar(pb, i)
+    if (i < n.pages) Sys.sleep(sleep_timer)
   }
 
+  if (verbose) close(pb)
+
   full.links <- paste0("https://www.gao.gov", report.links)
+
+  if (verbose) message("Found ", length(full.links), " report links")
 
   if (save_to_file) {
     write.csv(data.frame(url = full.links), file = output_file,
               row.names = FALSE)
-    message("Saved ", length(full.links), " links to: ", output_file)
+    if (verbose) message("Saved to: ", output_file)
   }
 
   return(full.links)

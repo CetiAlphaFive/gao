@@ -1,6 +1,8 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^gao_report_links\.csv$
+^data-raw$
+^test_functions\.R$
 ^CLAUDE\.md$
 ^\.claude$
 ^_pkgdown\.yml$

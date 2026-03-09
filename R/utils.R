@@ -6,14 +6,21 @@
 #' @return An xml_document from rvest.
 #' @keywords internal
 #' @noRd
-.fetch_html <- function(url) {
+.fetch_html <- function(url, retries = 3) {
   curl.bin <- .get_curl_bin()
-  html.text <- system2(curl.bin, args = c("-s", "-L", url), stdout = TRUE,
-                        stderr = FALSE)
-  if (length(html.text) == 0) {
-    stop("Failed to fetch: ", url)
+  for (attempt in seq_len(retries)) {
+    html.text <- system2(curl.bin, args = c("-s", "-L", url), stdout = TRUE,
+                          stderr = FALSE)
+    if (length(html.text) > 0) {
+      combined <- paste(html.text, collapse = "\n")
+      # Check for Akamai block
+      if (!grepl("Access Denied", combined, fixed = TRUE)) {
+        return(rvest::read_html(combined))
+      }
+    }
+    if (attempt < retries) Sys.sleep(2 * attempt)
   }
-  rvest::read_html(paste(html.text, collapse = "\n"))
+  stop("Failed to fetch: ", url)
 }
 
 #' Download a File

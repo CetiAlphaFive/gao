@@ -9,7 +9,8 @@ Description: Automates the harvesting and downloading of reports published by
     functions for scraping report page URLs, extracting PDF download links,
     and downloading report files in PDF or HTML format. Requires
     'curl-impersonate' to be installed on the system to bypass TLS
-    fingerprint filtering.
+    fingerprint filtering. This package is not affiliated with or endorsed
+    by the U.S. Government Accountability Office.
 License: MIT + file LICENSE
 Depends: R (>= 4.1.0)
 Imports:
