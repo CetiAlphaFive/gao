@@ -1,2 +1,58 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
 # gao
-This package downloads all public GAO reports and returns a cleaned dataset as well as the original files. Package will be made available and installable upon publication of the source working paper. 
+
+<!-- badges: start -->
+
+<!-- badges: end -->
+
+`gao` automates the harvesting and downloading of reports published by
+the United States Government Accountability Office (GAO). It provides
+functions for scraping report page URLs, extracting PDF download links,
+and downloading report files in PDF or HTML format using parallel
+processing.
+
+## Installation
+
+You can install the development version of gao from
+[GitHub](https://github.com/CetiAlphaFive/gao) with:
+
+``` r
+# install.packages("pak")
+pak::pak("CetiAlphaFive/gao")
+```
+
+## Usage
+
+The package provides a three-step pipeline for harvesting GAO reports:
+
+### 1. Scrape report page URLs
+
+``` r
+library(gao)
+
+# Scrape all report page links from the GAO website
+links <- extract_links(use_multicore = TRUE, workers = 4)
+```
+
+### 2. Extract PDF download links
+
+``` r
+# Extract the actual PDF download links from each report page
+pdf_links <- extract_pdf_links(links, workers = 4)
+```
+
+### 3. Download reports
+
+Download as PDFs:
+
+``` r
+download_pdfs(pdf_links, download_dir = "gao_pdfs", workers = 4)
+```
+
+Or download as HTML:
+
+``` r
+download_htmls(links, target_directory = "gao_htmls", workers = 4)
+```

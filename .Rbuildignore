@@ -1,0 +1,10 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^gao_report_links\.csv$
+^CLAUDE\.md$
+^\.claude$
+^_pkgdown\.yml$
+^\.github$
+^docs$
+^README\.Rmd$
+^LICENSE\.md$

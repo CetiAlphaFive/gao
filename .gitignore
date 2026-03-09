@@ -1,0 +1,10 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+inst/doc
+/*.tar.gz
+/*.Rcheck/
+docs/
+gao_report_links.csv
+.claude/
