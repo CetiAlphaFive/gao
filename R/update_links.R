@@ -5,20 +5,16 @@
 #' reports that are already known.
 #'
 #' @param verbose Logical. Show progress messages (default: `TRUE`).
-#' @param sleep_timer Numeric. Seconds between requests (default: 1).
+#' @param sleep_time Numeric. Seconds between requests (default: 1).
 #'
 #' @return A character vector of all known report URLs (old + new), sorted.
-#' @importFrom utils data
 #' @export
 #' @examples
 #' \dontrun{
 #' all_links <- update_links()
 #' }
-update_links <- function(verbose = TRUE, sleep_timer = 1) {
-
+update_links <- function(verbose = TRUE, sleep_time = 1) {
   base.url <- "https://www.gao.gov/reports-testimonies"
-
-  # Load bundled links
   known <- gao_links()
   if (verbose) message("Bundled links: ", length(known))
 
@@ -27,11 +23,7 @@ update_links <- function(verbose = TRUE, sleep_timer = 1) {
   consecutive.known <- 0L
 
   repeat {
-    if (page.num == 0) {
-      url <- base.url
-    } else {
-      url <- paste0(base.url, "?page=", page.num)
-    }
+    url <- if (page.num == 0) base.url else paste0(base.url, "?page=", page.num)
 
     page <- tryCatch(.fetch_html(url), error = function(e) {
       if (verbose) message("Failed page ", page.num, ": ", e$message)
@@ -42,14 +34,11 @@ update_links <- function(verbose = TRUE, sleep_timer = 1) {
       consecutive.known <- consecutive.known + 1L
       if (consecutive.known >= 3) break
       page.num <- page.num + 1
-      Sys.sleep(sleep_timer)
+      Sys.sleep(sleep_time)
       next
     }
 
-    hrefs <- rvest::html_attr(rvest::html_nodes(page, "a"), "href")
-    product.links <- hrefs[grep("/products/", hrefs)]
-    full.urls <- paste0("https://www.gao.gov", product.links)
-
+    full.urls <- paste0("https://www.gao.gov", .scrape_page_links(page))
     page.new <- setdiff(full.urls, known)
 
     if (length(page.new) == 0) {
@@ -61,17 +50,13 @@ update_links <- function(verbose = TRUE, sleep_timer = 1) {
       if (verbose) message("Page ", page.num, ": +", length(page.new), " new links")
     }
 
-    # Stop after 3 consecutive pages with no new links
     if (consecutive.known >= 3) break
-
     page.num <- page.num + 1
-    Sys.sleep(sleep_timer)
+    Sys.sleep(sleep_time)
   }
 
   if (verbose) message("New links found: ", length(new.links))
-
-  all.links <- sort(unique(c(known, new.links)))
-  return(all.links)
+  sort(unique(c(known, new.links)))
 }
 
 #' Get Bundled GAO Report Links

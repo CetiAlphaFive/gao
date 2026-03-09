@@ -3,6 +3,7 @@
 ^gao_report_links\.csv$
 ^data-raw$
 ^test_functions\.R$
+^README\.html$
 ^CLAUDE\.md$
 ^\.claude$
 ^_pkgdown\.yml$

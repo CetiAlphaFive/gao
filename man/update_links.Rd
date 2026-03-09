@@ -4,12 +4,12 @@
 \alias{update_links}
 \title{Update GAO Report Links}
 \usage{
-update_links(verbose = TRUE, sleep_timer = 1)
+update_links(verbose = TRUE, sleep_time = 1)
 }
 \arguments{
 \item{verbose}{Logical. Show progress messages (default: \code{TRUE}).}
 
-\item{sleep_timer}{Numeric. Seconds between requests (default: 1).}
+\item{sleep_time}{Numeric. Seconds between requests (default: 1).}
 }
 \value{
 A character vector of all known report URLs (old + new), sorted.

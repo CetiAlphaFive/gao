@@ -15,32 +15,8 @@
 download_htmls <- function(links,
                            target_directory = getwd(),
                            sleep_time = 1) {
+  if (!dir.exists(target_directory)) dir.create(target_directory, recursive = TRUE)
 
-  if (!dir.exists(target_directory)) {
-    dir.create(target_directory, recursive = TRUE)
-  }
-
-  downloaded <- character(0)
-
-  for (i in seq_along(links)) {
-    file.name <- paste0(basename(links[i]), ".html")
-    destfile <- file.path(target_directory, file.name)
-
-    if (file.exists(destfile)) {
-      message("Already exists: ", file.name)
-    } else {
-      tryCatch({
-        .download_file(links[i], destfile)
-        message("Downloaded: ", file.name)
-      }, error = function(e) {
-        message("Failed: ", file.name, " — ", e$message)
-      })
-    }
-
-    downloaded <- c(downloaded, destfile)
-    if (i < length(links)) Sys.sleep(sleep_time)
-    if (i %% 100 == 0) message("Downloaded ", i, " of ", length(links))
-  }
-
-  invisible(downloaded)
+  destfiles <- file.path(target_directory, paste0(basename(links), ".html"))
+  .download_files(links, destfiles, sleep_time)
 }

@@ -17,41 +17,13 @@
 download_pdfs <- function(pdf_links,
                           download_dir = getwd(),
                           sleep_time = 1) {
+  if (!dir.exists(download_dir)) dir.create(download_dir, recursive = TRUE)
 
-  if (!dir.exists(download_dir)) {
-    dir.create(download_dir, recursive = TRUE)
-  }
+  # Resolve full URLs
+  urls <- ifelse(grepl("^https?://", pdf_links),
+                 pdf_links,
+                 paste0("https://www.gao.gov", pdf_links))
+  destfiles <- file.path(download_dir, basename(pdf_links))
 
-  downloaded <- character(0)
-
-  for (i in seq_along(pdf_links)) {
-    # Handle both relative and absolute URLs
-    if (grepl("^https?://", pdf_links[i])) {
-      full.url <- pdf_links[i]
-    } else {
-      full.url <- paste0("https://www.gao.gov", pdf_links[i])
-    }
-
-    file.name <- basename(pdf_links[i])
-    destfile <- file.path(download_dir, file.name)
-
-    if (file.exists(destfile)) {
-      message("Already exists: ", file.name)
-    } else {
-      result <- tryCatch({
-        .download_file(full.url, destfile)
-        message("Downloaded: ", file.name)
-        0L
-      }, error = function(e) {
-        message("Failed: ", file.name, " — ", e$message)
-        1L
-      })
-    }
-
-    downloaded <- c(downloaded, destfile)
-    if (i < length(pdf_links)) Sys.sleep(sleep_time)
-    if (i %% 100 == 0) message("Downloaded ", i, " of ", length(pdf_links))
-  }
-
-  invisible(downloaded)
+  .download_files(urls, destfiles, sleep_time)
 }

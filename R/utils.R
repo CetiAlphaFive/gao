@@ -3,7 +3,9 @@
 #' Uses curl-impersonate to fetch a URL and returns parsed HTML.
 #'
 #' @param url Character. URL to fetch.
+#' @param retries Integer. Number of retry attempts.
 #' @return An xml_document from rvest.
+#' @importFrom rvest read_html html_nodes html_attr
 #' @keywords internal
 #' @noRd
 .fetch_html <- function(url, retries = 3) {
@@ -13,7 +15,6 @@
                           stderr = FALSE)
     if (length(html.text) > 0) {
       combined <- paste(html.text, collapse = "\n")
-      # Check for Akamai block
       if (!grepl("Access Denied", combined, fixed = TRUE)) {
         return(rvest::read_html(combined))
       }
@@ -35,6 +36,45 @@
 .download_file <- function(url, destfile) {
   curl.bin <- .get_curl_bin()
   invisible(system2(curl.bin, args = c("-s", "-L", "-o", destfile, url)))
+}
+
+#' Download Files in a Loop
+#'
+#' Shared logic for [download_pdfs()] and [download_htmls()].
+#'
+#' @param urls Character vector. Full URLs to download.
+#' @param destfiles Character vector. Destination file paths.
+#' @param sleep_time Numeric. Seconds between downloads.
+#' @return Invisible character vector of destination paths.
+#' @keywords internal
+#' @noRd
+.download_files <- function(urls, destfiles, sleep_time = 1) {
+  for (i in seq_along(urls)) {
+    if (file.exists(destfiles[i])) {
+      message("Already exists: ", basename(destfiles[i]))
+    } else {
+      tryCatch({
+        .download_file(urls[i], destfiles[i])
+        message("Downloaded: ", basename(destfiles[i]))
+      }, error = function(e) {
+        message("Failed: ", basename(destfiles[i]), " - ", e$message)
+      })
+    }
+    if (i < length(urls)) Sys.sleep(sleep_time)
+    if (i %% 100 == 0) message("Downloaded ", i, " of ", length(urls))
+  }
+  invisible(destfiles)
+}
+
+#' Extract Report Links from a Parsed Page
+#'
+#' @param page An xml_document.
+#' @return Character vector of relative report paths (e.g., "/products/gao-24-106198").
+#' @keywords internal
+#' @noRd
+.scrape_page_links <- function(page) {
+  hrefs <- rvest::html_attr(rvest::html_nodes(page, "a"), "href")
+  hrefs[grep("/products/", hrefs)]
 }
 
 #' Get curl-impersonate Binary

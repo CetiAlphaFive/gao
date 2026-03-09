@@ -9,7 +9,7 @@ extract_links(
   last_page = NULL,
   verbose = TRUE,
   save_to_file = FALSE,
-  sleep_timer = 0.5,
+  sleep_time = 1,
   output_file = "gao_report_links.csv"
 )
 }
@@ -25,7 +25,7 @@ automatically from the pagination.}
 \item{save_to_file}{Logical. If \code{TRUE}, saves links to a CSV file
 (default: \code{FALSE}).}
 
-\item{sleep_timer}{Numeric. Seconds to pause between page requests.}
+\item{sleep_time}{Numeric. Seconds to pause between page requests.}
 
 \item{output_file}{Character. File path for the CSV output.}
 }
