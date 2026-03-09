@@ -6,7 +6,7 @@
 \alias{gao-package}
 \title{gao: Harvest Government Accountability Office Reports}
 \description{
-Automates the harvesting and downloading of reports published by the United States Government Accountability Office (GAO). Provides functions for scraping report page URLs, extracting PDF download links, and downloading report files in PDF or HTML format using parallel processing.
+Automates the harvesting and downloading of reports published by the United States Government Accountability Office (GAO). Provides functions for scraping report page URLs, extracting PDF download links, and downloading report files in PDF or HTML format. Requires 'curl-impersonate' to be installed on the system to bypass TLS fingerprint filtering.
 }
 \seealso{
 Useful links:

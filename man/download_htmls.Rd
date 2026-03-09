@@ -2,25 +2,25 @@
 % Please edit documentation in R/download_htmls.R
 \name{download_htmls}
 \alias{download_htmls}
-\title{Download GAO Report HTMLs}
+\title{Download GAO Report HTML Pages}
 \usage{
-download_htmls(
-  links,
-  target_directory = getwd(),
-  workers = parallel::detectCores() - 2
-)
+download_htmls(links, target_directory = getwd(), sleep_time = 1)
 }
 \arguments{
-\item{links}{A vector of URLs to download.}
+\item{links}{Character vector. Full URLs of GAO report pages.}
 
-\item{target_directory}{A directory where the HTML files will be saved.}
+\item{target_directory}{Character. Directory to save HTML files (default: working directory).}
 
-\item{workers}{Number of workers to use for parallel processing (default: all cores - 2).}
+\item{sleep_time}{Numeric. Seconds to pause between downloads (default: 1).}
 }
 \value{
-Invisible list of download results. Called for side effect of downloading HTML files.
+Invisible character vector of downloaded file paths.
 }
 \description{
-This function downloads HTML files from a list of GAO report URLs, saving them
-to a specified directory. It runs in parallel using available cores and provides progress updates.
+Downloads HTML files from a list of GAO report URLs.
+}
+\examples{
+\dontrun{
+download_htmls(links, target_directory = "gao_htmls")
+}
 }

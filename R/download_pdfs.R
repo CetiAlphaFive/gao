@@ -1,47 +1,57 @@
-#' Download GAO PDF reports
+#' Download GAO PDF Reports
 #'
-#' This function downloads PDF files from the provided URLs in parallel, saving them to a specified directory.
+#' Downloads PDF files from extracted PDF links.
 #'
-#' @param pdf_links A character vector of PDF URLs to download (without the domain prefix).
-#' @param front_url The base URL to prepend to each PDF link (default: "https://www.gao.gov").
-#' @param download_dir The directory where the PDF files will be saved (default: current working directory).
-#' @param workers The number of workers to use for parallel downloading (default: all cores - 1).
-#' @param sleep_time Time (in seconds) to pause between downloads to avoid overwhelming the server (default: 1).
-#' @return Invisible list of download results. Called for side effect of downloading PDF files.
-#' @import furrr future
-#' @importFrom utils download.file
+#' @param pdf_links Character vector. PDF paths as returned by
+#'   [extract_pdf_links()] (relative paths like `"/assets/gao-24-106198.pdf"`
+#'   or full URLs).
+#' @param download_dir Character. Directory to save PDFs (default: working directory).
+#' @param sleep_time Numeric. Seconds to pause between downloads (default: 1).
+#'
+#' @return Invisible character vector of downloaded file paths.
 #' @export
+#' @examples
+#' \dontrun{
+#' download_pdfs(pdf_links, download_dir = "gao_pdfs")
+#' }
 download_pdfs <- function(pdf_links,
-                          front_url = "https://www.gao.gov",
                           download_dir = getwd(),
-                          workers = parallel::detectCores() - 1,
                           sleep_time = 1) {
 
-  # Ensure the download directory exists
   if (!dir.exists(download_dir)) {
     dir.create(download_dir, recursive = TRUE)
   }
 
-  # Set up parallel processing with furrr
-  future::plan(future::multisession, workers = workers)
+  downloaded <- character(0)
 
-  # Define the download function
-  download_pdf <- function(url) {
-    # Prepend the front_url to the relative PDF path
-    full_url <- paste0(front_url, url)
-    # Extract the file name from the URL
-    file_name <- basename(url)
-    # Create the full path for the destination file
-    destfile <- file.path(download_dir, file_name)
-    # Download the PDF file
-    download.file(full_url, destfile = destfile, mode = "wb")
-    # Pause to avoid overwhelming the website
-    Sys.sleep(sleep_time)
+  for (i in seq_along(pdf_links)) {
+    # Handle both relative and absolute URLs
+    if (grepl("^https?://", pdf_links[i])) {
+      full.url <- pdf_links[i]
+    } else {
+      full.url <- paste0("https://www.gao.gov", pdf_links[i])
+    }
+
+    file.name <- basename(pdf_links[i])
+    destfile <- file.path(download_dir, file.name)
+
+    if (file.exists(destfile)) {
+      message("Already exists: ", file.name)
+    } else {
+      result <- tryCatch({
+        .download_file(full.url, destfile)
+        message("Downloaded: ", file.name)
+        0L
+      }, error = function(e) {
+        message("Failed: ", file.name, " — ", e$message)
+        1L
+      })
+    }
+
+    downloaded <- c(downloaded, destfile)
+    if (i < length(pdf_links)) Sys.sleep(sleep_time)
+    if (i %% 100 == 0) message("Downloaded ", i, " of ", length(pdf_links))
   }
 
-  # Download PDFs in parallel using future_map
-  invisible(furrr::future_map(pdf_links, download_pdf))
-
-  # Clear the parallel plan after the download
-  future::plan(future::sequential)
+  invisible(downloaded)
 }

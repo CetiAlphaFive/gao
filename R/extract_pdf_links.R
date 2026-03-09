@@ -1,44 +1,44 @@
-#' Extract PDF links from GAO reports
+#' Extract PDF Links from GAO Report Pages
 #'
-#' This function extracts and processes the PDF links from GAO report pages. It uses parallel processing to speed up the extraction.
+#' Visits each report page and extracts the PDF download link(s).
 #'
-#' @param page_links A vector of report page URLs from which to extract PDF links.
-#' @param workers Number of workers to use for parallel processing (default: all cores - 2).
-#' @param sleep_time Time (in seconds) to pause between requests to avoid overwhelming the server (default: 1).
-#' @return A vector of unique PDF links.
-#' @import httr rvest furrr future
+#' @param page_links Character vector. Full URLs of GAO report pages
+#'   (e.g., `"https://www.gao.gov/products/gao-24-106198"`).
+#' @param sleep_time Numeric. Seconds to pause between requests (default: 1).
+#'
+#' @return A character vector of unique PDF paths (relative to gao.gov).
+#' @import rvest
 #' @export
-extract_pdf_links <- function(page_links,
-                              workers = parallel::detectCores() - 2,
-                              sleep_time = 1) {
+#' @examples
+#' \dontrun{
+#' pdf_links <- extract_pdf_links(c(
+#'   "https://www.gao.gov/products/gao-24-106198",
+#'   "https://www.gao.gov/products/gao-24-106856"
+#' ))
+#' }
+extract_pdf_links <- function(page_links, sleep_time = 1) {
 
-  # Set up parallel processing
-  future::plan(future::multisession, workers = workers)
+  pdf.links <- character(0)
 
-  # Function to extract the PDF link from a single report page
-  extract_pdf_link <- function(url) {
-    Sys.sleep(sleep_time)
-    page <- tryCatch(rvest::read_html(url), error = function(e) NULL)
+  for (i in seq_along(page_links)) {
+    page <- tryCatch(.fetch_html(page_links[i]), error = function(e) {
+      message("Failed: ", page_links[i], " — ", e$message)
+      NULL
+    })
 
     if (!is.null(page)) {
-      pdf_link <- page |>
+      hrefs <- page |>
         rvest::html_nodes("div.field__item a") |>
-        rvest::html_attr("href") |>
-        grep("\\.pdf$", x = _, value = TRUE)
-    } else {
-      pdf_link <- NULL
+        rvest::html_attr("href")
+      pdfs <- grep("\\.pdf$", hrefs, value = TRUE)
+      pdf.links <- c(pdf.links, pdfs)
     }
 
-    return(pdf_link)
+    if (i < length(page_links)) Sys.sleep(sleep_time)
+    if (i %% 100 == 0) message("Processed ", i, " of ", length(page_links), " pages")
   }
 
-  # Extract PDF links from each report page using future_map for parallelism
-  pdf_links <- furrr::future_map(page_links, extract_pdf_link) |>
-    unlist()
-
-  # Filter out any links containing "highlights"
-  pdf_links_filtered <- pdf_links[!grepl("highlights", pdf_links)]
-
-  # Return unique PDF links
-  return(unique(pdf_links_filtered))
+  # Remove highlight PDFs and deduplicate
+  pdf.links <- pdf.links[!grepl("highlights", pdf.links)]
+  unique(pdf.links)
 }

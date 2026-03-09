@@ -6,8 +6,6 @@
 \usage{
 extract_links(
   base_url = "https://www.gao.gov/reports-testimonies",
-  use_multicore = TRUE,
-  workers = NULL,
   last_page = NULL,
   save_to_file = TRUE,
   sleep_timer = 0.5,
@@ -15,29 +13,26 @@ extract_links(
 )
 }
 \arguments{
-\item{base_url}{Character. The base URL for GAO reports (defaults to 'https://www.gao.gov/reports-testimonies').}
+\item{base_url}{Character. The base URL for GAO reports
+(default: \code{"https://www.gao.gov/reports-testimonies"}).}
 
-\item{use_multicore}{Logical. If TRUE, uses multicore processing (defaults to TRUE).}
+\item{last_page}{Integer. Last page number to scrape. If \code{NULL}, detected
+automatically from the pagination.}
 
-\item{workers}{Integer. Number of workers for multicore processing. Only used if use_multicore = TRUE (defaults to 2).}
+\item{save_to_file}{Logical. If \code{TRUE}, saves links to a CSV file.}
 
-\item{last_page}{Integer. Optional. Specify the last page manually. If not provided, it will be dynamically detected.}
+\item{sleep_timer}{Numeric. Seconds to pause between page requests.}
 
-\item{save_to_file}{Logical. If TRUE, saves the scraped links to a CSV file (defaults to TRUE).}
-
-\item{sleep_timer}{Numeric. The number of seconds to sleep between requests (defaults to .5).}
-
-\item{output_file}{Character. The file path to save the links if \code{save_to_file = TRUE} (defaults to 'gao_report_links.csv').}
+\item{output_file}{Character. File path for the CSV output.}
 }
 \value{
-A character vector of GAO report links.
+A character vector of full GAO report URLs.
 }
 \description{
-This function scrapes all report links from the Government Accountability Office (GAO) reports and testimonies webpage.
-It can use multicore processing to speed up scraping.
+Scrapes report links from the GAO reports and testimonies listing pages.
 }
 \examples{
 \dontrun{
-links <- extract_links(use_multicore = TRUE, workers = 10)
+links <- extract_links(last_page = 5)
 }
 }

@@ -1,21 +1,20 @@
 Package: gao
 Type: Package
 Title: Harvest Government Accountability Office Reports
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: person(c("Jack", "T."), "Rametta", email = "jtrametta@gmail.com",
                   role = c("aut", "cre", "cph"))
 Description: Automates the harvesting and downloading of reports published by
     the United States Government Accountability Office (GAO). Provides
     functions for scraping report page URLs, extracting PDF download links,
-    and downloading report files in PDF or HTML format using parallel
-    processing.
+    and downloading report files in PDF or HTML format. Requires
+    'curl-impersonate' to be installed on the system to bypass TLS
+    fingerprint filtering.
 License: MIT + file LICENSE
-Depends: R (>= 4.2.0)
+Depends: R (>= 4.1.0)
 Imports:
-    furrr,
-    future,
-    httr,
     rvest
+SystemRequirements: curl-impersonate (https://github.com/lexiforest/curl-impersonate)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 URL: https://github.com/CetiAlphaFive/gao

@@ -2,30 +2,27 @@
 % Please edit documentation in R/download_pdfs.R
 \name{download_pdfs}
 \alias{download_pdfs}
-\title{Download GAO PDF reports}
+\title{Download GAO PDF Reports}
 \usage{
-download_pdfs(
-  pdf_links,
-  front_url = "https://www.gao.gov",
-  download_dir = getwd(),
-  workers = parallel::detectCores() - 1,
-  sleep_time = 1
-)
+download_pdfs(pdf_links, download_dir = getwd(), sleep_time = 1)
 }
 \arguments{
-\item{pdf_links}{A character vector of PDF URLs to download (without the domain prefix).}
+\item{pdf_links}{Character vector. PDF paths as returned by
+\code{\link[=extract_pdf_links]{extract_pdf_links()}} (relative paths like \code{"/assets/gao-24-106198.pdf"}
+or full URLs).}
 
-\item{front_url}{The base URL to prepend to each PDF link (default: "https://www.gao.gov").}
+\item{download_dir}{Character. Directory to save PDFs (default: working directory).}
 
-\item{download_dir}{The directory where the PDF files will be saved (default: current working directory).}
-
-\item{workers}{The number of workers to use for parallel downloading (default: all cores - 1).}
-
-\item{sleep_time}{Time (in seconds) to pause between downloads to avoid overwhelming the server (default: 1).}
+\item{sleep_time}{Numeric. Seconds to pause between downloads (default: 1).}
 }
 \value{
-Invisible list of download results. Called for side effect of downloading PDF files.
+Invisible character vector of downloaded file paths.
 }
 \description{
-This function downloads PDF files from the provided URLs in parallel, saving them to a specified directory.
+Downloads PDF files from extracted PDF links.
+}
+\examples{
+\dontrun{
+download_pdfs(pdf_links, download_dir = "gao_pdfs")
+}
 }

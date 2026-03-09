@@ -2,24 +2,27 @@
 % Please edit documentation in R/extract_pdf_links.R
 \name{extract_pdf_links}
 \alias{extract_pdf_links}
-\title{Extract PDF links from GAO reports}
+\title{Extract PDF Links from GAO Report Pages}
 \usage{
-extract_pdf_links(
-  page_links,
-  workers = parallel::detectCores() - 2,
-  sleep_time = 1
-)
+extract_pdf_links(page_links, sleep_time = 1)
 }
 \arguments{
-\item{page_links}{A vector of report page URLs from which to extract PDF links.}
+\item{page_links}{Character vector. Full URLs of GAO report pages
+(e.g., \code{"https://www.gao.gov/products/gao-24-106198"}).}
 
-\item{workers}{Number of workers to use for parallel processing (default: all cores - 2).}
-
-\item{sleep_time}{Time (in seconds) to pause between requests to avoid overwhelming the server (default: 1).}
+\item{sleep_time}{Numeric. Seconds to pause between requests (default: 1).}
 }
 \value{
-A vector of unique PDF links.
+A character vector of unique PDF paths (relative to gao.gov).
 }
 \description{
-This function extracts and processes the PDF links from GAO report pages. It uses parallel processing to speed up the extraction.
+Visits each report page and extracts the PDF download link(s).
+}
+\examples{
+\dontrun{
+pdf_links <- extract_pdf_links(c(
+  "https://www.gao.gov/products/gao-24-106198",
+  "https://www.gao.gov/products/gao-24-106856"
+))
+}
 }

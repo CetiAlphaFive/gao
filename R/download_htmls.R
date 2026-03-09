@@ -1,47 +1,46 @@
-#' Download GAO Report HTMLs
+#' Download GAO Report HTML Pages
 #'
-#' This function downloads HTML files from a list of GAO report URLs, saving them
-#' to a specified directory. It runs in parallel using available cores and provides progress updates.
+#' Downloads HTML files from a list of GAO report URLs.
 #'
-#' @param links A vector of URLs to download.
-#' @param target_directory A directory where the HTML files will be saved.
-#' @param workers Number of workers to use for parallel processing (default: all cores - 2).
-#' @return Invisible list of download results. Called for side effect of downloading HTML files.
-#' @import furrr future httr
-#' @importFrom stats runif
+#' @param links Character vector. Full URLs of GAO report pages.
+#' @param target_directory Character. Directory to save HTML files (default: working directory).
+#' @param sleep_time Numeric. Seconds to pause between downloads (default: 1).
+#'
+#' @return Invisible character vector of downloaded file paths.
 #' @export
-download_htmls <- function(links, target_directory = getwd(), workers = parallel::detectCores() - 2) {
-  # Ensure target directory exists
+#' @examples
+#' \dontrun{
+#' download_htmls(links, target_directory = "gao_htmls")
+#' }
+download_htmls <- function(links,
+                           target_directory = getwd(),
+                           sleep_time = 1) {
+
   if (!dir.exists(target_directory)) {
     dir.create(target_directory, recursive = TRUE)
   }
 
-  # Define the download function
-  download_url <- function(url) {
-    # Extract the file name from the URL and append .html
-    file_name <- file.path(target_directory, paste0(basename(url), ".html"))
+  downloaded <- character(0)
 
-    # Check if file already exists
-    if (!file.exists(file_name)) {
-      tryCatch({
-        response <- httr::GET(url, httr::user_agent("Mozilla/5.0"))
-        # Check for a successful response
-        if (response$status_code == 200) {
-          write(httr::content(response, "text"), file_name)
-          message(paste("Successfully downloaded:", url))
-        } else {
-          message(paste("Failed to download:", url, "\nStatus:", response$status_code))
-        }
-        Sys.sleep(runif(1, 0.5, 1.5))
-      }, error = function(e) {
-        message(paste("Error downloading:", url, "\nReason:", e$message))
-      })
+  for (i in seq_along(links)) {
+    file.name <- paste0(basename(links[i]), ".html")
+    destfile <- file.path(target_directory, file.name)
+
+    if (file.exists(destfile)) {
+      message("Already exists: ", file.name)
     } else {
-      message(paste("File already exists for:", url))
+      tryCatch({
+        .download_file(links[i], destfile)
+        message("Downloaded: ", file.name)
+      }, error = function(e) {
+        message("Failed: ", file.name, " — ", e$message)
+      })
     }
+
+    downloaded <- c(downloaded, destfile)
+    if (i < length(links)) Sys.sleep(sleep_time)
+    if (i %% 100 == 0) message("Downloaded ", i, " of ", length(links))
   }
 
-  # Run downloads in parallel
-  future::plan(future::multisession, workers = workers)
-  invisible(furrr::future_map(links, download_url, .progress = TRUE))
+  invisible(downloaded)
 }
