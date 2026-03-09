@@ -26,11 +26,14 @@ system dependency (GAO.gov uses TLS fingerprint filtering that blocks
 standard HTTP clients).
 
 ``` bash
-# Arch Linux
+# Linux
 sudo pacman -S curl-impersonate
 
 # macOS
 brew install lexiforest/curl-impersonate/curl-impersonate
+
+# Windows
+# you're on your own :)  
 ```
 
 Then install the package from GitHub:
