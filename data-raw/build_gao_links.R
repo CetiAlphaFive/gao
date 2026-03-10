@@ -20,13 +20,13 @@ urls <- c(
 url.file <- file.path(page.dir, "urls.txt")
 writeLines(urls, url.file)
 
-message("Downloading ", length(urls), " pages with 20 concurrent workers...")
+message("Downloading ", length(urls), " pages with 40 concurrent workers...")
 
 curl.bin <- gao:::.get_curl_bin()
-# xargs: -P 10 for concurrency, -I{} for URL substitution
+# xargs: -P 40 for concurrency, -I{} for URL substitution
 # Output filename = page number extracted from URL (or 0 for base)
 download.cmd <- sprintf(
-  "xargs -P 20 -a '%s' -I{} sh -c '%s -s -L -o \"%s/page_$(echo \"{}\" | grep -oP \"page=\\K[0-9]+\" || echo 0).html\" \"{}\"'",
+  "xargs -P 40 -a '%s' -I{} sh -c '%s -s -L -o \"%s/page_$(echo \"{}\" | grep -oP \"page=\\K[0-9]+\" || echo 0).html\" \"{}\"'",
   url.file, curl.bin, page.dir
 )
 
