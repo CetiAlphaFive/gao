@@ -26,14 +26,11 @@ system dependency (GAO.gov uses TLS fingerprint filtering that blocks
 standard HTTP clients).
 
 ``` bash
-# Linux
+# Arch Linux
 sudo pacman -S curl-impersonate
 
 # macOS
 brew install lexiforest/curl-impersonate/curl-impersonate
-
-# Windows
-# you're on your own :)  
 ```
 
 Then install the package from GitHub:
@@ -43,15 +40,30 @@ Then install the package from GitHub:
 pak::pak("CetiAlphaFive/gao")
 ```
 
-## Usage
-
-### Browse the bundled dataset
-
-The package ships with a pre-built list of all GAO report URLs:
+## Quick start
 
 ``` r
 library(gao)
 
+# Interactive — prompts for format and year range
+auto_download()
+
+# Or specify everything up front
+auto_download(format = "pdf", year = 2020:2024, confirm = FALSE)
+```
+
+`auto_download()` loads the bundled dataset of ~55,000 GAO report URLs,
+filters by fiscal year, and downloads PDFs, HTMLs, or both into
+`gao_reports/pdf/` and `gao_reports/html/`. That’s it.
+
+## Advanced usage
+
+The functions below give you finer control over each step. Most users
+won’t need them.
+
+### Browse the bundled dataset
+
+``` r
 links <- gao_links()
 length(links)
 head(links)
