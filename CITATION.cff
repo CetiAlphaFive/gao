@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+title: "gao: Harvest United States Government Accountability Office Reports"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - family-names: Rametta
+    given-names: Jack T.
+    email: jtrametta@gmail.com
+    orcid: "https://orcid.org/0000-0002-7995-2722"
+repository-code: "https://github.com/CetiAlphaFive/gao"
+license: MIT
+version: 0.2.0
+date-released: "2026-03-10"

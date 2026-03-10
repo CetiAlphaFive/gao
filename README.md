@@ -5,18 +5,23 @@
 
 <!-- badges: start -->
 
+[![R-CMD-check](https://github.com/CetiAlphaFive/gao/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/CetiAlphaFive/gao/actions/workflows/R-CMD-check.yaml)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/gao)](https://CRAN.R-project.org/package=gao)
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-`gao` provides tools for harvesting reports published by the United
+`gao` provides tools for downloading reports published by the United
 States Government Accountability Office (GAO). It ships with a bundled
-dataset of all GAO report URLs (updated daily via GitHub Actions) and
-functions for downloading reports as PDF or HTML files.
+dataset of over 55,000 report URLs (1921–present, updated daily via
+GitHub Actions) and a one-step function for batch downloading reports as
+PDF or HTML.
 
 **Disclaimer:** This package is not affiliated with, endorsed by, or in
 any way officially connected to the U.S. Government Accountability
-Office. “GAO” refers to the publicly available reports hosted at
-[gao.gov](https://www.gao.gov). All data is obtained from public web
-pages.
+Office. All data is obtained from public web pages at
+[gao.gov](https://www.gao.gov).
 
 ## Installation
 
@@ -33,9 +38,13 @@ sudo pacman -S curl-impersonate
 brew install lexiforest/curl-impersonate/curl-impersonate
 ```
 
-Then install the package from GitHub:
+Then install the package:
 
 ``` r
+# From CRAN (when available)
+install.packages("gao")
+
+# Development version from GitHub
 # install.packages("pak")
 pak::pak("CetiAlphaFive/gao")
 ```
@@ -45,16 +54,16 @@ pak::pak("CetiAlphaFive/gao")
 ``` r
 library(gao)
 
-# Interactive — prompts for format and year range
+# Interactive --- prompts for format and year range
 auto_download()
 
 # Or specify everything up front
 auto_download(format = "pdf", year = 2020:2024, confirm = FALSE)
 ```
 
-`auto_download()` loads the bundled dataset of ~55,000 GAO report URLs,
-filters by fiscal year, and downloads PDFs, HTMLs, or both into
-`gao_reports/pdf/` and `gao_reports/html/`. That’s it.
+`auto_download()` loads the bundled dataset, filters by fiscal year, and
+downloads PDFs, HTMLs, or both into `gao_reports/pdf/` and
+`gao_reports/html/`. That’s it.
 
 ## Advanced usage
 
@@ -99,8 +108,7 @@ download_htmls(links[1:10], target_directory = "gao_htmls")
 
 ### Full pipeline from scratch
 
-If you need to re-scrape the entire report listing (not usually
-necessary):
+Re-scrape the entire report listing (not usually necessary):
 
 ``` r
 links <- extract_links(save_to_file = FALSE)

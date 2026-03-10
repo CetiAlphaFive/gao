@@ -22,7 +22,7 @@ Invisible character vector of downloaded file paths.
 Downloads PDF files from extracted PDF links.
 }
 \examples{
-\dontrun{
-download_pdfs(pdf_links, download_dir = "gao_pdfs")
+\donttest{
+download_pdfs("/assets/gao-24-106198.pdf", download_dir = tempdir())
 }
 }

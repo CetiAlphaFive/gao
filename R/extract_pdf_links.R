@@ -10,7 +10,7 @@
 #' @return A character vector of unique PDF paths (relative to gao.gov).
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' pdf_links <- extract_pdf_links("https://www.gao.gov/products/gao-24-106198")
 #' }
 extract_pdf_links <- function(page_links, sleep_time = 1) {

@@ -9,8 +9,9 @@
 #' @return Invisible character vector of downloaded file paths.
 #' @export
 #' @examples
-#' \dontrun{
-#' download_htmls(links, target_directory = "gao_htmls")
+#' \donttest{
+#' download_htmls("https://www.gao.gov/products/gao-24-106198",
+#'                target_directory = tempdir())
 #' }
 download_htmls <- function(links,
                            target_directory = getwd(),

@@ -16,7 +16,7 @@
 #' @importFrom utils txtProgressBar setTxtProgressBar
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' links <- extract_links(last_page = 5)
 #' }
 extract_links <- function(base_url = "https://www.gao.gov/reports-testimonies",

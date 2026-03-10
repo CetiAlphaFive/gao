@@ -15,4 +15,5 @@ Returns the character vector of GAO report URLs bundled with the package.
 \examples{
 links <- gao_links()
 length(links)
+head(links)
 }

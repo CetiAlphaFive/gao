@@ -20,7 +20,7 @@ Visits each report page and extracts the PDF download link(s).
 Highlight PDFs are excluded automatically.
 }
 \examples{
-\dontrun{
+\donttest{
 pdf_links <- extract_pdf_links("https://www.gao.gov/products/gao-24-106198")
 }
 }

@@ -11,3 +11,6 @@
 ^docs$
 ^README\.Rmd$
 ^LICENSE\.md$
+^cran-comments\.md$
+^CITATION\.cff$
+^NEWS\.md$

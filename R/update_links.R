@@ -11,7 +11,7 @@
 #' @return A character vector of all known report URLs (old + new), sorted.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' all_links <- update_links()
 #' }
 update_links <- function(verbose = TRUE, sleep_time = 1) {
@@ -77,6 +77,7 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
 #' @examples
 #' links <- gao_links()
 #' length(links)
+#' head(links)
 gao_links <- function() {
   path <- system.file("extdata", "gao_links.txt", package = "gao")
   if (path == "") {
