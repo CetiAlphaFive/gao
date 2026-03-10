@@ -87,60 +87,9 @@ automatically from the pagination.</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="va">links</span> <span class="op">&lt;-</span> <span class="fu">extract_links</span><span class="op">(</span>last_page <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using manually specified last page: 5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                                              |                                                                      |   0%</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Failed page 0: curl-impersonate not found on your system.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> GAO.gov requires browser-like TLS fingerprints.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Install curl-impersonate: https://github.com/lexiforest/curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Arch Linux: pacman -S curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   macOS: brew install lexiforest/curl-impersonate/curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Set a different binary with: options(gao.curl_bin = "curl_chrome145")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                                              |============                                                          |  17%</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Failed page 1: curl-impersonate not found on your system.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> GAO.gov requires browser-like TLS fingerprints.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Install curl-impersonate: https://github.com/lexiforest/curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Arch Linux: pacman -S curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   macOS: brew install lexiforest/curl-impersonate/curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Set a different binary with: options(gao.curl_bin = "curl_chrome145")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                                              |=======================                                               |  33%</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Failed page 2: curl-impersonate not found on your system.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> GAO.gov requires browser-like TLS fingerprints.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Install curl-impersonate: https://github.com/lexiforest/curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Arch Linux: pacman -S curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   macOS: brew install lexiforest/curl-impersonate/curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Set a different binary with: options(gao.curl_bin = "curl_chrome145")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                                              |===================================                                   |  50%</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Failed page 3: curl-impersonate not found on your system.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> GAO.gov requires browser-like TLS fingerprints.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Install curl-impersonate: https://github.com/lexiforest/curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Arch Linux: pacman -S curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   macOS: brew install lexiforest/curl-impersonate/curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Set a different binary with: options(gao.curl_bin = "curl_chrome145")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                                              |===============================================                       |  67%</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Failed page 4: curl-impersonate not found on your system.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> GAO.gov requires browser-like TLS fingerprints.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Install curl-impersonate: https://github.com/lexiforest/curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Arch Linux: pacman -S curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   macOS: brew install lexiforest/curl-impersonate/curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Set a different binary with: options(gao.curl_bin = "curl_chrome145")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                                              |==========================================================            |  83%</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Failed page 5: curl-impersonate not found on your system.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> GAO.gov requires browser-like TLS fingerprints.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Install curl-impersonate: https://github.com/lexiforest/curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Arch Linux: pacman -S curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   macOS: brew install lexiforest/curl-impersonate/curl-impersonate</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Set a different binary with: options(gao.curl_bin = "curl_chrome145")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   |                                                                              |======================================================================| 100%</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Found 1 report links</span>
-<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

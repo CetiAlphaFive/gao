@@ -29,14 +29,8 @@ Invisible character vector of downloaded file paths.
 ## Examples
 
 ``` r
-# \donttest{
+if (FALSE) { # \dontrun{
 download_htmls("https://www.gao.gov/products/gao-24-106198",
                target_directory = tempdir())
-#> Failed: gao-24-106198.html - curl-impersonate not found on your system.
-#> GAO.gov requires browser-like TLS fingerprints.
-#> Install curl-impersonate: https://github.com/lexiforest/curl-impersonate
-#>   Arch Linux: pacman -S curl-impersonate
-#>   macOS: brew install lexiforest/curl-impersonate/curl-impersonate
-#> Set a different binary with: options(gao.curl_bin = "curl_chrome145")
-# }
+} # }
 ```

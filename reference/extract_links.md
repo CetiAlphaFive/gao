@@ -50,58 +50,7 @@ A character vector of full GAO report URLs.
 ## Examples
 
 ``` r
-# \donttest{
+if (FALSE) { # \dontrun{
 links <- extract_links(last_page = 5)
-#> Using manually specified last page: 5
-#>   |                                                                              |                                                                      |   0%
-#> 
-#> Failed page 0: curl-impersonate not found on your system.
-#> GAO.gov requires browser-like TLS fingerprints.
-#> Install curl-impersonate: https://github.com/lexiforest/curl-impersonate
-#>   Arch Linux: pacman -S curl-impersonate
-#>   macOS: brew install lexiforest/curl-impersonate/curl-impersonate
-#> Set a different binary with: options(gao.curl_bin = "curl_chrome145")
-#>   |                                                                              |============                                                          |  17%
-#> 
-#> Failed page 1: curl-impersonate not found on your system.
-#> GAO.gov requires browser-like TLS fingerprints.
-#> Install curl-impersonate: https://github.com/lexiforest/curl-impersonate
-#>   Arch Linux: pacman -S curl-impersonate
-#>   macOS: brew install lexiforest/curl-impersonate/curl-impersonate
-#> Set a different binary with: options(gao.curl_bin = "curl_chrome145")
-#>   |                                                                              |=======================                                               |  33%
-#> 
-#> Failed page 2: curl-impersonate not found on your system.
-#> GAO.gov requires browser-like TLS fingerprints.
-#> Install curl-impersonate: https://github.com/lexiforest/curl-impersonate
-#>   Arch Linux: pacman -S curl-impersonate
-#>   macOS: brew install lexiforest/curl-impersonate/curl-impersonate
-#> Set a different binary with: options(gao.curl_bin = "curl_chrome145")
-#>   |                                                                              |===================================                                   |  50%
-#> 
-#> Failed page 3: curl-impersonate not found on your system.
-#> GAO.gov requires browser-like TLS fingerprints.
-#> Install curl-impersonate: https://github.com/lexiforest/curl-impersonate
-#>   Arch Linux: pacman -S curl-impersonate
-#>   macOS: brew install lexiforest/curl-impersonate/curl-impersonate
-#> Set a different binary with: options(gao.curl_bin = "curl_chrome145")
-#>   |                                                                              |===============================================                       |  67%
-#> 
-#> Failed page 4: curl-impersonate not found on your system.
-#> GAO.gov requires browser-like TLS fingerprints.
-#> Install curl-impersonate: https://github.com/lexiforest/curl-impersonate
-#>   Arch Linux: pacman -S curl-impersonate
-#>   macOS: brew install lexiforest/curl-impersonate/curl-impersonate
-#> Set a different binary with: options(gao.curl_bin = "curl_chrome145")
-#>   |                                                                              |==========================================================            |  83%
-#> 
-#> Failed page 5: curl-impersonate not found on your system.
-#> GAO.gov requires browser-like TLS fingerprints.
-#> Install curl-impersonate: https://github.com/lexiforest/curl-impersonate
-#>   Arch Linux: pacman -S curl-impersonate
-#>   macOS: brew install lexiforest/curl-impersonate/curl-impersonate
-#> Set a different binary with: options(gao.curl_bin = "curl_chrome145")
-#>   |                                                                              |======================================================================| 100%
-#> Found 1 report links
-# }
+} # }
 ```

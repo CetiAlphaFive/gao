@@ -28,29 +28,7 @@ A character vector of all known report URLs (old + new), sorted.
 ## Examples
 
 ``` r
-# \donttest{
+if (FALSE) { # \dontrun{
 all_links <- update_links()
-#> Warning: No bundled link data found. Run extract_links() to build it.
-#> Bundled links: 0
-#> Failed page 0: curl-impersonate not found on your system.
-#> GAO.gov requires browser-like TLS fingerprints.
-#> Install curl-impersonate: https://github.com/lexiforest/curl-impersonate
-#>   Arch Linux: pacman -S curl-impersonate
-#>   macOS: brew install lexiforest/curl-impersonate/curl-impersonate
-#> Set a different binary with: options(gao.curl_bin = "curl_chrome145")
-#> Failed page 1: curl-impersonate not found on your system.
-#> GAO.gov requires browser-like TLS fingerprints.
-#> Install curl-impersonate: https://github.com/lexiforest/curl-impersonate
-#>   Arch Linux: pacman -S curl-impersonate
-#>   macOS: brew install lexiforest/curl-impersonate/curl-impersonate
-#> Set a different binary with: options(gao.curl_bin = "curl_chrome145")
-#> Failed page 2: curl-impersonate not found on your system.
-#> GAO.gov requires browser-like TLS fingerprints.
-#> Install curl-impersonate: https://github.com/lexiforest/curl-impersonate
-#>   Arch Linux: pacman -S curl-impersonate
-#>   macOS: brew install lexiforest/curl-impersonate/curl-impersonate
-#> Set a different binary with: options(gao.curl_bin = "curl_chrome145")
-#> Stopping: 3 consecutive fetch failures
-#> New links found: 0
-# }
+} # }
 ```

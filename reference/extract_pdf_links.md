@@ -27,13 +27,7 @@ A character vector of unique PDF paths (relative to gao.gov).
 ## Examples
 
 ``` r
-# \donttest{
+if (FALSE) { # \dontrun{
 pdf_links <- extract_pdf_links("https://www.gao.gov/products/gao-24-106198")
-#> Failed: https://www.gao.gov/products/gao-24-106198 - curl-impersonate not found on your system.
-#> GAO.gov requires browser-like TLS fingerprints.
-#> Install curl-impersonate: https://github.com/lexiforest/curl-impersonate
-#>   Arch Linux: pacman -S curl-impersonate
-#>   macOS: brew install lexiforest/curl-impersonate/curl-impersonate
-#> Set a different binary with: options(gao.curl_bin = "curl_chrome145")
-# }
+} # }
 ```
