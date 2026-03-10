@@ -31,7 +31,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Jack T. Rametta \email{jtrametta@gmail.com} [copyright holder]
+\strong{Maintainer}: Jack T. Rametta \email{jtrametta@gmail.com} (\href{https://orcid.org/0000-0002-9841-146X}{ORCID}) [copyright holder]
 
 }
 \keyword{internal}

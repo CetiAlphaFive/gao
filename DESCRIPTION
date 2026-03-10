@@ -3,7 +3,8 @@ Type: Package
 Title: Harvest United States Government Accountability Office Reports
 Version: 0.2.0
 Authors@R: person(c("Jack", "T."), "Rametta", email = "jtrametta@gmail.com",
-                  role = c("aut", "cre", "cph"))
+                  role = c("aut", "cre", "cph"),
+                  comment = c(ORCID = "0000-0002-9841-146X"))
 Description: Download reports published by the United States Government
     Accountability Office (GAO) directly from <https://www.gao.gov>. Ships
     with a bundled dataset of over 55,000 report URLs spanning 1921 to the

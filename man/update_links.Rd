@@ -21,7 +21,7 @@ reports that are already known (3 consecutive pages with no new links) or
 after 3 consecutive fetch failures.
 }
 \examples{
-\donttest{
+\dontrun{
 all_links <- update_links()
 }
 }

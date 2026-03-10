@@ -36,7 +36,7 @@ A character vector of full GAO report URLs.
 Scrapes report links from the GAO reports and testimonies listing pages.
 }
 \examples{
-\donttest{
+\dontrun{
 links <- extract_links(last_page = 5)
 }
 }

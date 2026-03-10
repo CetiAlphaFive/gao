@@ -11,7 +11,7 @@
 #' @return Invisible character vector of downloaded file paths.
 #' @export
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' download_pdfs("/assets/gao-24-106198.pdf", download_dir = tempdir())
 #' }
 download_pdfs <- function(pdf_links,

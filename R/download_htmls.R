@@ -9,7 +9,7 @@
 #' @return Invisible character vector of downloaded file paths.
 #' @export
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' download_htmls("https://www.gao.gov/products/gao-24-106198",
 #'                target_directory = tempdir())
 #' }

@@ -20,7 +20,7 @@ Invisible character vector of downloaded file paths.
 Downloads HTML files from a list of GAO report URLs.
 }
 \examples{
-\donttest{
+\dontrun{
 download_htmls("https://www.gao.gov/products/gao-24-106198",
                target_directory = tempdir())
 }

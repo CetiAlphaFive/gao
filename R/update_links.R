@@ -11,7 +11,7 @@
 #' @return A character vector of all known report URLs (old + new), sorted.
 #' @export
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' all_links <- update_links()
 #' }
 update_links <- function(verbose = TRUE, sleep_time = 1) {
