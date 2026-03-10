@@ -91,6 +91,24 @@
   hrefs[grep("/products/", hrefs)]
 }
 
+#' Extract Fiscal Year from GAO URLs
+#'
+#' Parses two-digit year codes from GAO report IDs (e.g., `gao-24-106198`).
+#' Uses a 50-year pivot: YY >= 50 maps to 19YY, YY < 50 maps to 20YY.
+#'
+#' @param urls Character vector. GAO report URLs or IDs.
+#' @return Integer vector of fiscal years (`NA` for non-matching URLs).
+#' @keywords internal
+#' @noRd
+.extract_gao_year <- function(urls) {
+  if (length(urls) == 0L) return(integer(0))
+  ids <- basename(urls)
+  has.year <- grepl("^[a-z]+-[0-9]{2}-", ids)
+  yy <- rep(NA_integer_, length(ids))
+  yy[has.year] <- as.integer(sub("^[a-z]+-([0-9]{2})-.*", "\\1", ids[has.year]))
+  ifelse(is.na(yy), NA_integer_, ifelse(yy >= 50L, 1900L + yy, 2000L + yy))
+}
+
 #' Get curl-impersonate Binary
 #'
 #' Returns the path to the curl-impersonate binary. Users can override with
