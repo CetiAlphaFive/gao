@@ -17,6 +17,9 @@
 download_pdfs <- function(pdf_links,
                           download_dir = getwd(),
                           sleep_time = 1) {
+  if (!is.character(pdf_links)) {
+    stop("pdf_links must be a character vector", call. = FALSE)
+  }
   if (!dir.exists(download_dir)) dir.create(download_dir, recursive = TRUE)
 
   # Resolve full URLs

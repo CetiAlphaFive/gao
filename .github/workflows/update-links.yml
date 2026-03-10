@@ -36,7 +36,7 @@ jobs:
           updated <- update_links(verbose = TRUE, sleep_time = 1)
           n.new <- length(updated) - length(known)
           if (n.new > 0) {
-            writeLines(sort(unique(updated)), "inst/extdata/gao_links.csv")
+            writeLines(sort(unique(updated)), "inst/extdata/gao_links.txt")
             message("Added ", n.new, " new links")
           } else {
             message("No new links found")
@@ -52,7 +52,7 @@ jobs:
           if [ "$N_NEW" -gt 0 ]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add inst/extdata/gao_links.csv
+            git add inst/extdata/gao_links.txt
             git commit -m "update gao links (+${N_NEW} new)"
             git push
           else

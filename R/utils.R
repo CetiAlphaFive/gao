@@ -1,3 +1,6 @@
+# Package environment for caching
+.gao_env <- new.env(parent = emptyenv())
+
 #' Fetch and Parse a URL
 #'
 #' Uses curl-impersonate to fetch a URL and returns parsed HTML.
@@ -26,16 +29,27 @@
 
 #' Download a File
 #'
-#' Uses curl-impersonate to download a file.
+#' Uses curl-impersonate to download a file. Downloads to a temporary file
+#' and renames on success to avoid leaving corrupt files on disk.
 #'
 #' @param url Character. URL to download.
 #' @param destfile Character. Destination file path.
-#' @return Exit code from system2 (invisible).
+#' @return Invisible integer exit code (0 on success).
 #' @keywords internal
 #' @noRd
 .download_file <- function(url, destfile) {
   curl.bin <- .get_curl_bin()
-  invisible(system2(curl.bin, args = c("-s", "-L", "-o", destfile, url)))
+  tmpfile <- paste0(destfile, ".part")
+  on.exit(unlink(tmpfile), add = TRUE)
+  exit.code <- system2(curl.bin, args = c("-s", "-L", "-o", tmpfile, url))
+  if (exit.code != 0) {
+    stop("curl failed with exit code ", exit.code, " for: ", url, call. = FALSE)
+  }
+  if (!file.exists(tmpfile) || file.size(tmpfile) == 0) {
+    stop("download produced empty file for: ", url, call. = FALSE)
+  }
+  file.rename(tmpfile, destfile)
+  invisible(0L)
 }
 
 #' Download Files in a Loop
@@ -80,23 +94,27 @@
 #' Get curl-impersonate Binary
 #'
 #' Returns the path to the curl-impersonate binary. Users can override with
-#' `options(gao.curl_bin = "curl_chrome145")`.
+#' `options(gao.curl_bin = "curl_chrome145")`. Caches the result to avoid
+#' repeated `Sys.which()` calls.
 #'
 #' @return Character. Name or path to curl-impersonate binary.
 #' @keywords internal
 #' @noRd
 .get_curl_bin <- function() {
   bin <- getOption("gao.curl_bin", "curl_firefox147")
-  if (nchar(Sys.which(bin)) == 0) {
-    stop(
-      "curl-impersonate not found on your system.\n",
-      "GAO.gov requires browser-like TLS fingerprints.\n",
-      "Install curl-impersonate: https://github.com/lexiforest/curl-impersonate\n",
-      "  Arch Linux: pacman -S curl-impersonate\n",
-      "  macOS: brew install lexiforest/curl-impersonate/curl-impersonate\n",
-      "Set a different binary with: options(gao.curl_bin = \"curl_chrome145\")",
-      call. = FALSE
-    )
+  if (!identical(bin, .gao_env$curl_bin)) {
+    if (nchar(Sys.which(bin)) == 0) {
+      stop(
+        "curl-impersonate not found on your system.\n",
+        "GAO.gov requires browser-like TLS fingerprints.\n",
+        "Install curl-impersonate: https://github.com/lexiforest/curl-impersonate\n",
+        "  Arch Linux: pacman -S curl-impersonate\n",
+        "  macOS: brew install lexiforest/curl-impersonate/curl-impersonate\n",
+        "Set a different binary with: options(gao.curl_bin = \"curl_chrome145\")",
+        call. = FALSE
+      )
+    }
+    .gao_env$curl_bin <- bin
   }
-  bin
+  .gao_env$curl_bin
 }

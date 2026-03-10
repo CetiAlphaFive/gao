@@ -1,3 +1,11 @@
+test_that("download_pdfs() validates pdf_links", {
+  expect_error(download_pdfs(42), "character vector")
+})
+
+test_that("download_htmls() validates links", {
+  expect_error(download_htmls(42), "character vector")
+})
+
 test_that("download_pdfs() downloads a PDF", {
   skip_if_not(nchar(Sys.which("curl_firefox147")) > 0)
   skip_on_cran()

@@ -17,7 +17,8 @@ A character vector of all known report URLs (old + new), sorted.
 \description{
 Scrapes the most recent GAO report listing pages and appends any new links
 not already in the bundled dataset. Stops automatically when it reaches
-reports that are already known.
+reports that are already known (3 consecutive pages with no new links) or
+after 3 consecutive fetch failures.
 }
 \examples{
 \dontrun{

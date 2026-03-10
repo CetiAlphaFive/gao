@@ -15,6 +15,9 @@
 download_htmls <- function(links,
                            target_directory = getwd(),
                            sleep_time = 1) {
+  if (!is.character(links)) {
+    stop("links must be a character vector", call. = FALSE)
+  }
   if (!dir.exists(target_directory)) dir.create(target_directory, recursive = TRUE)
 
   destfiles <- file.path(target_directory, paste0(basename(links), ".html"))

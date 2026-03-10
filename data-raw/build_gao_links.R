@@ -72,8 +72,8 @@ message("Total unique report links: ", length(full.links))
 
 # ── Save ──────────────────────────────────────────────────────────────────────
 dir.create("inst/extdata", recursive = TRUE, showWarnings = FALSE)
-writeLines(full.links, "inst/extdata/gao_links.csv")
-message("Saved to inst/extdata/gao_links.csv")
+writeLines(full.links, "inst/extdata/gao_links.txt")
+message("Saved to inst/extdata/gao_links.txt")
 
 # Cleanup
 unlink(page.dir, recursive = TRUE)

@@ -18,6 +18,12 @@ test_that(".get_last_page() returns a positive integer", {
   expect_true(last.page > 100)
 })
 
+test_that("extract_links() validates last_page", {
+  expect_error(extract_links(last_page = -5, verbose = FALSE), "non-negative")
+  expect_error(extract_links(last_page = "abc", verbose = FALSE), "non-negative")
+  expect_error(extract_links(last_page = c(1, 2), verbose = FALSE), "non-negative")
+})
+
 test_that("extract_links() save_to_file works", {
   skip_if_not(nchar(Sys.which("curl_firefox147")) > 0)
   skip_on_cran()

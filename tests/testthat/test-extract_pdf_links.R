@@ -1,3 +1,8 @@
+test_that("extract_pdf_links() validates page_links", {
+  expect_error(extract_pdf_links(42), "character vector")
+  expect_error(extract_pdf_links(list("a", "b")), "character vector")
+})
+
 test_that("extract_pdf_links() returns .pdf paths", {
   skip_if_not(nchar(Sys.which("curl_firefox147")) > 0)
   skip_on_cran()

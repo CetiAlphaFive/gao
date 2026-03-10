@@ -14,7 +14,11 @@
 #' pdf_links <- extract_pdf_links("https://www.gao.gov/products/gao-24-106198")
 #' }
 extract_pdf_links <- function(page_links, sleep_time = 1) {
-  pdf.links <- character(0)
+  if (!is.character(page_links)) {
+    stop("page_links must be a character vector", call. = FALSE)
+  }
+
+  pdf.links <- vector("list", length(page_links))
 
   for (i in seq_along(page_links)) {
     page <- tryCatch(.fetch_html(page_links[i]), error = function(e) {
@@ -24,12 +28,14 @@ extract_pdf_links <- function(page_links, sleep_time = 1) {
 
     if (!is.null(page)) {
       pdfs <- rvest::html_attr(rvest::html_nodes(page, "a[href$='.pdf']"), "href")
-      pdf.links <- c(pdf.links, pdfs)
+      pdf.links[[i]] <- pdfs
     }
 
     if (i < length(page_links)) Sys.sleep(sleep_time)
     if (i %% 100 == 0) message("Processed ", i, " of ", length(page_links))
   }
 
-  unique(pdf.links[!grepl("highlights", pdf.links)])
+  all.pdfs <- unlist(pdf.links)
+  if (length(all.pdfs) == 0) return(character(0))
+  unique(all.pdfs[!grepl("highlights", all.pdfs)])
 }

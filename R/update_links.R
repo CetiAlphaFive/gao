@@ -2,7 +2,8 @@
 #'
 #' Scrapes the most recent GAO report listing pages and appends any new links
 #' not already in the bundled dataset. Stops automatically when it reaches
-#' reports that are already known.
+#' reports that are already known (3 consecutive pages with no new links) or
+#' after 3 consecutive fetch failures.
 #'
 #' @param verbose Logical. Show progress messages (default: `TRUE`).
 #' @param sleep_time Numeric. Seconds between requests (default: 1).
@@ -18,9 +19,11 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
   known <- gao_links()
   if (verbose) message("Bundled links: ", length(known))
 
-  new.links <- character(0)
+  new.links <- list()
   page.num <- 0
   consecutive.known <- 0L
+  consecutive.failures <- 0L
+  link.idx <- 0L
 
   repeat {
     url <- if (page.num == 0) base.url else paste0(base.url, "?page=", page.num)
@@ -31,13 +34,17 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
     })
 
     if (is.null(page)) {
-      consecutive.known <- consecutive.known + 1L
-      if (consecutive.known >= 3) break
+      consecutive.failures <- consecutive.failures + 1L
+      if (consecutive.failures >= 3) {
+        if (verbose) message("Stopping: 3 consecutive fetch failures")
+        break
+      }
       page.num <- page.num + 1
       Sys.sleep(sleep_time)
       next
     }
 
+    consecutive.failures <- 0L
     full.urls <- paste0("https://www.gao.gov", .scrape_page_links(page))
     page.new <- setdiff(full.urls, known)
 
@@ -46,7 +53,8 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
       if (verbose) message("Page ", page.num, ": no new links")
     } else {
       consecutive.known <- 0L
-      new.links <- c(new.links, page.new)
+      link.idx <- link.idx + 1L
+      new.links[[link.idx]] <- page.new
       if (verbose) message("Page ", page.num, ": +", length(page.new), " new links")
     }
 
@@ -55,6 +63,7 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
     Sys.sleep(sleep_time)
   }
 
+  new.links <- unlist(new.links)
   if (verbose) message("New links found: ", length(new.links))
   sort(unique(c(known, new.links)))
 }
@@ -69,7 +78,7 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
 #' links <- gao_links()
 #' length(links)
 gao_links <- function() {
-  path <- system.file("extdata", "gao_links.csv", package = "gao")
+  path <- system.file("extdata", "gao_links.txt", package = "gao")
   if (path == "") {
     warning("No bundled link data found. Run extract_links() to build it.",
             call. = FALSE)

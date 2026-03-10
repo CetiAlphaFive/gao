@@ -7,13 +7,13 @@
 #' @param last_page Integer. Last page number to scrape. If `NULL`, detected
 #'   automatically from the pagination.
 #' @param verbose Logical. If `TRUE`, shows a progress bar (default: `TRUE`).
-#' @param save_to_file Logical. If `TRUE`, saves links to a CSV file
+#' @param save_to_file Logical. If `TRUE`, saves links to a text file
 #'   (default: `FALSE`).
-#' @param output_file Character. File path for the CSV output.
+#' @param output_file Character. File path for the output.
 #' @param sleep_time Numeric. Seconds to pause between page requests.
 #'
 #' @return A character vector of full GAO report URLs.
-#' @importFrom utils write.csv txtProgressBar setTxtProgressBar
+#' @importFrom utils txtProgressBar setTxtProgressBar
 #' @export
 #' @examples
 #' \dontrun{
@@ -24,7 +24,14 @@ extract_links <- function(base_url = "https://www.gao.gov/reports-testimonies",
                           verbose = TRUE,
                           save_to_file = FALSE,
                           sleep_time = 1,
-                          output_file = "gao_report_links.csv") {
+                          output_file = "gao_report_links.txt") {
+
+  if (!is.null(last_page)) {
+    if (!is.numeric(last_page) || length(last_page) != 1 || last_page < 0) {
+      stop("last_page must be a single non-negative integer", call. = FALSE)
+    }
+    last_page <- as.integer(last_page)
+  }
 
   if (is.null(last_page)) {
     last_page <- .get_last_page(base_url)
@@ -37,7 +44,7 @@ extract_links <- function(base_url = "https://www.gao.gov/reports-testimonies",
   n.pages <- length(pages)
   if (verbose) pb <- txtProgressBar(min = 0, max = n.pages, style = 3)
 
-  report.links <- character(0)
+  report.links <- vector("list", n.pages)
   for (i in seq_along(pages)) {
     url <- if (pages[i] == 0) base_url else paste0(base_url, "?page=", pages[i])
 
@@ -47,7 +54,7 @@ extract_links <- function(base_url = "https://www.gao.gov/reports-testimonies",
     })
 
     if (!is.null(page)) {
-      report.links <- c(report.links, .scrape_page_links(page))
+      report.links[[i]] <- .scrape_page_links(page)
     }
 
     if (verbose) setTxtProgressBar(pb, i)
@@ -55,12 +62,11 @@ extract_links <- function(base_url = "https://www.gao.gov/reports-testimonies",
   }
   if (verbose) close(pb)
 
-  full.links <- paste0("https://www.gao.gov", report.links)
+  full.links <- paste0("https://www.gao.gov", unlist(report.links))
   if (verbose) message("Found ", length(full.links), " report links")
 
   if (save_to_file) {
-    write.csv(data.frame(url = full.links), file = output_file,
-              row.names = FALSE)
+    writeLines(full.links, output_file)
     if (verbose) message("Saved to: ", output_file)
   }
 

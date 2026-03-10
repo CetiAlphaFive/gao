@@ -10,7 +10,7 @@ extract_links(
   verbose = TRUE,
   save_to_file = FALSE,
   sleep_time = 1,
-  output_file = "gao_report_links.csv"
+  output_file = "gao_report_links.txt"
 )
 }
 \arguments{
@@ -22,12 +22,12 @@ automatically from the pagination.}
 
 \item{verbose}{Logical. If \code{TRUE}, shows a progress bar (default: \code{TRUE}).}
 
-\item{save_to_file}{Logical. If \code{TRUE}, saves links to a CSV file
+\item{save_to_file}{Logical. If \code{TRUE}, saves links to a text file
 (default: \code{FALSE}).}
 
 \item{sleep_time}{Numeric. Seconds to pause between page requests.}
 
-\item{output_file}{Character. File path for the CSV output.}
+\item{output_file}{Character. File path for the output.}
 }
 \value{
 A character vector of full GAO report URLs.
