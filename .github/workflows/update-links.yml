@@ -33,7 +33,7 @@ jobs:
         run: |
           library(gao)
           known <- gao_links()
-          updated <- update_links(verbose = TRUE, sleep_timer = 1)
+          updated <- update_links(verbose = TRUE, sleep_time = 1)
           n.new <- length(updated) - length(known)
           if (n.new > 0) {
             writeLines(sort(unique(updated)), "inst/extdata/gao_links.csv")
