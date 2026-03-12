@@ -17,9 +17,10 @@ A character vector of GAO report URLs.
 
 ``` r
 links <- gao_links()
-#> Warning: No bundled link data found. Run extract_links() to build it.
 length(links)
-#> [1] 0
+#> [1] 56117
 head(links)
-#> character(0)
+#> [1] "https://www.gao.gov/products/087286" "https://www.gao.gov/products/087364"
+#> [3] "https://www.gao.gov/products/087365" "https://www.gao.gov/products/087528"
+#> [5] "https://www.gao.gov/products/087529" "https://www.gao.gov/products/087530"
 ```
