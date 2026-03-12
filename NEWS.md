@@ -1,3 +1,17 @@
+# gao 0.3.0
+
+* **Breaking:** `gao_links()` now returns a data.frame with columns `url`,
+  `title`, `report_id`, `published`, `released`, and `summary` instead of a
+  character vector.
+* Bundled dataset switched from text (`.txt`) to RDS (`.rds`) for compression
+  with rich metadata.
+* Year filtering in `auto_download()` now uses published date and fiscal year
+  calculation instead of regex on report IDs, fixing ~29% of reports with
+  legacy ID formats that previously yielded `NA` years.
+* `extract_links()` and `update_links()` now return data.frames with full
+  report metadata.
+* Fixed R-CMD-check GitHub Action syntax error (`args` parameter).
+
 # gao 0.2.0
 
 * Added `auto_download()` convenience wrapper that handles the full pipeline

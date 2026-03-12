@@ -12,7 +12,7 @@ update_links(verbose = TRUE, sleep_time = 1)
 \item{sleep_time}{Numeric. Seconds between requests (default: 1).}
 }
 \value{
-A character vector of all known report URLs (old + new), sorted.
+A data.frame of all known reports (old + new), sorted by url.
 }
 \description{
 Scrapes the most recent GAO report listing pages and appends any new links
@@ -22,6 +22,6 @@ after 3 consecutive fetch failures.
 }
 \examples{
 \dontrun{
-all_links <- update_links()
+all_data <- update_links()
 }
 }

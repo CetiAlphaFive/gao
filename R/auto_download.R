@@ -63,13 +63,13 @@ auto_download <- function(format = NULL,
     stop("confirm must be TRUE or FALSE", call. = FALSE)
   }
 
-  # --- Load bundled links ---
-  all.links <- gao_links()
-  if (length(all.links) == 0) {
+  # --- Load bundled data ---
+  all.data <- gao_links()
+  if (nrow(all.data) == 0) {
     stop("No bundled links found. Run update_links() first.", call. = FALSE)
   }
 
-  all.years <- .extract_gao_year(all.links)
+  all.years <- .fiscal_year(all.data$published)
 
   # --- Interactive prompts ---
   is.interactive <- interactive()
@@ -111,9 +111,9 @@ auto_download <- function(format = NULL,
   # --- Filter links ---
   if (!is.null(year)) {
     keep <- !is.na(all.years) & all.years %in% year
-    filtered.links <- all.links[keep]
+    filtered.links <- all.data$url[keep]
   } else {
-    filtered.links <- all.links
+    filtered.links <- all.data$url
   }
 
   if (length(filtered.links) == 0) {

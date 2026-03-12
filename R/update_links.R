@@ -8,22 +8,22 @@
 #' @param verbose Logical. Show progress messages (default: `TRUE`).
 #' @param sleep_time Numeric. Seconds between requests (default: 1).
 #'
-#' @return A character vector of all known report URLs (old + new), sorted.
+#' @return A data.frame of all known reports (old + new), sorted by url.
 #' @export
 #' @examples
 #' \dontrun{
-#' all_links <- update_links()
+#' all_data <- update_links()
 #' }
 update_links <- function(verbose = TRUE, sleep_time = 1) {
   base.url <- "https://www.gao.gov/reports-testimonies"
   known <- gao_links()
-  if (verbose) message("Bundled links: ", length(known))
+  if (verbose) message("Bundled reports: ", nrow(known))
 
-  new.links <- list()
+  new.rows <- list()
   page.num <- 0
   consecutive.known <- 0L
   consecutive.failures <- 0L
-  link.idx <- 0L
+  row.idx <- 0L
 
   repeat {
     url <- if (page.num == 0) base.url else paste0(base.url, "?page=", page.num)
@@ -45,17 +45,22 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
     }
 
     consecutive.failures <- 0L
-    full.urls <- paste0("https://www.gao.gov", .scrape_page_links(page))
-    page.new <- setdiff(full.urls, known)
+    page.data <- .scrape_page_links(page)
+    if (nrow(page.data) > 0) {
+      page.data$url <- paste0("https://www.gao.gov", page.data$url)
+      page.new <- page.data[!page.data$url %in% known$url, , drop = FALSE]
+    } else {
+      page.new <- page.data
+    }
 
-    if (length(page.new) == 0) {
+    if (nrow(page.new) == 0) {
       consecutive.known <- consecutive.known + 1L
-      if (verbose) message("Page ", page.num, ": no new links")
+      if (verbose) message("Page ", page.num, ": no new reports")
     } else {
       consecutive.known <- 0L
-      link.idx <- link.idx + 1L
-      new.links[[link.idx]] <- page.new
-      if (verbose) message("Page ", page.num, ": +", length(page.new), " new links")
+      row.idx <- row.idx + 1L
+      new.rows[[row.idx]] <- page.new
+      if (verbose) message("Page ", page.num, ": +", nrow(page.new), " new reports")
     }
 
     if (consecutive.known >= 3) break
@@ -63,27 +68,42 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
     Sys.sleep(sleep_time)
   }
 
-  new.links <- unlist(new.links)
-  if (verbose) message("New links found: ", length(new.links))
-  sort(unique(c(known, new.links)))
+  if (length(new.rows) > 0) {
+    new.data <- do.call(rbind, new.rows)
+    combined <- rbind(known, new.data)
+  } else {
+    combined <- known
+  }
+
+  if (verbose) message("New reports found: ", nrow(combined) - nrow(known))
+
+  combined <- combined[!duplicated(combined$url), , drop = FALSE]
+  combined <- combined[order(combined$url), , drop = FALSE]
+  rownames(combined) <- NULL
+  combined
 }
 
-#' Get Bundled GAO Report Links
+#' Get Bundled GAO Report Data
 #'
-#' Returns the character vector of GAO report URLs bundled with the package.
+#' Returns a data.frame of GAO report metadata bundled with the package.
 #'
-#' @return A character vector of GAO report URLs.
+#' @return A data.frame with columns: url, title, report_id, published,
+#'   released, summary.
 #' @export
 #' @examples
-#' links <- gao_links()
-#' length(links)
-#' head(links)
+#' reports <- gao_links()
+#' nrow(reports)
+#' head(reports)
 gao_links <- function() {
-  path <- system.file("extdata", "gao_links.txt", package = "gao")
+  path <- system.file("extdata", "gao_links.rds", package = "gao")
   if (path == "") {
     warning("No bundled link data found. Run extract_links() to build it.",
             call. = FALSE)
-    return(character(0))
+    return(data.frame(
+      url = character(0), title = character(0), report_id = character(0),
+      published = character(0), released = character(0), summary = character(0),
+      stringsAsFactors = FALSE
+    ))
   }
-  readLines(path)
+  readRDS(path)
 }

@@ -10,7 +10,7 @@ extract_links(
   verbose = TRUE,
   save_to_file = FALSE,
   sleep_time = 1,
-  output_file = "gao_report_links.txt"
+  output_file = "gao_report_links.rds"
 )
 }
 \arguments{
@@ -22,7 +22,7 @@ automatically from the pagination.}
 
 \item{verbose}{Logical. If \code{TRUE}, shows a progress bar (default: \code{TRUE}).}
 
-\item{save_to_file}{Logical. If \code{TRUE}, saves links to a text file
+\item{save_to_file}{Logical. If \code{TRUE}, saves data to an RDS file
 (default: \code{FALSE}).}
 
 \item{sleep_time}{Numeric. Seconds to pause between page requests.}
@@ -30,10 +30,12 @@ automatically from the pagination.}
 \item{output_file}{Character. File path for the output.}
 }
 \value{
-A character vector of full GAO report URLs.
+A data.frame with columns: url, title, report_id, published,
+released, summary.
 }
 \description{
-Scrapes report links from the GAO reports and testimonies listing pages.
+Scrapes report links and metadata from the GAO reports and testimonies
+listing pages.
 }
 \examples{
 \dontrun{

@@ -2,18 +2,19 @@
 % Please edit documentation in R/update_links.R
 \name{gao_links}
 \alias{gao_links}
-\title{Get Bundled GAO Report Links}
+\title{Get Bundled GAO Report Data}
 \usage{
 gao_links()
 }
 \value{
-A character vector of GAO report URLs.
+A data.frame with columns: url, title, report_id, published,
+released, summary.
 }
 \description{
-Returns the character vector of GAO report URLs bundled with the package.
+Returns a data.frame of GAO report metadata bundled with the package.
 }
 \examples{
-links <- gao_links()
-length(links)
-head(links)
+reports <- gao_links()
+nrow(reports)
+head(reports)
 }

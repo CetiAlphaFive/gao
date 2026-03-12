@@ -59,21 +59,27 @@ if (any(blocked)) {
 message("Parsing downloaded pages...")
 html.files <- list.files(page.dir, pattern = "\\.html$", full.names = TRUE)
 
-all.links <- character(0)
-for (f in html.files) {
-  page <- rvest::read_html(f)
-  hrefs <- rvest::html_attr(rvest::html_nodes(page, "a"), "href")
-  product.links <- hrefs[grep("/products/", hrefs)]
-  all.links <- c(all.links, product.links)
+all.rows <- vector("list", length(html.files))
+for (i in seq_along(html.files)) {
+  page <- rvest::read_html(html.files[i])
+  all.rows[[i]] <- gao:::.scrape_page_links(page)
 }
 
-full.links <- sort(unique(paste0("https://www.gao.gov", all.links)))
-message("Total unique report links: ", length(full.links))
+all.data <- do.call(rbind, all.rows)
+all.data$url <- paste0("https://www.gao.gov", all.data$url)
+all.data <- all.data[!duplicated(all.data$url), , drop = FALSE]
+all.data <- all.data[order(all.data$url), , drop = FALSE]
+rownames(all.data) <- NULL
+
+message("Total unique reports: ", nrow(all.data))
+message("NA published dates: ", sum(is.na(all.data$published)),
+        " (", round(100 * mean(is.na(all.data$published)), 1), "%)")
 
 # ── Save ──────────────────────────────────────────────────────────────────────
 dir.create("inst/extdata", recursive = TRUE, showWarnings = FALSE)
-writeLines(full.links, "inst/extdata/gao_links.txt")
-message("Saved to inst/extdata/gao_links.txt")
+saveRDS(all.data, "inst/extdata/gao_links.rds")
+message("Saved to inst/extdata/gao_links.rds (",
+        round(file.size("inst/extdata/gao_links.rds") / 1e6, 1), " MB)")
 
 # Cleanup
 unlink(page.dir, recursive = TRUE)

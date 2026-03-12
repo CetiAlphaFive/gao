@@ -1,18 +1,20 @@
 #' Extract GAO Report Links
 #'
-#' Scrapes report links from the GAO reports and testimonies listing pages.
+#' Scrapes report links and metadata from the GAO reports and testimonies
+#' listing pages.
 #'
 #' @param base_url Character. The base URL for GAO reports
 #'   (default: `"https://www.gao.gov/reports-testimonies"`).
 #' @param last_page Integer. Last page number to scrape. If `NULL`, detected
 #'   automatically from the pagination.
 #' @param verbose Logical. If `TRUE`, shows a progress bar (default: `TRUE`).
-#' @param save_to_file Logical. If `TRUE`, saves links to a text file
+#' @param save_to_file Logical. If `TRUE`, saves data to an RDS file
 #'   (default: `FALSE`).
 #' @param output_file Character. File path for the output.
 #' @param sleep_time Numeric. Seconds to pause between page requests.
 #'
-#' @return A character vector of full GAO report URLs.
+#' @return A data.frame with columns: url, title, report_id, published,
+#'   released, summary.
 #' @importFrom utils txtProgressBar setTxtProgressBar
 #' @export
 #' @examples
@@ -24,7 +26,7 @@ extract_links <- function(base_url = "https://www.gao.gov/reports-testimonies",
                           verbose = TRUE,
                           save_to_file = FALSE,
                           sleep_time = 1,
-                          output_file = "gao_report_links.txt") {
+                          output_file = "gao_report_links.rds") {
 
   if (!is.null(last_page)) {
     if (!is.numeric(last_page) || length(last_page) != 1 || last_page < 0) {
@@ -62,15 +64,25 @@ extract_links <- function(base_url = "https://www.gao.gov/reports-testimonies",
   }
   if (verbose) close(pb)
 
-  full.links <- paste0("https://www.gao.gov", unlist(report.links))
-  if (verbose) message("Found ", length(full.links), " report links")
+  all.data <- do.call(rbind, report.links)
+  if (is.null(all.data) || nrow(all.data) == 0) {
+    if (verbose) message("Found 0 report links")
+    all.data <- data.frame(
+      url = character(0), title = character(0), report_id = character(0),
+      published = character(0), released = character(0), summary = character(0),
+      stringsAsFactors = FALSE
+    )
+  } else {
+    all.data$url <- paste0("https://www.gao.gov", all.data$url)
+    if (verbose) message("Found ", nrow(all.data), " report links")
+  }
 
   if (save_to_file) {
-    writeLines(full.links, output_file)
+    saveRDS(all.data, output_file)
     if (verbose) message("Saved to: ", output_file)
   }
 
-  full.links
+  all.data
 }
 
 #' Get the Last Page of GAO Reports

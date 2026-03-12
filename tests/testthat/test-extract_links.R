@@ -1,12 +1,13 @@
-test_that("extract_links() returns report URLs from 1 page", {
+test_that("extract_links() returns data.frame from 1 page", {
   skip_if_not(nchar(Sys.which("curl_firefox147")) > 0)
   skip_on_cran()
 
-  links <- extract_links(last_page = 0, verbose = FALSE, save_to_file = FALSE)
+  result <- extract_links(last_page = 0, verbose = FALSE, save_to_file = FALSE)
 
-  expect_type(links, "character")
-  expect_true(length(links) > 0)
-  expect_true(all(grepl("^https://www.gao.gov/products/", links)))
+  expect_s3_class(result, "data.frame")
+  expect_true(nrow(result) > 0)
+  expect_named(result, c("url", "title", "report_id", "published", "released", "summary"))
+  expect_true(all(grepl("^https://www.gao.gov/products/", result$url)))
 })
 
 test_that(".get_last_page() returns a positive integer", {
@@ -28,10 +29,12 @@ test_that("extract_links() save_to_file works", {
   skip_if_not(nchar(Sys.which("curl_firefox147")) > 0)
   skip_on_cran()
 
-  tmp <- tempfile(fileext = ".csv")
+  tmp <- tempfile(fileext = ".rds")
   on.exit(unlink(tmp))
 
-  links <- extract_links(last_page = 0, verbose = FALSE,
-                         save_to_file = TRUE, output_file = tmp)
+  result <- extract_links(last_page = 0, verbose = FALSE,
+                           save_to_file = TRUE, output_file = tmp)
   expect_true(file.exists(tmp))
+  loaded <- readRDS(tmp)
+  expect_s3_class(loaded, "data.frame")
 })
