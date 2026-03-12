@@ -1,5 +1,24 @@
 # Changelog
 
+## gao 0.3.0
+
+- **Breaking:**
+  [`gao_links()`](https://cetialphafive.github.io/gao/reference/gao_links.md)
+  now returns a data.frame with columns `url`, `title`, `report_id`,
+  `published`, `released`, and `summary` instead of a character vector.
+- Bundled dataset switched from text (`.txt`) to RDS (`.rds`) for
+  compression with rich metadata.
+- Year filtering in
+  [`auto_download()`](https://cetialphafive.github.io/gao/reference/auto_download.md)
+  now uses published date and fiscal year calculation instead of regex
+  on report IDs, fixing ~29% of reports with legacy ID formats that
+  previously yielded `NA` years.
+- [`extract_links()`](https://cetialphafive.github.io/gao/reference/extract_links.md)
+  and
+  [`update_links()`](https://cetialphafive.github.io/gao/reference/update_links.md)
+  now return data.frames with full report metadata.
+- Fixed R-CMD-check GitHub Action syntax error (`args` parameter).
+
 ## gao 0.2.0
 
 - Added

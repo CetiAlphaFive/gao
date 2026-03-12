@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gao</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,16 @@
       <small>Source: <a href="https://github.com/CetiAlphaFive/gao/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.0" id="gao-030">gao 0.3.0<a class="anchor" aria-label="anchor" href="#gao-030"></a></h2>
+<ul><li>
+<strong>Breaking:</strong> <code><a href="../reference/gao_links.html">gao_links()</a></code> now returns a data.frame with columns <code>url</code>, <code>title</code>, <code>report_id</code>, <code>published</code>, <code>released</code>, and <code>summary</code> instead of a character vector.</li>
+<li>Bundled dataset switched from text (<code>.txt</code>) to RDS (<code>.rds</code>) for compression with rich metadata.</li>
+<li>Year filtering in <code><a href="../reference/auto_download.html">auto_download()</a></code> now uses published date and fiscal year calculation instead of regex on report IDs, fixing ~29% of reports with legacy ID formats that previously yielded <code>NA</code> years.</li>
+<li>
+<code><a href="../reference/extract_links.html">extract_links()</a></code> and <code><a href="../reference/update_links.html">update_links()</a></code> now return data.frames with full report metadata.</li>
+<li>Fixed R-CMD-check GitHub Action syntax error (<code>args</code> parameter).</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.0" id="gao-020">gao 0.2.0<a class="anchor" aria-label="anchor" href="#gao-020"></a></h2>
 <ul><li>Added <code><a href="../reference/auto_download.html">auto_download()</a></code> convenience wrapper that handles the full pipeline (load links, filter by year, download as PDF/HTML) in one call.</li>

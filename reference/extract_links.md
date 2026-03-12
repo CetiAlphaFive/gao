@@ -1,6 +1,7 @@
 # Extract GAO Report Links
 
-Scrapes report links from the GAO reports and testimonies listing pages.
+Scrapes report links and metadata from the GAO reports and testimonies
+listing pages.
 
 ## Usage
 
@@ -11,7 +12,7 @@ extract_links(
   verbose = TRUE,
   save_to_file = FALSE,
   sleep_time = 1,
-  output_file = "gao_report_links.txt"
+  output_file = "gao_report_links.rds"
 )
 ```
 
@@ -33,7 +34,7 @@ extract_links(
 
 - save_to_file:
 
-  Logical. If `TRUE`, saves links to a text file (default: `FALSE`).
+  Logical. If `TRUE`, saves data to an RDS file (default: `FALSE`).
 
 - sleep_time:
 
@@ -45,7 +46,8 @@ extract_links(
 
 ## Value
 
-A character vector of full GAO report URLs.
+A data.frame with columns: url, title, report_id, published, released,
+summary.
 
 ## Examples
 

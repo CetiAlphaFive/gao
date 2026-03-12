@@ -13,6 +13,6 @@
 - [`extract_pdf_links()`](https://cetialphafive.github.io/gao/reference/extract_pdf_links.md)
   : Extract PDF Links from GAO Report Pages
 - [`gao_links()`](https://cetialphafive.github.io/gao/reference/gao_links.md)
-  : Get Bundled GAO Report Links
+  : Get Bundled GAO Report Data
 - [`update_links()`](https://cetialphafive.github.io/gao/reference/update_links.md)
   : Update GAO Report Links

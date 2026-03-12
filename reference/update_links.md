@@ -23,12 +23,12 @@ update_links(verbose = TRUE, sleep_time = 1)
 
 ## Value
 
-A character vector of all known report URLs (old + new), sorted.
+A data.frame of all known reports (old + new), sorted by url.
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-all_links <- update_links()
+all_data <- update_links()
 } # }
 ```
