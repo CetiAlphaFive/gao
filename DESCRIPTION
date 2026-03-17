@@ -14,7 +14,7 @@ Description: Download reports published by the United States Government
     Requires 'curl-impersonate' as a system dependency to handle TLS
     fingerprint filtering. Not affiliated with or endorsed by the
     U.S. Government Accountability Office.
-License: MIT + file LICENSE
+License: GPL (>= 3)
 Depends: R (>= 4.1.0)
 Imports:
     rvest
