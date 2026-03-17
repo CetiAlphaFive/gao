@@ -142,6 +142,41 @@
   ifelse(is.na(yr), NA_integer_, ifelse(mo >= 10L, yr + 1L, yr))
 }
 
+#' Extract Fiscal Year from GAO URL
+#'
+#' Parses the 2-digit year from modern GAO product URLs of the form
+#' `/products/gao-YY-*` and converts to a 4-digit fiscal year.
+#'
+#' @param urls Character vector of GAO product URLs.
+#' @return Integer vector of fiscal years (`NA_integer_` for URLs that don't
+#'   match the modern pattern).
+#' @keywords internal
+#' @noRd
+.fiscal_year_from_url <- function(urls) {
+  m <- regmatches(urls, regexpr("gao-([0-9]{2})-", urls))
+  yy <- suppressWarnings(as.integer(sub("gao-([0-9]{2})-", "\\1", m)))
+  yy[lengths(regmatches(urls, regexpr("gao-([0-9]{2})-", urls))) == 0L] <- NA_integer_
+  # 00-49 -> 2000-2049, 50-99 -> 1950-1999
+  ifelse(is.na(yy), NA_integer_, ifelse(yy <= 49L, 2000L + yy, 1900L + yy))
+}
+
+#' Infer Fiscal Year from Date or URL
+#'
+#' Uses the published date when available (via [.fiscal_year()]), falling back
+#' to the URL-encoded year (via [.fiscal_year_from_url()]) when `published` is
+#' `NA`.
+#'
+#' @param dates Character vector of dates in YYYY-MM-DD format.
+#' @param urls Character vector of GAO product URLs (same length as `dates`).
+#' @return Integer vector of fiscal years.
+#' @keywords internal
+#' @noRd
+.infer_fiscal_year <- function(dates, urls) {
+  fy.date <- .fiscal_year(dates)
+  fy.url <- .fiscal_year_from_url(urls)
+  ifelse(is.na(fy.date), fy.url, fy.date)
+}
+
 #' Get curl-impersonate Binary
 #'
 #' Returns the path to the curl-impersonate binary. Users can override with

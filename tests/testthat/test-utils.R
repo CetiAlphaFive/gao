@@ -83,3 +83,54 @@ test_that(".fiscal_year() vectorizes", {
   result <- .fiscal_year(dates)
   expect_equal(result, c(2024L, 2024L, NA_integer_, 2000L))
 })
+
+# --- .fiscal_year_from_url() ---
+
+test_that(".fiscal_year_from_url() parses modern GAO URLs", {
+  urls <- c(
+    "https://www.gao.gov/products/gao-24-106198",
+    "/products/gao-20-100",
+    "https://www.gao.gov/products/gao-05-1234"
+  )
+  expect_equal(.fiscal_year_from_url(urls), c(2024L, 2020L, 2005L))
+})
+
+test_that(".fiscal_year_from_url() returns NA for legacy URLs", {
+  legacy <- c(
+    "/products/aimd-98-123",
+    "/products/ggd-96-100",
+    "https://www.gao.gov/products/t-hehs-00-50"
+  )
+  expect_true(all(is.na(.fiscal_year_from_url(legacy))))
+})
+
+test_that(".fiscal_year_from_url() handles century boundary", {
+  expect_equal(.fiscal_year_from_url("/products/gao-00-100"), 2000L)
+  expect_equal(.fiscal_year_from_url("/products/gao-49-100"), 2049L)
+  expect_equal(.fiscal_year_from_url("/products/gao-50-100"), 1950L)
+  expect_equal(.fiscal_year_from_url("/products/gao-99-100"), 1999L)
+})
+
+# --- .infer_fiscal_year() ---
+
+test_that(".infer_fiscal_year() prefers published date when available", {
+  dates <- c("2024-01-15", "2023-10-01")
+  urls <- c("/products/gao-20-100", "/products/gao-20-200")
+  result <- .infer_fiscal_year(dates, urls)
+  # Should use date-based FY (2024, 2024), not URL-based (2020, 2020)
+  expect_equal(result, c(2024L, 2024L))
+})
+
+test_that(".infer_fiscal_year() falls back to URL when published is NA", {
+  dates <- c(NA_character_, NA_character_, "2024-01-15")
+  urls <- c("/products/gao-22-100", "/products/gao-23-200", "/products/gao-20-300")
+  result <- .infer_fiscal_year(dates, urls)
+  expect_equal(result, c(2022L, 2023L, 2024L))
+})
+
+test_that(".infer_fiscal_year() returns NA when both sources are NA", {
+  dates <- c(NA_character_)
+  urls <- c("/products/aimd-98-100")
+  result <- .infer_fiscal_year(dates, urls)
+  expect_true(is.na(result))
+})

@@ -38,6 +38,35 @@ test_that("auto_download() errors with confirm = TRUE non-interactively", {
 
 # --- Integration test with mocked gao_links() ---
 
+test_that("auto_download() includes URL-only rows when year matches", {
+  mock.links <- data.frame(
+    url = c("https://www.gao.gov/products/gao-24-106198",
+            "https://www.gao.gov/products/gao-24-200000",
+            "https://www.gao.gov/products/gao-23-300000"),
+    title = c("Report A", "Report B", "Report C"),
+    report_id = c("GAO-24-106198", "GAO-24-200000", "GAO-23-300000"),
+    published = c("2024-01-15", NA_character_, NA_character_),
+    released = c("2024-02-01", NA_character_, NA_character_),
+    summary = c("Summary A", "Summary B", "Summary C"),
+    stringsAsFactors = FALSE
+  )
+
+  local_mocked_bindings(gao_links = function() mock.links)
+
+  # Capture the filtering logic without actually downloading
+  # by using a year that won't trigger confirm in non-interactive
+  # Report A: FY2024 from date, Report B: FY2024 from URL, Report C: FY2023 from URL
+  expect_error(
+    auto_download(format = "pdf", year = 2024, confirm = TRUE),
+    "confirm = FALSE"
+  )
+
+  # Verify the inferred years directly
+  fy <- .infer_fiscal_year(mock.links$published, mock.links$url)
+  expect_equal(fy, c(2024L, 2024L, 2023L))
+  expect_equal(sum(fy == 2024L, na.rm = TRUE), 2L)
+})
+
 test_that("auto_download() downloads PDFs with mocked data", {
   skip_if_not(nchar(Sys.which("curl_firefox147")) > 0)
 

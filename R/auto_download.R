@@ -69,7 +69,7 @@ auto_download <- function(format = NULL,
     stop("No bundled links found. Run update_links() first.", call. = FALSE)
   }
 
-  all.years <- .fiscal_year(all.data$published)
+  all.years <- .infer_fiscal_year(all.data$published, all.data$url)
 
   # --- Interactive prompts ---
   is.interactive <- interactive()
