@@ -13,8 +13,10 @@ auto_download(
 )
 }
 \arguments{
-\item{format}{Character. \code{"pdf"}, \code{"html"}, or \code{"both"}. \code{NULL} (default)
-prompts interactively; in non-interactive sessions defaults to \code{"pdf"}.}
+\item{format}{Character. \code{"pdf"}, \code{"html"}, \code{"both"}, or \code{"metadata"}.
+\code{"metadata"} writes a CSV of report metadata without downloading files.
+\code{NULL} (default) prompts interactively; in non-interactive sessions
+defaults to \code{"pdf"}.}
 
 \item{year}{Integer vector of 4-digit fiscal years, e.g. \code{2024} or
 \code{2020:2024}. \code{NULL} (default) prompts interactively; in non-interactive
@@ -30,12 +32,14 @@ downloading. In non-interactive sessions, \code{confirm = TRUE} raises an error
 to prevent accidental mass downloads — set \code{confirm = FALSE} explicitly.}
 }
 \value{
-Invisible character vector of downloaded file paths.
+For \code{"pdf"}, \code{"html"}, or \code{"both"}: invisible character vector of
+downloaded file paths. For \code{"metadata"}: invisible path to the written CSV.
 }
 \description{
 Convenience wrapper that loads the bundled report links, optionally filters
-by fiscal year, and downloads reports as PDF, HTML, or both. In interactive
-sessions, prompts for format and year range when not supplied.
+by fiscal year, and downloads reports as PDF, HTML, or both. Use
+\code{format = "metadata"} to export a CSV of report metadata without
+downloading any files.
 }
 \details{
 PDF URLs are constructed directly from report IDs (e.g.,
@@ -50,5 +54,8 @@ auto_download()
 
 # Non-interactive: download 2024 PDFs
 auto_download(format = "pdf", year = 2024, confirm = FALSE)
+
+# Export metadata only (no file downloads)
+auto_download(format = "metadata", year = 2020:2024, confirm = FALSE)
 }
 }

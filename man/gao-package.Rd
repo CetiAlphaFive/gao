@@ -25,6 +25,7 @@ standard HTTP clients.
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://cetialphafive.github.io/gao/}
   \item \url{https://github.com/CetiAlphaFive/gao}
   \item Report bugs at \url{https://github.com/CetiAlphaFive/gao/issues}
 }

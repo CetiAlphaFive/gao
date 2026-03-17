@@ -1,16 +1,19 @@
 #' Download GAO Reports in One Step
 #'
 #' Convenience wrapper that loads the bundled report links, optionally filters
-#' by fiscal year, and downloads reports as PDF, HTML, or both. In interactive
-#' sessions, prompts for format and year range when not supplied.
+#' by fiscal year, and downloads reports as PDF, HTML, or both. Use
+#' `format = "metadata"` to export a CSV of report metadata without
+#' downloading any files.
 #'
 #' PDF URLs are constructed directly from report IDs (e.g.,
 #' `/products/gao-24-106198` becomes `/assets/gao-24-106198.pdf`) rather than
 #' scraping each report page, so no extra HTTP requests are needed for
 #' link extraction.
 #'
-#' @param format Character. `"pdf"`, `"html"`, or `"both"`. `NULL` (default)
-#'   prompts interactively; in non-interactive sessions defaults to `"pdf"`.
+#' @param format Character. `"pdf"`, `"html"`, `"both"`, or `"metadata"`.
+#'   `"metadata"` writes a CSV of report metadata without downloading files.
+#'   `NULL` (default) prompts interactively; in non-interactive sessions
+#'   defaults to `"pdf"`.
 #' @param year Integer vector of 4-digit fiscal years, e.g. `2024` or
 #'   `2020:2024`. `NULL` (default) prompts interactively; in non-interactive
 #'   sessions uses all available years.
@@ -21,9 +24,10 @@
 #'   downloading. In non-interactive sessions, `confirm = TRUE` raises an error
 #'   to prevent accidental mass downloads — set `confirm = FALSE` explicitly.
 #'
-#' @return Invisible character vector of downloaded file paths.
+#' @return For `"pdf"`, `"html"`, or `"both"`: invisible character vector of
+#'   downloaded file paths. For `"metadata"`: invisible path to the written CSV.
 #' @export
-#' @importFrom utils menu
+#' @importFrom utils menu write.csv
 #' @examples
 #' \dontrun{
 #' # Interactive: walks through prompts
@@ -31,6 +35,9 @@
 #'
 #' # Non-interactive: download 2024 PDFs
 #' auto_download(format = "pdf", year = 2024, confirm = FALSE)
+#'
+#' # Export metadata only (no file downloads)
+#' auto_download(format = "metadata", year = 2020:2024, confirm = FALSE)
 #' }
 auto_download <- function(format = NULL,
                           year = NULL,
@@ -40,8 +47,9 @@ auto_download <- function(format = NULL,
   # --- Validate fixed args ---
   if (!is.null(format)) {
     format <- tolower(format)
-    if (!format %in% c("pdf", "html", "both")) {
-      stop("format must be \"pdf\", \"html\", or \"both\"", call. = FALSE)
+    if (!format %in% c("pdf", "html", "both", "metadata")) {
+      stop("format must be \"pdf\", \"html\", \"both\", or \"metadata\"",
+           call. = FALSE)
     }
   }
   if (!is.null(year)) {
@@ -76,13 +84,14 @@ auto_download <- function(format = NULL,
 
   if (is.null(format)) {
     if (is.interactive) {
-      choice <- utils::menu(c("PDF only", "HTML only", "Both"),
+      choice <- utils::menu(c("PDF only", "HTML only", "Both",
+                              "Metadata only (CSV, no downloads)"),
                             title = "Select download format:")
       if (choice == 0) {
         message("Cancelled.")
         return(invisible(character(0)))
       }
-      format <- c("pdf", "html", "both")[choice]
+      format <- c("pdf", "html", "both", "metadata")[choice]
     } else {
       format <- "pdf"
     }
@@ -108,17 +117,43 @@ auto_download <- function(format = NULL,
     # non-interactive NULL year means all years — no filtering needed
   }
 
-  # --- Filter links ---
+  # --- Filter ---
   if (!is.null(year)) {
     keep <- !is.na(all.years) & all.years %in% year
-    filtered.links <- all.data$url[keep]
+    filtered.data <- all.data[keep, , drop = FALSE]
   } else {
-    filtered.links <- all.data$url
+    filtered.data <- all.data
   }
 
-  if (length(filtered.links) == 0) {
+  if (nrow(filtered.data) == 0) {
     message("No reports matched the specified year(s).")
     return(invisible(character(0)))
+  }
+
+  filtered.links <- filtered.data$url
+  n <- length(filtered.links)
+
+  # --- Metadata-only path ---
+  if (format == "metadata") {
+    if (!dir.exists(download_dir)) dir.create(download_dir, recursive = TRUE)
+    csv.path <- file.path(download_dir, "gao_metadata.csv")
+    message("Ready to export: ", n, " report records -> ", csv.path)
+
+    if (confirm) {
+      if (!is.interactive) {
+        stop("Non-interactive session: set confirm = FALSE to proceed.",
+             call. = FALSE)
+      }
+      ans <- readline("Proceed? (y/n): ")
+      if (!tolower(trimws(ans)) %in% c("y", "yes")) {
+        message("Cancelled.")
+        return(invisible(character(0)))
+      }
+    }
+
+    utils::write.csv(filtered.data, csv.path, row.names = FALSE)
+    message("Wrote ", n, " records to ", csv.path)
+    return(invisible(csv.path))
   }
 
   # --- Summary ---
@@ -128,7 +163,6 @@ auto_download <- function(format = NULL,
   pdf.dir <- file.path(download_dir, "pdf")
   html.dir <- file.path(download_dir, "html")
 
-  n <- length(filtered.links)
   parts <- character(0)
   if (do.pdf)  parts <- c(parts, paste0(n, " PDFs -> ", pdf.dir, "/"))
   if (do.html) parts <- c(parts, paste0(n, " HTMLs -> ", html.dir, "/"))
