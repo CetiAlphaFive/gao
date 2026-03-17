@@ -18,7 +18,7 @@ summary.
 ``` r
 reports <- gao_links()
 nrow(reports)
-#> [1] 56117
+#> [1] 56263
 head(reports)
 #>                                   url title report_id published released
 #> 1 https://www.gao.gov/products/087286  <NA>      <NA>      <NA>     <NA>

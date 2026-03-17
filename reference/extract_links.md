@@ -12,7 +12,8 @@ extract_links(
   verbose = TRUE,
   save_to_file = FALSE,
   sleep_time = 1,
-  output_file = "gao_report_links.rds"
+  output_file = "gao_report_links.rds",
+  cache_dir = NULL
 )
 ```
 
@@ -44,15 +45,31 @@ extract_links(
 
   Character. File path for the output.
 
+- cache_dir:
+
+  Character or `NULL`. Directory to cache raw HTML listing pages. If
+  `NULL` (default), pages are fetched into memory only. If set, pages
+  are saved as `page_0.html`, `page_1.html`, etc., and
+  already-downloaded pages are skipped.
+
 ## Value
 
 A data.frame with columns: url, title, report_id, published, released,
 summary.
+
+## Details
+
+When `cache_dir` is set, raw HTML pages are saved to disk and
+already-downloaded pages are skipped on subsequent runs. This makes
+large scrapes resumable.
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
 links <- extract_links(last_page = 5)
+
+# Resumable: caches HTML to disk
+links <- extract_links(cache_dir = "data-raw/gao_pages")
 } # }
 ```
