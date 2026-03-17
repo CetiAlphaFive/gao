@@ -1,6 +1,6 @@
 Package: gao
 Type: Package
-Title: Harvest United States Government Accountability Office Reports
+Title: A Complete Library of GAO Reports and Metadata
 Version: 0.3.0
 Authors@R: person(c("Jack", "T."), "Rametta", email = "jtrametta@gmail.com",
                   role = c("aut", "cre", "cph"),

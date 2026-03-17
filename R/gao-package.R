@@ -1,6 +1,6 @@
-#' gao: Harvest Government Accountability Office Reports
+#' gao: A Complete Library of GAO Reports and Metadata
 #'
-#' Tools for harvesting reports published by the U.S. Government
+#' A complete library of reports and metadata from the U.S. Government
 #' Accountability Office (GAO). Ships with a bundled dataset of all GAO
 #' report URLs and provides functions for downloading reports as PDF or HTML.
 #'
@@ -17,9 +17,20 @@
 "_PACKAGE"
 
 .onAttach <- function(libname, pkgname) {
+  packageStartupMessage(
+    "Please cite the gao package in your work:\n",
+    "  Rametta, J. T. (",
+    format(Sys.Date(), "%Y"),
+    "). gao: A Complete Library of GAO Reports and Metadata.\n",
+    "  https://cetialphafive.github.io/gao/"
+  )
+
   tryCatch(.get_curl_bin(), error = function(e) {
     packageStartupMessage(
-      "gao: curl-impersonate not found. Install it before using this package.\n",
+      "\ngao: curl-impersonate not found.\n",
+      "  Downloading reports requires curl-impersonate.\n",
+      "  Browsing metadata (gao_links(), auto_download(format = \"metadata\"))\n",
+      "  works without it.\n",
       "  Arch Linux: pacman -S curl-impersonate\n",
       "  macOS: brew install lexiforest/curl-impersonate/curl-impersonate\n",
       "  See: https://github.com/lexiforest/curl-impersonate"

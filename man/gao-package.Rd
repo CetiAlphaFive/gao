@@ -4,9 +4,9 @@
 \name{gao-package}
 \alias{gao}
 \alias{gao-package}
-\title{gao: Harvest Government Accountability Office Reports}
+\title{gao: A Complete Library of GAO Reports and Metadata}
 \description{
-Tools for harvesting reports published by the U.S. Government
+A complete library of reports and metadata from the U.S. Government
 Accountability Office (GAO). Ships with a bundled dataset of all GAO
 report URLs and provides functions for downloading reports as PDF or HTML.
 }
