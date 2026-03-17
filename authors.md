@@ -10,12 +10,12 @@
 Source:
 [`DESCRIPTION`](https://github.com/CetiAlphaFive/gao/blob/main/DESCRIPTION)
 
-Rametta JT (2026). *gao: Harvest United States Government Accountability
-Office Reports*. R package version 0.3.0,
+Rametta JT (2026). *gao: A Complete Library of GAO Reports and
+Metadata*. R package version 0.3.0,
 <https://cetialphafive.github.io/gao/>.
 
     @Manual{,
-      title = {gao: Harvest United States Government Accountability Office Reports},
+      title = {gao: A Complete Library of GAO Reports and Metadata},
       author = {Jack T. Rametta},
       year = {2026},
       note = {R package version 0.3.0},
