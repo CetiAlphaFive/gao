@@ -16,6 +16,11 @@ reference:
   - gao_links
   - extract_pdf_links
 
+- title: Process reports
+  desc: Extract text and data from downloaded reports.
+  contents:
+  - extract_text
+
 - title: Update data
   desc: Scrape and update the bundled link dataset.
   contents:

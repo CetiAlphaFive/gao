@@ -70,11 +70,14 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
 
   if (length(new.rows) > 0) {
     new.data <- do.call(rbind, new.rows)
-    # Ensure consistent columns if bundled data predates schema additions
+    # Ensure consistent columns in both directions
     for (col in setdiff(names(new.data), names(known))) {
       known[[col]] <- NA_character_
     }
-    combined <- rbind(known, new.data)
+    for (col in setdiff(names(known), names(new.data))) {
+      new.data[[col]] <- NA
+    }
+    combined <- rbind(known, new.data[, names(known), drop = FALSE])
   } else {
     combined <- known
   }
@@ -92,7 +95,8 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
 #' Returns a data.frame of GAO report metadata bundled with the package.
 #'
 #' @return A data.frame with columns: url, title, report_id, published,
-#'   released, summary.
+#'   released, summary, and page_count (integer, may be `NA` for reports
+#'   without a matching PDF in the bundled archive).
 #' @export
 #' @examples
 #' reports <- gao_links()

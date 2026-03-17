@@ -28,15 +28,36 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::remotes
+          extra-packages: any::remotes, any::pdftools
 
-      - name: Update links
+      - name: Update links and backfill page counts
         run: |
           library(gao)
           known <- gao_links()
           updated <- update_links(verbose = TRUE, sleep_time = 1)
           n.new <- nrow(updated) - nrow(known)
+
           if (n.new > 0) {
+            ## Backfill page_count for new reports
+            new.idx <- which(!updated$url %in% known$url)
+            tmp.dir <- tempdir()
+
+            for (i in new.idx) {
+              pdf.url <- paste0(
+                sub("/products/", "/assets/", updated$url[i]), ".pdf"
+              )
+              pdf.path <- file.path(tmp.dir, basename(pdf.url))
+              tryCatch({
+                download_pdfs(pdf.url, download_dir = tmp.dir, sleep_time = 1)
+                if (file.exists(pdf.path)) {
+                  updated$page_count[i] <- pdftools::pdf_length(pdf.path)
+                  unlink(pdf.path)
+                }
+              }, error = function(e) {
+                message("page_count failed for ", updated$url[i], ": ", e$message)
+              })
+            }
+
             saveRDS(updated, "inst/extdata/gao_links.rds")
             message("Added ", n.new, " new reports")
           } else {

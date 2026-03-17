@@ -8,7 +8,7 @@ test_that("update_links() returns sorted data.frame with correct columns", {
   result <- update_links(verbose = FALSE, sleep_time = 1)
 
   expect_s3_class(result, "data.frame")
-  expect_named(result, c("url", "title", "report_id", "published", "released", "summary", "topics", "subject_terms"))
+  expect_named(result, c("url", "title", "report_id", "published", "released", "summary", "page_count", "topics", "subject_terms"))
   expect_true(nrow(result) >= nrow(known))
   expect_true(all(known$url %in% result$url))
   expect_equal(result$url, sort(unique(result$url)))
