@@ -97,6 +97,7 @@
     return(data.frame(
       url = character(0), title = character(0), report_id = character(0),
       published = character(0), released = character(0), summary = character(0),
+      topics = character(0), subject_terms = character(0),
       stringsAsFactors = FALSE
     ))
   }
@@ -118,10 +119,85 @@
 
     data.frame(url = url, title = title, report_id = report.id,
                published = published, released = released, summary = summary,
+               topics = NA_character_, subject_terms = NA_character_,
                stringsAsFactors = FALSE)
   })
 
   do.call(rbind, out)
+}
+
+#' Extract Metadata from a Single GAO Report Page
+#'
+#' Parses metadata from the HTML of an individual GAO report page (not a
+#' listing page). Returns a 1-row data.frame.
+#'
+#' @param page An xml_document of a single report page.
+#' @return A 1-row data.frame with columns: title, report_id, published,
+#'   released, summary, topics, subject_terms.
+#' @importFrom rvest html_node html_nodes html_attr html_text
+#' @keywords internal
+#' @noRd
+.scrape_report_metadata <- function(page) {
+  # Title from og:title meta tag
+  og.title <- rvest::html_attr(
+    rvest::html_node(page, "meta[property='og:title']"), "content"
+  )
+  title <- if (!is.na(og.title)) sub("^U\\.S\\. GAO - ", "", og.title) else NA_character_
+
+ # Report ID from span.d-block.text-small > strong
+  id.node <- rvest::html_node(page, "span.d-block.text-small strong")
+  report.id <- if (!is.na(id.node)) trimws(rvest::html_text(id.node)) else NA_character_
+  if (!is.na(report.id) && nchar(report.id) == 0L) report.id <- NA_character_
+
+  # Dates from span.d-block.text-small text
+  date.nodes <- rvest::html_nodes(page, "span.d-block.text-small")
+  date.text <- paste(rvest::html_text(date.nodes), collapse = " ")
+
+  pub.match <- regmatches(date.text, regexpr("Published:\\s*(\\w+ \\d{1,2}, \\d{4})", date.text))
+  published <- if (length(pub.match) == 1L) {
+    raw <- sub("Published:\\s*", "", pub.match)
+    d <- as.Date(raw, format = "%b %d, %Y")
+    if (!is.na(d)) format(d, "%Y-%m-%d") else NA_character_
+  } else {
+    NA_character_
+  }
+
+  rel.match <- regmatches(date.text, regexpr("Publicly Released:\\s*(\\w+ \\d{1,2}, \\d{4})", date.text))
+  released <- if (length(rel.match) == 1L) {
+    raw <- sub("Publicly Released:\\s*", "", rel.match)
+    d <- as.Date(raw, format = "%b %d, %Y")
+    if (!is.na(d)) format(d, "%Y-%m-%d") else NA_character_
+  } else {
+    NA_character_
+  }
+
+  # Summary from meta description
+  summary <- rvest::html_attr(
+    rvest::html_node(page, "meta[name='description']"), "content"
+  )
+  if (!is.na(summary) && nchar(trimws(summary)) == 0L) summary <- NA_character_
+
+  # Topics (modern pages only)
+  topic.nodes <- rvest::html_nodes(page, ".views-field-field-topic .field-content a")
+  topics <- if (length(topic.nodes) > 0L) {
+    paste(trimws(rvest::html_text(topic.nodes)), collapse = "; ")
+  } else {
+    NA_character_
+  }
+
+  # Subject terms (modern pages only)
+  subj.nodes <- rvest::html_nodes(page, ".views-field-field-subject-term .field-content span")
+  subject.terms <- if (length(subj.nodes) > 0L) {
+    paste(trimws(rvest::html_text(subj.nodes)), collapse = "; ")
+  } else {
+    NA_character_
+  }
+
+  data.frame(
+    title = title, report_id = report.id, published = published,
+    released = released, summary = summary, topics = topics,
+    subject_terms = subject.terms, stringsAsFactors = FALSE
+  )
 }
 
 #' Compute Fiscal Year from Date Strings

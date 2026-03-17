@@ -70,6 +70,10 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
 
   if (length(new.rows) > 0) {
     new.data <- do.call(rbind, new.rows)
+    # Ensure consistent columns if bundled data predates schema additions
+    for (col in setdiff(names(new.data), names(known))) {
+      known[[col]] <- NA_character_
+    }
     combined <- rbind(known, new.data)
   } else {
     combined <- known
@@ -102,6 +106,7 @@ gao_links <- function() {
     return(data.frame(
       url = character(0), title = character(0), report_id = character(0),
       published = character(0), released = character(0), summary = character(0),
+      topics = character(0), subject_terms = character(0),
       stringsAsFactors = FALSE
     ))
   }

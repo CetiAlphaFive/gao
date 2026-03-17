@@ -127,6 +127,7 @@ extract_links <- function(base_url = "https://www.gao.gov/reports-testimonies",
     all.data <- data.frame(
       url = character(0), title = character(0), report_id = character(0),
       published = character(0), released = character(0), summary = character(0),
+      topics = character(0), subject_terms = character(0),
       stringsAsFactors = FALSE
     )
   } else {

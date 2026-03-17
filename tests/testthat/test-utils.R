@@ -46,7 +46,7 @@ test_that(".scrape_page_links() extracts metadata from search results", {
   result <- .scrape_page_links(html)
   expect_s3_class(result, "data.frame")
   expect_equal(nrow(result), 2)
-  expect_named(result, c("url", "title", "report_id", "published", "released", "summary"))
+  expect_named(result, c("url", "title", "report_id", "published", "released", "summary", "topics", "subject_terms"))
   expect_equal(result$url, c("/products/gao-24-100", "/products/gao-24-200"))
   expect_equal(result$title, c("Defense Report", "Health Report"))
   expect_equal(result$report_id, c("GAO-24-100", "GAO-24-200"))
@@ -60,7 +60,7 @@ test_that(".scrape_page_links() returns empty data.frame for no results", {
   result <- .scrape_page_links(html)
   expect_s3_class(result, "data.frame")
   expect_equal(nrow(result), 0)
-  expect_named(result, c("url", "title", "report_id", "published", "released", "summary"))
+  expect_named(result, c("url", "title", "report_id", "published", "released", "summary", "topics", "subject_terms"))
 })
 
 test_that(".fiscal_year() computes federal fiscal year", {
@@ -133,4 +133,80 @@ test_that(".infer_fiscal_year() returns NA when both sources are NA", {
   urls <- c("/products/aimd-98-100")
   result <- .infer_fiscal_year(dates, urls)
   expect_true(is.na(result))
+})
+
+# --- .scrape_report_metadata() ---
+
+test_that(".scrape_report_metadata() extracts metadata from modern page", {
+  html <- rvest::read_html('
+    <html>
+    <head>
+      <meta property="og:title" content="U.S. GAO - Defense Spending Report" />
+      <meta name="description" content="This report examines defense spending." />
+    </head>
+    <body>
+      <span class="d-block text-small">
+        <strong>GAO-24-106335</strong>
+        Published: Jan 15, 2024
+        Publicly Released: Feb 01, 2024
+      </span>
+      <div class="views-field-field-topic">
+        <div class="field-content"><a href="/topics/defense">Defense</a></div>
+        <div class="field-content"><a href="/topics/budget">Budget</a></div>
+      </div>
+      <div class="views-field-field-subject-term">
+        <div class="field-content"><span>Military spending</span></div>
+        <div class="field-content"><span>Appropriations</span></div>
+      </div>
+    </body>
+    </html>
+  ')
+  result <- .scrape_report_metadata(html)
+  expect_s3_class(result, "data.frame")
+  expect_equal(nrow(result), 1)
+  expect_equal(result$title, "Defense Spending Report")
+  expect_equal(result$report_id, "GAO-24-106335")
+  expect_equal(result$published, "2024-01-15")
+  expect_equal(result$released, "2024-02-01")
+  expect_equal(result$summary, "This report examines defense spending.")
+  expect_equal(result$topics, "Defense; Budget")
+  expect_equal(result$subject_terms, "Military spending; Appropriations")
+})
+
+test_that(".scrape_report_metadata() handles legacy page without topics", {
+  html <- rvest::read_html('
+    <html>
+    <head>
+      <meta property="og:title" content="U.S. GAO - Veterans Benefits" />
+      <meta name="description" content="A review of veterans benefits." />
+    </head>
+    <body>
+      <span class="d-block text-small">
+        Published: Mar 10, 2001
+        Publicly Released: Apr 05, 2001
+      </span>
+    </body>
+    </html>
+  ')
+  result <- .scrape_report_metadata(html)
+  expect_equal(result$title, "Veterans Benefits")
+  expect_true(is.na(result$report_id))
+  expect_equal(result$published, "2001-03-10")
+  expect_equal(result$released, "2001-04-05")
+  expect_equal(result$summary, "A review of veterans benefits.")
+  expect_true(is.na(result$topics))
+  expect_true(is.na(result$subject_terms))
+})
+
+test_that(".scrape_report_metadata() returns NA for missing fields", {
+  html <- rvest::read_html("<html><head></head><body></body></html>")
+  result <- .scrape_report_metadata(html)
+  expect_equal(nrow(result), 1)
+  expect_true(is.na(result$title))
+  expect_true(is.na(result$report_id))
+  expect_true(is.na(result$published))
+  expect_true(is.na(result$released))
+  expect_true(is.na(result$summary))
+  expect_true(is.na(result$topics))
+  expect_true(is.na(result$subject_terms))
 })

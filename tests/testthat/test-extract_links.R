@@ -6,7 +6,7 @@ test_that("extract_links() returns data.frame from 1 page", {
 
   expect_s3_class(result, "data.frame")
   expect_true(nrow(result) > 0)
-  expect_named(result, c("url", "title", "report_id", "published", "released", "summary"))
+  expect_named(result, c("url", "title", "report_id", "published", "released", "summary", "topics", "subject_terms"))
   expect_true(all(grepl("^https://www.gao.gov/products/", result$url)))
 })
 
