@@ -12,18 +12,16 @@ status](https://www.r-pkg.org/badges/version/gao)](https://CRAN.R-project.org/pa
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-`gao` provides tools for downloading reports published by the United
-States Government Accountability Office (GAO). It ships with a bundled
-dataset of over 55,000 report URLs (1921–present, updated daily via
-GitHub Actions) and a one-step function for batch downloading reports as
-PDF or HTML.
+`gao` provides tools for downloading reports and associated metadata
+published by the United States Government Accountability Office (GAO).
+It ships with a bundled dataset covering over 55,000 reports
+(1921–present, updated daily) and a one-step function for batch
+downloading reports as PDF, HTML, or both.
 
 **Disclaimer:** This package is not affiliated with, endorsed by, or in
 any way officially connected to the U.S. Government Accountability
 Office. All data is obtained from public web pages at
-[gao.gov](https://www.gao.gov).
-
-## Installation
+[gao.gov](https://www.gao.gov). \## Installation
 
 `gao` requires
 [curl-impersonate](https://github.com/lexiforest/curl-impersonate) as a
@@ -65,55 +63,4 @@ auto_download(format = "pdf", year = 2020:2024, confirm = FALSE)
 downloads PDFs, HTMLs, or both into `gao_reports/pdf/` and
 `gao_reports/html/`. That’s it.
 
-## Advanced usage
-
-The functions below give you finer control over each step. Most users
-won’t need them.
-
-### Browse the bundled dataset
-
-``` r
-links <- gao_links()
-length(links)
-head(links)
-```
-
-### Update the link list
-
-Fetch any reports published since the last package update:
-
-``` r
-all_links <- update_links()
-```
-
-### Extract PDF download links
-
-``` r
-pdf_links <- extract_pdf_links(links[1:10])
-```
-
-### Download reports
-
-Download as PDFs:
-
-``` r
-download_pdfs(pdf_links, download_dir = "gao_pdfs")
-```
-
-Or download report pages as HTML:
-
-``` r
-download_htmls(links[1:10], target_directory = "gao_htmls")
-```
-
-### Full pipeline from scratch
-
-Re-scrape the entire report listing (not usually necessary):
-
-``` r
-links <- extract_links(save_to_file = FALSE)
-```
-
-## License
-
-MIT
+Advanced functions are viewable in the reference tab.
