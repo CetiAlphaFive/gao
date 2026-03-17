@@ -67,8 +67,7 @@ downloads PDFs, HTMLs, or both into `gao_reports/pdf/` and
 
 ## Advanced usage
 
-The functions below give you finer control over each step. Most users
-won’t need them.
+The functions below give you finer control over each step. For the most part, I recommend sticking to the automatic download function. 
 
 ### Browse the bundled dataset
 
@@ -108,7 +107,7 @@ download_htmls(links[1:10], target_directory = "gao_htmls")
 
 ### Full pipeline from scratch
 
-Re-scrape the entire report listing (not usually necessary):
+Re-scrape the entire report listing (this will take a very long time and it quite unnecessary):
 
 ``` r
 links <- extract_links(save_to_file = FALSE)
