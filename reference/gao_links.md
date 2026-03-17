@@ -11,7 +11,8 @@ gao_links()
 ## Value
 
 A data.frame with columns: url, title, report_id, published, released,
-summary.
+summary, and page_count (integer, may be `NA` for reports without a
+matching PDF in the bundled archive).
 
 ## Examples
 
@@ -27,11 +28,11 @@ head(reports)
 #> 4 https://www.gao.gov/products/087528  <NA>      <NA>      <NA>     <NA>
 #> 5 https://www.gao.gov/products/087529  <NA>      <NA>      <NA>     <NA>
 #> 6 https://www.gao.gov/products/087530  <NA>      <NA>      <NA>     <NA>
-#>   summary
-#> 1    <NA>
-#> 2    <NA>
-#> 3    <NA>
-#> 4    <NA>
-#> 5    <NA>
-#> 6    <NA>
+#>   summary page_count
+#> 1    <NA>          2
+#> 2    <NA>         NA
+#> 3    <NA>         NA
+#> 4    <NA>        399
+#> 5    <NA>        179
+#> 6    <NA>        315
 ```

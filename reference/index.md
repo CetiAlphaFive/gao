@@ -20,6 +20,13 @@ Access the bundled dataset of GAO report URLs.
 - [`extract_pdf_links()`](https://cetialphafive.github.io/gao/reference/extract_pdf_links.md)
   : Extract PDF Links from GAO Report Pages
 
+## Process reports
+
+Extract text and data from downloaded reports.
+
+- [`extract_text()`](https://cetialphafive.github.io/gao/reference/extract_text.md)
+  : Extract Text from GAO PDF Reports
+
 ## Update data
 
 Scrape and update the bundled link dataset.
