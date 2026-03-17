@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# gao
+# A Complete Library of GAO Reports and Metadata
 
 <!-- badges: start -->
 
@@ -65,7 +65,54 @@ auto_download(format = "pdf", year = 2020:2024, confirm = FALSE)
 downloads PDFs, HTMLs, or both into `gao_reports/pdf/` and
 `gao_reports/html/`. That’s it.
 
-For advanced functions, see the reference page. 
+## Advanced usage
+
+The functions below give you finer control over each step. Most users
+won’t need them.
+
+### Browse the bundled dataset
+
+``` r
+links <- gao_links()
+length(links)
+head(links)
+```
+
+### Update the link list
+
+Fetch any reports published since the last package update:
+
+``` r
+all_links <- update_links()
+```
+
+### Extract PDF download links
+
+``` r
+pdf_links <- extract_pdf_links(links[1:10])
+```
+
+### Download reports
+
+Download as PDFs:
+
+``` r
+download_pdfs(pdf_links, download_dir = "gao_pdfs")
+```
+
+Or download report pages as HTML:
+
+``` r
+download_htmls(links[1:10], target_directory = "gao_htmls")
+```
+
+### Full pipeline from scratch
+
+Re-scrape the entire report listing (not usually necessary):
+
+``` r
+links <- extract_links(save_to_file = FALSE)
+```
 
 ## License
 
