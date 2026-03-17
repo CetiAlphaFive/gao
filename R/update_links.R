@@ -95,8 +95,9 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
 #' Returns a data.frame of GAO report metadata bundled with the package.
 #'
 #' @return A data.frame with columns: url, title, report_id, published,
-#'   released, summary, and page_count (integer, may be `NA` for reports
-#'   without a matching PDF in the bundled archive).
+#'   released, summary, page_count (integer, may be `NA` for reports
+#'   without a matching PDF in the bundled archive), topics, and
+#'   subject_terms.
 #' @export
 #' @examples
 #' reports <- gao_links()
@@ -110,8 +111,8 @@ gao_links <- function() {
     return(data.frame(
       url = character(0), title = character(0), report_id = character(0),
       published = character(0), released = character(0), summary = character(0),
-      topics = character(0), subject_terms = character(0),
-      stringsAsFactors = FALSE
+      page_count = integer(0), topics = character(0),
+      subject_terms = character(0), stringsAsFactors = FALSE
     ))
   }
   readRDS(path)
