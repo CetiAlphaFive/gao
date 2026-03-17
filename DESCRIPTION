@@ -25,6 +25,6 @@ Config/testthat/edition: 3
 SystemRequirements: curl-impersonate (https://github.com/lexiforest/curl-impersonate)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-URL: https://github.com/CetiAlphaFive/gao
+URL: https://cetialphafive.github.io/gao/, https://github.com/CetiAlphaFive/gao
 BugReports: https://github.com/CetiAlphaFive/gao/issues
 RoxygenNote: 7.3.3

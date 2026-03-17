@@ -1,3 +1,23 @@
 url: https://cetialphafive.github.io/gao/
 template:
   bootstrap: 5
+
+reference:
+- title: Download reports
+  desc: Download GAO reports as PDF or HTML files.
+  contents:
+  - auto_download
+  - download_pdfs
+  - download_htmls
+
+- title: Browse data
+  desc: Access the bundled dataset of GAO report URLs.
+  contents:
+  - gao_links
+  - extract_pdf_links
+
+- title: Update data
+  desc: Scrape and update the bundled link dataset.
+  contents:
+  - update_links
+  - extract_links
