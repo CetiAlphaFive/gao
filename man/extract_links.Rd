@@ -10,7 +10,8 @@ extract_links(
   verbose = TRUE,
   save_to_file = FALSE,
   sleep_time = 1,
-  output_file = "gao_report_links.rds"
+  output_file = "gao_report_links.rds",
+  cache_dir = NULL
 )
 }
 \arguments{
@@ -28,6 +29,11 @@ automatically from the pagination.}
 \item{sleep_time}{Numeric. Seconds to pause between page requests.}
 
 \item{output_file}{Character. File path for the output.}
+
+\item{cache_dir}{Character or \code{NULL}. Directory to cache raw HTML listing
+pages. If \code{NULL} (default), pages are fetched into memory only. If set,
+pages are saved as \code{page_0.html}, \code{page_1.html}, etc., and
+already-downloaded pages are skipped.}
 }
 \value{
 A data.frame with columns: url, title, report_id, published,
@@ -37,8 +43,16 @@ released, summary.
 Scrapes report links and metadata from the GAO reports and testimonies
 listing pages.
 }
+\details{
+When \code{cache_dir} is set, raw HTML pages are saved to disk and
+already-downloaded pages are skipped on subsequent runs. This makes
+large scrapes resumable.
+}
 \examples{
 \dontrun{
 links <- extract_links(last_page = 5)
+
+# Resumable: caches HTML to disk
+links <- extract_links(cache_dir = "data-raw/gao_pages")
 }
 }
