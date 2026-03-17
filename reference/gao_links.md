@@ -11,8 +11,8 @@ gao_links()
 ## Value
 
 A data.frame with columns: url, title, report_id, published, released,
-summary, and page_count (integer, may be `NA` for reports without a
-matching PDF in the bundled archive).
+summary, page_count (integer, may be `NA` for reports without a matching
+PDF in the bundled archive), topics, and subject_terms.
 
 ## Examples
 
@@ -36,12 +36,12 @@ head(reports)
 #> 5                                                                                                                                             Comptroller General's Annual Report 1970
 #> 6                                                                                                                                             Comptroller General's Annual Report 1966
 #>   report_id  published   released
-#> 1      <NA> 1944-11-13 1944-11-13
-#> 2      <NA> 1942-09-21 1950-09-21
-#> 3      <NA> 1936-06-08 1936-06-08
-#> 4      <NA> 1966-01-10 1966-01-10
-#> 5      <NA> 1971-01-21 1971-01-21
-#> 6      <NA> 1967-01-10 1967-01-10
+#> 1    087286 1944-11-13 1944-11-13
+#> 2    087364 1942-09-21 1950-09-21
+#> 3    087365 1936-06-08 1936-06-08
+#> 4    087528 1966-01-10 1966-01-10
+#> 5    087529 1971-01-21 1971-01-21
+#> 6    087530 1967-01-10 1967-01-10
 #>                                                                                                                                                    summary
 #> 1   GAO commented on a Department of Defense (DOD) request for exemption from the standard way funds were advanced to its national defense project. DOD...
 #> 2        GAO commented on the bonding of Tennessee Valley Authority (TVA) agent officers and its internal control procedures concerning the handling of...
