@@ -1,5 +1,27 @@
 # Changelog
 
+## gao 0.4.0
+
+- New
+  [`extract_text()`](https://cetialphafive.github.io/gao/reference/extract_text.md)
+  function for extracting text from downloaded PDFs. Requires `pdftools`
+  (added to `Suggests`).
+- Bundled dataset now includes `page_count`, `topics`, and
+  `subject_terms` columns.
+  [`gao_links()`](https://cetialphafive.github.io/gao/reference/gao_links.md)
+  returns a 9-column data.frame.
+- Full metadata backfill: `title`, `published`, `released` are now 100%
+  populated across all 56,000+ reports. `summary` at 97.5%.
+- Missing `report_id` values filled from URL slugs (now 100% complete).
+- Page counts extracted from 55,000+ PDF archive and matched to metadata
+  via URL slug and report ID (80.7% coverage).
+- Daily CI workflow now backfills `page_count` for newly added reports.
+- Fixed
+  [`update_links()`](https://cetialphafive.github.io/gao/reference/update_links.md)
+  column mismatch when bundled data has columns that new scrape results
+  lack.
+- License changed from MIT to GPL (\>= 3).
+
 ## gao 0.3.0
 
 - **Breaking:**

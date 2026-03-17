@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gao</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,17 @@
       <small>Source: <a href="https://github.com/CetiAlphaFive/gao/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.0" id="gao-040">gao 0.4.0<a class="anchor" aria-label="anchor" href="#gao-040"></a></h2>
+<ul><li>New <code><a href="../reference/extract_text.html">extract_text()</a></code> function for extracting text from downloaded PDFs. Requires <code>pdftools</code> (added to <code>Suggests</code>).</li>
+<li>Bundled dataset now includes <code>page_count</code>, <code>topics</code>, and <code>subject_terms</code> columns. <code><a href="../reference/gao_links.html">gao_links()</a></code> returns a 9-column data.frame.</li>
+<li>Full metadata backfill: <code>title</code>, <code>published</code>, <code>released</code> are now 100% populated across all 56,000+ reports. <code>summary</code> at 97.5%.</li>
+<li>Missing <code>report_id</code> values filled from URL slugs (now 100% complete).</li>
+<li>Page counts extracted from 55,000+ PDF archive and matched to metadata via URL slug and report ID (80.7% coverage).</li>
+<li>Daily CI workflow now backfills <code>page_count</code> for newly added reports.</li>
+<li>Fixed <code><a href="../reference/update_links.html">update_links()</a></code> column mismatch when bundled data has columns that new scrape results lack.</li>
+<li>License changed from MIT to GPL (&gt;= 3).</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="gao-030">gao 0.3.0<a class="anchor" aria-label="anchor" href="#gao-030"></a></h2>
 <ul><li>
