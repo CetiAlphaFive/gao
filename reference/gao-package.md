@@ -22,6 +22,8 @@ HTTP clients.
 
 Useful links:
 
+- <https://cetialphafive.github.io/gao/>
+
 - <https://github.com/CetiAlphaFive/gao>
 
 - Report bugs at <https://github.com/CetiAlphaFive/gao/issues>

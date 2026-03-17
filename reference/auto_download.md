@@ -1,9 +1,9 @@
 # Download GAO Reports in One Step
 
 Convenience wrapper that loads the bundled report links, optionally
-filters by fiscal year, and downloads reports as PDF, HTML, or both. In
-interactive sessions, prompts for format and year range when not
-supplied.
+filters by fiscal year, and downloads reports as PDF, HTML, or both. Use
+`format = "metadata"` to export a CSV of report metadata without
+downloading any files.
 
 ## Usage
 
@@ -21,8 +21,10 @@ auto_download(
 
 - format:
 
-  Character. `"pdf"`, `"html"`, or `"both"`. `NULL` (default) prompts
-  interactively; in non-interactive sessions defaults to `"pdf"`.
+  Character. `"pdf"`, `"html"`, `"both"`, or `"metadata"`. `"metadata"`
+  writes a CSV of report metadata without downloading files. `NULL`
+  (default) prompts interactively; in non-interactive sessions defaults
+  to `"pdf"`.
 
 - year:
 
@@ -48,7 +50,9 @@ auto_download(
 
 ## Value
 
-Invisible character vector of downloaded file paths.
+For `"pdf"`, `"html"`, or `"both"`: invisible character vector of
+downloaded file paths. For `"metadata"`: invisible path to the written
+CSV.
 
 ## Details
 
@@ -66,5 +70,8 @@ auto_download()
 
 # Non-interactive: download 2024 PDFs
 auto_download(format = "pdf", year = 2024, confirm = FALSE)
+
+# Export metadata only (no file downloads)
+auto_download(format = "metadata", year = 2020:2024, confirm = FALSE)
 } # }
 ```
