@@ -133,7 +133,8 @@
 #'
 #' @param page An xml_document of a single report page.
 #' @return A 1-row data.frame with columns: title, report_id, published,
-#'   released, summary, topics, subject_terms.
+#'   released, summary, topics, subject_terms, has_recommendations,
+#'   n_recommendations, has_matters, n_matters, agencies_affected.
 #' @importFrom rvest html_node html_nodes html_attr html_text
 #' @keywords internal
 #' @noRd
@@ -193,10 +194,41 @@
     NA_character_
   }
 
+  # Recommendations for Executive Action
+  rec.section <- rvest::html_node(page, "section.view--recommendations--block-1")
+  has.recommendations <- !is.na(rec.section)
+  if (has.recommendations) {
+    rec.cells <- rvest::html_nodes(rec.section, "td.views-field-field-recommendation")
+    n.recommendations <- length(rec.cells)
+    agency.nodes <- rvest::html_nodes(rec.section, "td.views-field-name")
+    agencies <- unique(sort(trimws(rvest::html_text(agency.nodes))))
+    agencies <- agencies[nzchar(agencies)]
+    agencies.affected <- if (length(agencies) > 0L) paste(agencies, collapse = "; ") else NA_character_
+  } else {
+    n.recommendations <- 0L
+    agencies.affected <- NA_character_
+  }
+
+  # Matter for Congressional Consideration
+  matter.section <- rvest::html_node(page, "section.view--recommendations--block-3")
+  has.matters <- !is.na(matter.section)
+  if (has.matters) {
+    matter.cells <- rvest::html_nodes(matter.section, "td.views-field-field-recommendation")
+    n.matters <- length(matter.cells)
+  } else {
+    n.matters <- 0L
+  }
+
   data.frame(
     title = title, report_id = report.id, published = published,
     released = released, summary = summary, topics = topics,
-    subject_terms = subject.terms, stringsAsFactors = FALSE
+    subject_terms = subject.terms,
+    has_recommendations = has.recommendations,
+    n_recommendations = as.integer(n.recommendations),
+    has_matters = has.matters,
+    n_matters = as.integer(n.matters),
+    agencies_affected = agencies.affected,
+    stringsAsFactors = FALSE
   )
 }
 

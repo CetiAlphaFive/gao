@@ -9,8 +9,10 @@ gao_links()
 \value{
 A data.frame with columns: url, title, report_id, published,
 released, summary, page_count (integer, may be \code{NA} for reports
-without a matching PDF in the bundled archive), topics, and
-subject_terms.
+without a matching PDF in the bundled archive), topics,
+subject_terms, has_recommendations (logical), n_recommendations
+(integer), has_matters (logical), n_matters (integer), and
+agencies_affected (character, semicolon-separated).
 }
 \description{
 Returns a data.frame of GAO report metadata bundled with the package.

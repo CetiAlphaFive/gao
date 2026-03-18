@@ -171,6 +171,10 @@ test_that(".scrape_report_metadata() extracts metadata from modern page", {
   expect_equal(result$summary, "This report examines defense spending.")
   expect_equal(result$topics, "Defense; Budget")
   expect_equal(result$subject_terms, "Military spending; Appropriations")
+  expect_false(result$has_recommendations)
+  expect_equal(result$n_recommendations, 0L)
+  expect_false(result$has_matters)
+  expect_equal(result$n_matters, 0L)
 })
 
 test_that(".scrape_report_metadata() handles legacy page without topics", {
@@ -196,9 +200,11 @@ test_that(".scrape_report_metadata() handles legacy page without topics", {
   expect_equal(result$summary, "A review of veterans benefits.")
   expect_true(is.na(result$topics))
   expect_true(is.na(result$subject_terms))
+  expect_false(result$has_recommendations)
+  expect_equal(result$n_recommendations, 0L)
 })
 
-test_that(".scrape_report_metadata() returns NA for missing fields", {
+test_that(".scrape_report_metadata() returns NA/FALSE for missing fields", {
   html <- rvest::read_html("<html><head></head><body></body></html>")
   result <- .scrape_report_metadata(html)
   expect_equal(nrow(result), 1)
@@ -209,4 +215,139 @@ test_that(".scrape_report_metadata() returns NA for missing fields", {
   expect_true(is.na(result$summary))
   expect_true(is.na(result$topics))
   expect_true(is.na(result$subject_terms))
+  expect_false(result$has_recommendations)
+  expect_equal(result$n_recommendations, 0L)
+  expect_false(result$has_matters)
+  expect_equal(result$n_matters, 0L)
+  expect_true(is.na(result$agencies_affected))
+})
+
+# --- Recommendation & matter extraction ---
+
+test_that(".scrape_report_metadata() extracts executive recommendations", {
+  html <- rvest::read_html('
+    <html><head>
+      <meta property="og:title" content="U.S. GAO - Test Report" />
+      <meta name="description" content="A test report." />
+    </head><body>
+      <section class="view--recommendations--block-1">
+        <div class="view--recommendations--inner">
+          <h2>Recommendations for Executive Action</h2>
+          <table class="views-table">
+            <thead><tr>
+              <th class="views-field views-field-name">Agency Affected</th>
+              <th class="views-field views-field-field-recommendation">Recommendation</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td class="views-field views-field-name">Department of Defense</td>
+                <td class="views-field views-field-field-recommendation">Rec 1</td>
+              </tr>
+              <tr>
+                <td class="views-field views-field-name">Department of Defense</td>
+                <td class="views-field views-field-field-recommendation">Rec 2</td>
+              </tr>
+              <tr>
+                <td class="views-field views-field-name">Internal Revenue Service</td>
+                <td class="views-field views-field-field-recommendation">Rec 3</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </body></html>
+  ')
+  result <- .scrape_report_metadata(html)
+  expect_true(result$has_recommendations)
+  expect_equal(result$n_recommendations, 3L)
+  expect_false(result$has_matters)
+  expect_equal(result$n_matters, 0L)
+  expect_equal(result$agencies_affected, "Department of Defense; Internal Revenue Service")
+})
+
+test_that(".scrape_report_metadata() extracts matters for Congress", {
+  html <- rvest::read_html('
+    <html><head>
+      <meta property="og:title" content="U.S. GAO - Matter Report" />
+      <meta name="description" content="A matter report." />
+    </head><body>
+      <section class="view--recommendations--block-3">
+        <div class="view--recommendations--inner">
+          <h2>Matter for Congressional Consideration</h2>
+          <table class="views-table">
+            <thead><tr>
+              <th class="views-field views-field-field-recommendation">Matter</th>
+              <th class="views-field views-field-field-status-code">Status</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td class="views-field views-field-field-recommendation">Matter 1</td>
+                <td class="views-field views-field-field-status-code">Open</td>
+              </tr>
+              <tr>
+                <td class="views-field views-field-field-recommendation">Matter 2</td>
+                <td class="views-field views-field-field-status-code">Closed</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </body></html>
+  ')
+  result <- .scrape_report_metadata(html)
+  expect_false(result$has_recommendations)
+  expect_equal(result$n_recommendations, 0L)
+  expect_true(result$has_matters)
+  expect_equal(result$n_matters, 2L)
+  expect_true(is.na(result$agencies_affected))
+})
+
+test_that(".scrape_report_metadata() handles both recommendations and matters", {
+  html <- rvest::read_html('
+    <html><head>
+      <meta property="og:title" content="U.S. GAO - Both Report" />
+      <meta name="description" content="A report with both." />
+    </head><body>
+      <section class="view--recommendations--block-3">
+        <div class="view--recommendations--inner">
+          <h2>Matter for Congressional Consideration</h2>
+          <table class="views-table"><tbody>
+            <tr><td class="views-field views-field-field-recommendation">M1</td></tr>
+          </tbody></table>
+        </div>
+      </section>
+      <section class="view--recommendations--block-1">
+        <div class="view--recommendations--inner">
+          <h2>Recommendations for Executive Action</h2>
+          <table class="views-table"><tbody>
+            <tr>
+              <td class="views-field views-field-name">Agency A</td>
+              <td class="views-field views-field-field-recommendation">R1</td>
+            </tr>
+            <tr>
+              <td class="views-field views-field-name">Agency B</td>
+              <td class="views-field views-field-field-recommendation">R2</td>
+            </tr>
+          </tbody></table>
+        </div>
+      </section>
+    </body></html>
+  ')
+  result <- .scrape_report_metadata(html)
+  expect_true(result$has_recommendations)
+  expect_equal(result$n_recommendations, 2L)
+  expect_true(result$has_matters)
+  expect_equal(result$n_matters, 1L)
+  expect_equal(result$agencies_affected, "Agency A; Agency B")
+})
+
+test_that(".scrape_report_metadata() returns new columns in modern page test", {
+  # Verify the modern page test still passes and includes new columns
+  html <- rvest::read_html("<html><head></head><body></body></html>")
+  result <- .scrape_report_metadata(html)
+  expect_true("has_recommendations" %in% names(result))
+  expect_true("n_recommendations" %in% names(result))
+  expect_true("has_matters" %in% names(result))
+  expect_true("n_matters" %in% names(result))
+  expect_true("agencies_affected" %in% names(result))
 })

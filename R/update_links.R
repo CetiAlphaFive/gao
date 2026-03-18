@@ -96,8 +96,10 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
 #'
 #' @return A data.frame with columns: url, title, report_id, published,
 #'   released, summary, page_count (integer, may be `NA` for reports
-#'   without a matching PDF in the bundled archive), topics, and
-#'   subject_terms.
+#'   without a matching PDF in the bundled archive), topics,
+#'   subject_terms, has_recommendations (logical), n_recommendations
+#'   (integer), has_matters (logical), n_matters (integer), and
+#'   agencies_affected (character, semicolon-separated).
 #' @export
 #' @examples
 #' reports <- gao_links()
@@ -112,7 +114,11 @@ gao_links <- function() {
       url = character(0), title = character(0), report_id = character(0),
       published = character(0), released = character(0), summary = character(0),
       page_count = integer(0), topics = character(0),
-      subject_terms = character(0), stringsAsFactors = FALSE
+      subject_terms = character(0),
+      has_recommendations = logical(0), n_recommendations = integer(0),
+      has_matters = logical(0), n_matters = integer(0),
+      agencies_affected = character(0),
+      stringsAsFactors = FALSE
     ))
   }
   readRDS(path)
