@@ -19,7 +19,7 @@ PDF in the bundled archive), topics, and subject_terms.
 ``` r
 reports <- gao_links()
 nrow(reports)
-#> [1] 56263
+#> [1] 56270
 head(reports)
 #>                                   url
 #> 1 https://www.gao.gov/products/087286

@@ -52,7 +52,10 @@
 <!-- badges: start -->
 
 <p><code>gao</code> provides tools for downloading reports and associated metadata published by the United States Government Accountability Office (GAO). It ships with a bundled dataset covering over 55,000 reports (1921–present, updated daily) and a one-step function for batch downloading reports as PDF, HTML, or both.</p>
-<p><strong>Disclaimer:</strong> This package is not affiliated with, endorsed by, or in any way officially connected to the U.S. Government Accountability Office. All data is obtained from public web pages at <a href="https://www.gao.gov" class="external-link">gao.gov</a>. ## Installation</p>
+<p><strong>Disclaimer:</strong> This package is not affiliated with, endorsed by, or in any way officially connected to the U.S. Government Accountability Office. All data is obtained from public web pages at <a href="https://www.gao.gov" class="external-link">gao.gov</a>.</p>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
 <p><code>gao</code> requires <a href="https://github.com/lexiforest/curl-impersonate" class="external-link">curl-impersonate</a> as a system dependency (GAO.gov uses TLS fingerprint filtering that blocks standard HTTP clients).</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># Arch Linux</span></span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">sudo</span> pacman <span class="at">-S</span> curl-impersonate</span>
@@ -67,6 +70,7 @@
 <span><span class="co"># Development version from GitHub</span></span>
 <span><span class="co"># install.packages("pak")</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"CetiAlphaFive/gao"</span><span class="op">)</span></span></code></pre></div>
+</div>
 <div class="section level2">
 <h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
