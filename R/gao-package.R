@@ -19,7 +19,7 @@
 .onAttach <- function(libname, pkgname) {
   packageStartupMessage(
     "Please cite the gao package in your work:\n",
-    "  Rametta, J. T. (",
+    "  Rametta, Jack T. (",
     format(Sys.Date(), "%Y"),
     "). gao: A Complete Library of GAO Reports and Metadata.\n",
     "  https://cetialphafive.github.io/gao/"
