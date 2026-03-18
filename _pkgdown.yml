@@ -7,23 +7,18 @@ reference:
   desc: Download GAO reports as PDF or HTML files.
   contents:
   - auto_download
-  - download_pdfs
-  - download_htmls
 
-- title: Browse data
-  desc: Access the bundled dataset of GAO report URLs.
+- title: Browse and update data
+  desc: Access the bundled dataset or download the latest version.
   contents:
   - gao_links
-  - extract_pdf_links
+  - gao_update_data
 
 - title: Process reports
   desc: Extract text and data from downloaded reports.
   contents:
   - extract_text
 
-- title: Update data
-  desc: Scrape and update the bundled link dataset.
+- title: Deprecated
   contents:
-  - gao_update_data
-  - update_links
-  - extract_links
+  - extract_pdf_links
