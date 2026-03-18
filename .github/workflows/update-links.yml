@@ -30,7 +30,7 @@ jobs:
         with:
           extra-packages: any::remotes, any::pdftools
 
-      - name: Update links and backfill page counts
+      - name: Update links and backfill metadata
         run: |
           library(gao)
           known <- gao_links()
@@ -38,13 +38,34 @@ jobs:
           n.new <- nrow(updated) - nrow(known)
 
           if (n.new > 0) {
-            ## Backfill page_count for new reports
             new.idx <- which(!updated$url %in% known$url)
             tmp.dir <- tempdir()
 
             for (i in new.idx) {
+              report.url <- updated$url[i]
+
+              ## Backfill metadata from individual report page
+              tryCatch({
+                page <- gao:::.fetch_html(report.url)
+                meta <- gao:::.scrape_report_metadata(page)
+                if (!is.na(meta$topics))
+                  updated$topics[i] <- meta$topics
+                if (!is.na(meta$subject_terms))
+                  updated$subject_terms[i] <- meta$subject_terms
+                updated$has_recommendations[i] <- meta$has_recommendations
+                updated$n_recommendations[i] <- meta$n_recommendations
+                updated$has_matters[i] <- meta$has_matters
+                updated$n_matters[i] <- meta$n_matters
+                if (!is.na(meta$agencies_affected))
+                  updated$agencies_affected[i] <- meta$agencies_affected
+              }, error = function(e) {
+                message("metadata failed for ", report.url, ": ", e$message)
+              })
+              Sys.sleep(1)
+
+              ## Backfill page_count from PDF
               pdf.url <- paste0(
-                sub("/products/", "/assets/", updated$url[i]), ".pdf"
+                sub("/products/", "/assets/", report.url), ".pdf"
               )
               pdf.path <- file.path(tmp.dir, basename(pdf.url))
               tryCatch({
@@ -54,9 +75,12 @@ jobs:
                   unlink(pdf.path)
                 }
               }, error = function(e) {
-                message("page_count failed for ", updated$url[i], ": ", e$message)
+                message("page_count failed for ", report.url, ": ", e$message)
               })
             }
+
+            ## Expand indicator columns for new rows
+            updated <- gao:::.expand_indicators(updated)
 
             saveRDS(updated, "inst/extdata/gao_links.rds")
             message("Added ", n.new, " new reports")

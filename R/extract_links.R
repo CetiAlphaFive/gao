@@ -128,12 +128,8 @@ extract_links <- function(base_url = "https://www.gao.gov/reports-testimonies",
       url = character(0), title = character(0), report_id = character(0),
       published = character(0), released = character(0), summary = character(0),
       topics = character(0), subject_terms = character(0),
-      has_recommendations = logical(0), n_recommendations = integer(0),
-      has_matters = logical(0), n_matters = integer(0),
-      agencies_affected = character(0),
       stringsAsFactors = FALSE
     )
-    for (col in .indicator_colnames()) all.data[[col]] <- integer(0)
   } else {
     all.data$url <- paste0("https://www.gao.gov", all.data$url)
     all.data <- all.data[!duplicated(all.data$url), , drop = FALSE]
