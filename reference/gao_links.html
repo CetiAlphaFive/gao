@@ -46,8 +46,10 @@
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A data.frame with columns: url, title, report_id, published,
 released, summary, page_count (integer, may be <code>NA</code> for reports
-without a matching PDF in the bundled archive), topics, and
-subject_terms.</p>
+without a matching PDF in the bundled archive), topics,
+subject_terms, has_recommendations (logical), n_recommendations
+(integer), has_matters (logical), n_matters (integer), and
+agencies_affected (character, semicolon-separated).</p>
     </div>
 
     <div class="section level2">
@@ -84,13 +86,20 @@ subject_terms.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4 GAO reported on its activities for the fiscal year ended June 30, 1965. GAO highlighted its: (1) assistance to Congress; (2) audits of civil, defense...</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 5 GAO reported on its activities for the fiscal year ended June 30, 1970. GAO highlighted its: (1) assistance to Congress; (2) audits of civil, defense...</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6 GAO reported on its activities for the fiscal year ended June 30, 1966. GAO highlighted its: (1) assistance to Congress; (2) audits of defense, civil...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   page_count topics subject_terms</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          2   &lt;NA&gt;          &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2         NA   &lt;NA&gt;          &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3         NA   &lt;NA&gt;          &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4        399   &lt;NA&gt;          &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5        179   &lt;NA&gt;          &lt;NA&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6        315   &lt;NA&gt;          &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   page_count topics subject_terms has_recommendations n_recommendations</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1          2   &lt;NA&gt;          &lt;NA&gt;               FALSE                 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         NA   &lt;NA&gt;          &lt;NA&gt;               FALSE                 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3         NA   &lt;NA&gt;          &lt;NA&gt;               FALSE                 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4        399   &lt;NA&gt;          &lt;NA&gt;               FALSE                 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5        179   &lt;NA&gt;          &lt;NA&gt;               FALSE                 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6        315   &lt;NA&gt;          &lt;NA&gt;               FALSE                 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   has_matters n_matters agencies_affected</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       FALSE         0              &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       FALSE         0              &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       FALSE         0              &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       FALSE         0              &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5       FALSE         0              &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6       FALSE         0              &lt;NA&gt;</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -12,7 +12,9 @@ gao_links()
 
 A data.frame with columns: url, title, report_id, published, released,
 summary, page_count (integer, may be `NA` for reports without a matching
-PDF in the bundled archive), topics, and subject_terms.
+PDF in the bundled archive), topics, subject_terms, has_recommendations
+(logical), n_recommendations (integer), has_matters (logical), n_matters
+(integer), and agencies_affected (character, semicolon-separated).
 
 ## Examples
 
@@ -49,11 +51,18 @@ head(reports)
 #> 4 GAO reported on its activities for the fiscal year ended June 30, 1965. GAO highlighted its: (1) assistance to Congress; (2) audits of civil, defense...
 #> 5 GAO reported on its activities for the fiscal year ended June 30, 1970. GAO highlighted its: (1) assistance to Congress; (2) audits of civil, defense...
 #> 6 GAO reported on its activities for the fiscal year ended June 30, 1966. GAO highlighted its: (1) assistance to Congress; (2) audits of defense, civil...
-#>   page_count topics subject_terms
-#> 1          2   <NA>          <NA>
-#> 2         NA   <NA>          <NA>
-#> 3         NA   <NA>          <NA>
-#> 4        399   <NA>          <NA>
-#> 5        179   <NA>          <NA>
-#> 6        315   <NA>          <NA>
+#>   page_count topics subject_terms has_recommendations n_recommendations
+#> 1          2   <NA>          <NA>               FALSE                 0
+#> 2         NA   <NA>          <NA>               FALSE                 0
+#> 3         NA   <NA>          <NA>               FALSE                 0
+#> 4        399   <NA>          <NA>               FALSE                 0
+#> 5        179   <NA>          <NA>               FALSE                 0
+#> 6        315   <NA>          <NA>               FALSE                 0
+#>   has_matters n_matters agencies_affected
+#> 1       FALSE         0              <NA>
+#> 2       FALSE         0              <NA>
+#> 3       FALSE         0              <NA>
+#> 4       FALSE         0              <NA>
+#> 5       FALSE         0              <NA>
+#> 6       FALSE         0              <NA>
 ```
