@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# A Complete Library of GAO Reports and Metadata
+# A Complete Library of GAO Reports and Metadata <a href="https://github.com/CetiAlphaFive/gao"><img src="man/figures/logo.png" align="right" height="139" alt="gao hex sticker" /></a>
 
 <!-- badges: start -->
 

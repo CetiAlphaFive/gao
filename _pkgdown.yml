@@ -24,5 +24,6 @@ reference:
 - title: Update data
   desc: Scrape and update the bundled link dataset.
   contents:
+  - gao_update_data
   - update_links
   - extract_links

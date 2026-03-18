@@ -1,3 +1,20 @@
+# gao 0.5.0
+
+* CRAN preparation release.
+* Bundled RDS shrunk from 6.4 MB to 3.7 MB by storing only 14 core columns
+  with xz compression. The 82 indicator columns are now computed on the fly
+  by `gao_links()` and cached in memory.
+* New `gao_update_data()` function downloads the latest data from GitHub
+  Releases using base R `download.file()` — no `curl-impersonate` needed.
+  `gao_links()` checks for user-local cached data before the bundled copy.
+* `auto_download()` now offers to check for updated data in interactive
+  sessions before proceeding.
+* Daily CI workflow now uploads the RDS to a pinned GitHub Release
+  (`data-latest`) for `gao_update_data()` to fetch.
+* Fixed missing `lifecycle-deprecated.svg` badge referenced by
+ `extract_pdf_links.Rd`.
+* Updated `CITATION.cff` to match current version and license.
+
 # gao 0.4.0
 
 * New `extract_text()` function for extracting text from downloaded PDFs.

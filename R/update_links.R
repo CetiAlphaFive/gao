@@ -11,6 +11,7 @@
 #' @keywords internal
 #' @noRd
 update_links <- function(verbose = TRUE, sleep_time = 1) {
+  .gao_env$links <- NULL
   base.url <- "https://www.gao.gov/reports-testimonies"
   known <- gao_links()
   if (verbose) message("Bundled reports: ", nrow(known))
@@ -86,9 +87,12 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
   combined
 }
 
-#' Get Bundled GAO Report Data
+#' Get GAO Report Data
 #'
-#' Returns a data.frame of GAO report metadata bundled with the package.
+#' Returns a data.frame of GAO report metadata. Checks for a user-local
+#' cache (written by [gao_update_data()]) first, then falls back to the
+#' bundled dataset. Indicator columns (82 one-hot columns for topics and
+#' agencies) are computed on the fly and cached in memory.
 #'
 #' @return A data.frame with columns: url, title, report_id, published,
 #'   released, summary, page_count (integer, may be `NA` for reports
@@ -106,7 +110,18 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
 #' nrow(reports)
 #' head(reports)
 gao_links <- function() {
-  path <- system.file("extdata", "gao_links.rds", package = "gao")
+  if (!is.null(.gao_env$links)) return(.gao_env$links)
+
+  # Check user-local cache first (from gao_update_data())
+  cache.dir <- tools::R_user_dir("gao", "data")
+  cache.path <- file.path(cache.dir, "gao_links.rds")
+
+  if (file.exists(cache.path)) {
+    path <- cache.path
+  } else {
+    path <- system.file("extdata", "gao_links.rds", package = "gao")
+  }
+
   if (path == "") {
     warning("No bundled link data found. Reinstall the package.",
             call. = FALSE)
@@ -123,5 +138,52 @@ gao_links <- function() {
     for (col in .indicator_colnames()) empty[[col]] <- integer(0)
     return(empty)
   }
-  readRDS(path)
+
+  d <- readRDS(path)
+  # Expand indicator columns on the fly if not already present
+  if (!"agency_other" %in% names(d)) {
+    d <- .expand_indicators(d)
+  }
+  .gao_env$links <- d
+  d
+}
+
+#' Download Updated GAO Report Data
+#'
+#' Downloads the latest `gao_links.rds` from the package's GitHub
+#' Releases and caches it locally. Subsequent calls to [gao_links()]
+#' will use the updated data. Uses base R [download.file()] — no
+#' `curl-impersonate` needed.
+#'
+#' @param quiet Logical. Suppress progress messages (default: `FALSE`).
+#' @return Invisible path to the cached RDS file.
+#' @export
+#' @examples
+#' \dontrun{
+#' gao_update_data()
+#' gao_links()  # now returns the latest data
+#' }
+gao_update_data <- function(quiet = FALSE) {
+  release.url <- "https://github.com/CetiAlphaFive/gao/releases/download/data-latest/gao_links.rds"
+  cache.dir <- tools::R_user_dir("gao", "data")
+  if (!dir.exists(cache.dir)) dir.create(cache.dir, recursive = TRUE)
+  cache.path <- file.path(cache.dir, "gao_links.rds")
+
+  if (!quiet) message("Downloading latest GAO data...")
+  tmp <- tempfile(fileext = ".rds")
+  on.exit(unlink(tmp), add = TRUE)
+
+  status <- utils::download.file(release.url, tmp, mode = "wb",
+                                 quiet = quiet)
+  if (status != 0L) stop("Download failed (status ", status, ")", call. = FALSE)
+
+  # Validate the download is a readable RDS
+  tryCatch(readRDS(tmp), error = function(e) {
+    stop("Downloaded file is not a valid RDS: ", e$message, call. = FALSE)
+  })
+
+  file.copy(tmp, cache.path, overwrite = TRUE)
+  .gao_env$links <- NULL
+  if (!quiet) message("Updated data cached at ", cache.path)
+  invisible(cache.path)
 }

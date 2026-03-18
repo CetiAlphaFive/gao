@@ -79,10 +79,13 @@ jobs:
               })
             }
 
-            ## Expand indicator columns for new rows
-            updated <- gao:::.expand_indicators(updated)
-
-            saveRDS(updated, "inst/extdata/gao_links.rds")
+            ## Save core columns only (indicators computed on the fly)
+            core.cols <- c("url", "title", "report_id", "published", "released",
+                           "summary", "page_count", "topics", "subject_terms",
+                           "has_recommendations", "n_recommendations",
+                           "has_matters", "n_matters", "agencies_affected")
+            updated <- updated[, intersect(core.cols, names(updated)), drop = FALSE]
+            saveRDS(updated, "inst/extdata/gao_links.rds", compress = "xz")
             message("Added ", n.new, " new reports")
           } else {
             message("No new reports found")
@@ -92,6 +95,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Commit and push if updated
+        id: commit
         run: |
           N_NEW=$(cat n_new.txt)
           rm -f n_new.txt
@@ -101,6 +105,15 @@ jobs:
             git add inst/extdata/gao_links.rds
             git commit -m "update gao links (+${N_NEW} new)"
             git push
+            echo "committed=true" >> "$GITHUB_OUTPUT"
           else
             echo "No changes to commit"
+            echo "committed=false" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Upload data to release
+        if: steps.commit.outputs.committed == 'true'
+        run: |
+          gh release upload data-latest inst/extdata/gao_links.rds --clobber
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/update_links.R
 \name{gao_links}
 \alias{gao_links}
-\title{Get Bundled GAO Report Data}
+\title{Get GAO Report Data}
 \usage{
 gao_links()
 }
@@ -19,7 +19,10 @@ indicator columns: 31 \verb{topic_*} columns (one per topic), 50
 \code{NA_integer_} where the source field is missing.
 }
 \description{
-Returns a data.frame of GAO report metadata bundled with the package.
+Returns a data.frame of GAO report metadata. Checks for a user-local
+cache (written by \code{\link[=gao_update_data]{gao_update_data()}}) first, then falls back to the
+bundled dataset. Indicator columns (82 one-hot columns for topics and
+agencies) are computed on the fly and cached in memory.
 }
 \examples{
 reports <- gao_links()

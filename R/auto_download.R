@@ -71,7 +71,18 @@ auto_download <- function(format = NULL,
     stop("confirm must be TRUE or FALSE", call. = FALSE)
   }
 
-  # --- Load bundled data ---
+  # --- Offer data update (interactive only) ---
+  is.interactive <- interactive()
+  if (is.interactive) {
+    ans <- readline("Check for updated report data? (y/n): ")
+    if (tolower(trimws(ans)) %in% c("y", "yes")) {
+      tryCatch(gao_update_data(), error = function(e) {
+        message("Update failed: ", e$message, "\nUsing cached data.")
+      })
+    }
+  }
+
+  # --- Load data ---
   all.data <- gao_links()
   if (nrow(all.data) == 0) {
     stop("No bundled links found. Reinstall the package to get bundled data.",
@@ -81,8 +92,6 @@ auto_download <- function(format = NULL,
   all.years <- .infer_fiscal_year(all.data$published, all.data$url)
 
   # --- Interactive prompts ---
-  is.interactive <- interactive()
-
   if (is.null(format)) {
     if (is.interactive) {
       choice <- utils::menu(c("PDF only", "HTML only", "Both",

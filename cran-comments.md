@@ -1,20 +1,24 @@
 ## R CMD check results
 
-0 errors | 0 warnings | 1 note
+0 errors | 0 warnings | 2 notes
 
-* checking for future file timestamps ... NOTE
-  unable to verify current time
-
-This NOTE is a transient network/clock check and not related to the package.
+* New submission.
+* URL `https://www.gao.gov` returns HTTP 403 from automated checks.
+  GAO.gov uses TLS fingerprint filtering that blocks standard HTTP
+  clients — this is the reason the package requires `curl-impersonate`
+  as a system dependency for scraping. The bundled dataset and
+  `gao_update_data()` function work without `curl-impersonate`.
+* `checking for future file timestamps` — transient network/clock check.
 
 ## System dependency
 
 This package requires 'curl-impersonate' (<https://github.com/lexiforest/curl-impersonate>)
-as a system dependency. GAO.gov uses TLS fingerprint filtering that blocks
-standard HTTP clients including base R and 'curl'. Installation instructions
-are provided in the README, DESCRIPTION, and a startup message.
+for scraping GAO.gov and downloading reports. The bundled dataset
+(`gao_links()`) and data updates from GitHub (`gao_update_data()`)
+work without it. Installation instructions are in the README and
+DESCRIPTION.
 
 ## Test environment
 
-* local: Arch Linux, R 4.5.x
+* local: Arch Linux (EndeavourOS), R 4.5.2
 * GitHub Actions: ubuntu-latest, R release
