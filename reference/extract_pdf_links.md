@@ -1,7 +1,11 @@
 # Extract PDF Links from GAO Report Pages
 
-Visits each report page and extracts the PDF download link(s). Highlight
-PDFs are excluded automatically.
+**\[deprecated\]**
+
+`extract_pdf_links()` is deprecated. Use
+[`auto_download()`](https://cetialphafive.github.io/gao/reference/auto_download.md)
+instead, which constructs PDF URLs directly from report IDs without
+extra HTTP requests.
 
 ## Usage
 
@@ -13,8 +17,7 @@ extract_pdf_links(page_links, sleep_time = 1)
 
 - page_links:
 
-  Character vector. Full URLs of GAO report pages (e.g.,
-  `"https://www.gao.gov/products/gao-24-106198"`).
+  Character vector. Full URLs of GAO report pages.
 
 - sleep_time:
 
@@ -28,6 +31,7 @@ A character vector of unique PDF paths (relative to gao.gov).
 
 ``` r
 if (FALSE) { # \dontrun{
-pdf_links <- extract_pdf_links("https://www.gao.gov/products/gao-24-106198")
+# Deprecated --- use auto_download() instead
+auto_download(format = "pdf", year = 2024, confirm = FALSE)
 } # }
 ```

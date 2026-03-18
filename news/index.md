@@ -1,5 +1,31 @@
 # Changelog
 
+## gao 0.5.0
+
+- CRAN preparation release.
+- Bundled RDS shrunk from 6.4 MB to 3.7 MB by storing only 14 core
+  columns with xz compression. The 82 indicator columns are now computed
+  on the fly by
+  [`gao_links()`](https://cetialphafive.github.io/gao/reference/gao_links.md)
+  and cached in memory.
+- New
+  [`gao_update_data()`](https://cetialphafive.github.io/gao/reference/gao_update_data.md)
+  function downloads the latest data from GitHub Releases using base R
+  [`download.file()`](https://rdrr.io/r/utils/download.file.html) — no
+  `curl-impersonate` needed.
+  [`gao_links()`](https://cetialphafive.github.io/gao/reference/gao_links.md)
+  checks for user-local cached data before the bundled copy.
+- [`auto_download()`](https://cetialphafive.github.io/gao/reference/auto_download.md)
+  now offers to check for updated data in interactive sessions before
+  proceeding.
+- Daily CI workflow now uploads the RDS to a pinned GitHub Release
+  (`data-latest`) for
+  [`gao_update_data()`](https://cetialphafive.github.io/gao/reference/gao_update_data.md)
+  to fetch.
+- Fixed missing `lifecycle-deprecated.svg` badge referenced by
+  `extract_pdf_links.Rd`.
+- Updated `CITATION.cff` to match current version and license.
+
 ## gao 0.4.0
 
 - New
@@ -16,10 +42,8 @@
 - Page counts extracted from 55,000+ PDF archive and matched to metadata
   via URL slug and report ID (80.7% coverage).
 - Daily CI workflow now backfills `page_count` for newly added reports.
-- Fixed
-  [`update_links()`](https://cetialphafive.github.io/gao/reference/update_links.md)
-  column mismatch when bundled data has columns that new scrape results
-  lack.
+- Fixed `update_links()` column mismatch when bundled data has columns
+  that new scrape results lack.
 - License changed from MIT to GPL (\>= 3).
 
 ## gao 0.3.0
@@ -35,10 +59,8 @@
   now uses published date and fiscal year calculation instead of regex
   on report IDs, fixing ~29% of reports with legacy ID formats that
   previously yielded `NA` years.
-- [`extract_links()`](https://cetialphafive.github.io/gao/reference/extract_links.md)
-  and
-  [`update_links()`](https://cetialphafive.github.io/gao/reference/update_links.md)
-  now return data.frames with full report metadata.
+- `extract_links()` and `update_links()` now return data.frames with
+  full report metadata.
 - Fixed R-CMD-check GitHub Action syntax error (`args` parameter).
 
 ## gao 0.2.0
@@ -61,14 +83,9 @@
 - Bundled dataset of ~55,000 GAO report URLs (1921–present).
 - [`gao_links()`](https://cetialphafive.github.io/gao/reference/gao_links.md)
   to access bundled report URLs.
-- [`update_links()`](https://cetialphafive.github.io/gao/reference/update_links.md)
-  to scrape newly published reports.
-- [`extract_links()`](https://cetialphafive.github.io/gao/reference/extract_links.md)
-  to build the full link list from scratch.
+- `update_links()` to scrape newly published reports.
+- `extract_links()` to build the full link list from scratch.
 - [`extract_pdf_links()`](https://cetialphafive.github.io/gao/reference/extract_pdf_links.md)
   to find PDF download links from report pages.
-- [`download_pdfs()`](https://cetialphafive.github.io/gao/reference/download_pdfs.md)
-  and
-  [`download_htmls()`](https://cetialphafive.github.io/gao/reference/download_htmls.md)
-  for batch downloading.
+- `download_pdfs()` and `download_htmls()` for batch downloading.
 - Requires ‘curl-impersonate’ for TLS fingerprint compatibility.

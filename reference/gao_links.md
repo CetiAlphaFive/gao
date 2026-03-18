@@ -1,6 +1,11 @@
-# Get Bundled GAO Report Data
+# Get GAO Report Data
 
-Returns a data.frame of GAO report metadata bundled with the package.
+Returns a data.frame of GAO report metadata. Checks for a user-local
+cache (written by
+[`gao_update_data()`](https://cetialphafive.github.io/gao/reference/gao_update_data.md))
+first, then falls back to the bundled dataset. Indicator columns (82
+one-hot columns for topics and agencies) are computed on the fly and
+cached in memory.
 
 ## Usage
 

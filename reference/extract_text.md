@@ -4,8 +4,6 @@ Reads PDF files from a local directory and extracts their text content
 using
 [`pdftools::pdf_text()`](https://docs.ropensci.org/pdftools//reference/pdftools.html).
 Designed to work with PDFs downloaded via
-[`download_pdfs()`](https://cetialphafive.github.io/gao/reference/download_pdfs.md)
-or
 [`auto_download()`](https://cetialphafive.github.io/gao/reference/auto_download.md).
 
 ## Usage
