@@ -9,8 +9,7 @@ Description: Download reports published by the United States Government
     Accountability Office (GAO) directly from <https://www.gao.gov>. Ships
     with a bundled dataset of over 55,000 report URLs spanning 1921 to the
     present. Provides a one-step download function that filters by fiscal
-    year and format, plus lower-level tools for scraping report listings,
-    extracting Portable Document Format (PDF) links, and downloading files.
+    year and format, and a text extraction utility for downloaded PDFs.
     Requires 'curl-impersonate' as a system dependency to handle TLS
     fingerprint filtering. Not affiliated with or endorsed by the
     U.S. Government Accountability Office.
@@ -19,6 +18,7 @@ Depends: R (>= 4.1.0)
 Imports:
     rvest
 Suggests:
+    lifecycle,
     pdftools,
     testthat (>= 3.0.0),
     withr

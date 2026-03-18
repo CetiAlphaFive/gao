@@ -21,9 +21,7 @@ downloading reports as PDF, HTML, or both.
 **Disclaimer:** This package is not affiliated with, endorsed by, or in
 any way officially connected to the U.S. Government Accountability
 Office. All data is obtained from public web pages at
-[gao.gov](https://www.gao.gov). 
-
-## Installation
+[gao.gov](https://www.gao.gov). \## Installation
 
 `gao` requires
 [curl-impersonate](https://github.com/lexiforest/curl-impersonate) as a
@@ -63,6 +61,13 @@ auto_download(format = "pdf", year = 2020:2024, confirm = FALSE)
 
 `auto_download()` loads the bundled dataset, filters by fiscal year, and
 downloads PDFs, HTMLs, or both into `gao_reports/pdf/` and
-`gao_reports/html/`. That’s it.
+`gao_reports/html/`.
 
-Advanced functions are viewable in the reference tab.
+The package has three main functions:
+
+- **`gao_links()`** — access the bundled dataset (56,000+ reports with
+  metadata and one-hot indicator columns)
+- **`auto_download()`** — download reports as PDF, HTML, or both (or
+  export metadata as CSV)
+- **`extract_text()`** — extract text from downloaded PDFs via
+  `pdftools`

@@ -34,7 +34,7 @@ jobs:
         run: |
           library(gao)
           known <- gao_links()
-          updated <- update_links(verbose = TRUE, sleep_time = 1)
+          updated <- gao:::update_links(verbose = TRUE, sleep_time = 1)
           n.new <- nrow(updated) - nrow(known)
 
           if (n.new > 0) {
@@ -69,7 +69,7 @@ jobs:
               )
               pdf.path <- file.path(tmp.dir, basename(pdf.url))
               tryCatch({
-                download_pdfs(pdf.url, download_dir = tmp.dir, sleep_time = 1)
+                gao:::download_pdfs(pdf.url, download_dir = tmp.dir, sleep_time = 1)
                 if (file.exists(pdf.path)) {
                   updated$page_count[i] <- pdftools::pdf_length(pdf.path)
                   unlink(pdf.path)

@@ -74,7 +74,8 @@ auto_download <- function(format = NULL,
   # --- Load bundled data ---
   all.data <- gao_links()
   if (nrow(all.data) == 0) {
-    stop("No bundled links found. Run update_links() first.", call. = FALSE)
+    stop("No bundled links found. Reinstall the package to get bundled data.",
+         call. = FALSE)
   }
 
   all.years <- .infer_fiscal_year(all.data$published, all.data$url)

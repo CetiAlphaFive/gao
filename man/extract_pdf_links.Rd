@@ -7,8 +7,7 @@
 extract_pdf_links(page_links, sleep_time = 1)
 }
 \arguments{
-\item{page_links}{Character vector. Full URLs of GAO report pages
-(e.g., \code{"https://www.gao.gov/products/gao-24-106198"}).}
+\item{page_links}{Character vector. Full URLs of GAO report pages.}
 
 \item{sleep_time}{Numeric. Seconds to pause between requests (default: 1).}
 }
@@ -16,11 +15,15 @@ extract_pdf_links(page_links, sleep_time = 1)
 A character vector of unique PDF paths (relative to gao.gov).
 }
 \description{
-Visits each report page and extracts the PDF download link(s).
-Highlight PDFs are excluded automatically.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+
+\code{extract_pdf_links()} is deprecated. Use \code{\link[=auto_download]{auto_download()}} instead, which
+constructs PDF URLs directly from report IDs without extra HTTP requests.
 }
 \examples{
 \dontrun{
-pdf_links <- extract_pdf_links("https://www.gao.gov/products/gao-24-106198")
+# Deprecated --- use auto_download() instead
+auto_download(format = "pdf", year = 2024, confirm = FALSE)
 }
 }
+\keyword{internal}

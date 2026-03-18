@@ -2,7 +2,7 @@
 #'
 #' Reads PDF files from a local directory and extracts their text content using
 #' [pdftools::pdf_text()]. Designed to work with PDFs downloaded via
-#' [download_pdfs()] or [auto_download()].
+#' [auto_download()].
 #'
 #' @param pdf_dir Character. Path to a directory containing PDF files.
 #' @param pattern Character. Regex pattern to filter filenames

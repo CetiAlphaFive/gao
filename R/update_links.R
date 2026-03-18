@@ -1,19 +1,15 @@
 #' Update GAO Report Links
 #'
 #' Scrapes the most recent GAO report listing pages and appends any new links
-#' not already in the bundled dataset. Stops automatically when it reaches
-#' reports that are already known (3 consecutive pages with no new links) or
-#' after 3 consecutive fetch failures.
+#' not already in the bundled dataset. Used by the daily CI workflow; most
+#' users should use [gao_links()] to access the bundled dataset.
 #'
 #' @param verbose Logical. Show progress messages (default: `TRUE`).
 #' @param sleep_time Numeric. Seconds between requests (default: 1).
 #'
 #' @return A data.frame of all known reports (old + new), sorted by url.
-#' @export
-#' @examples
-#' \dontrun{
-#' all_data <- update_links()
-#' }
+#' @keywords internal
+#' @noRd
 update_links <- function(verbose = TRUE, sleep_time = 1) {
   base.url <- "https://www.gao.gov/reports-testimonies"
   known <- gao_links()
@@ -112,7 +108,7 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
 gao_links <- function() {
   path <- system.file("extdata", "gao_links.rds", package = "gao")
   if (path == "") {
-    warning("No bundled link data found. Run extract_links() to build it.",
+    warning("No bundled link data found. Reinstall the package.",
             call. = FALSE)
     empty <- data.frame(
       url = character(0), title = character(0), report_id = character(0),

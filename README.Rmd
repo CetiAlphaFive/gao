@@ -59,8 +59,12 @@ auto_download()
 auto_download(format = "pdf", year = 2020:2024, confirm = FALSE)
 ```
 
-`auto_download()` loads the bundled dataset, filters by fiscal year, and downloads PDFs, HTMLs, or both into `gao_reports/pdf/` and `gao_reports/html/`. That's it.
+`auto_download()` loads the bundled dataset, filters by fiscal year, and downloads PDFs, HTMLs, or both into `gao_reports/pdf/` and `gao_reports/html/`.
 
-Advanced functions are viewable in the reference tab. 
+The package has three main functions:
+
+- **`gao_links()`** --- access the bundled dataset (56,000+ reports with metadata and one-hot indicator columns)
+- **`auto_download()`** --- download reports as PDF, HTML, or both (or export metadata as CSV)
+- **`extract_text()`** --- extract text from downloaded PDFs via `pdftools`
 
 

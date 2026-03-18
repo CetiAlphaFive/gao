@@ -1,18 +1,15 @@
 #' Download GAO Report HTML Pages
 #'
-#' Downloads HTML files from a list of GAO report URLs.
+#' Downloads HTML files from a list of GAO report URLs. Called internally by
+#' [auto_download()].
 #'
 #' @param links Character vector. Full URLs of GAO report pages.
 #' @param target_directory Character. Directory to save HTML files (default: working directory).
 #' @param sleep_time Numeric. Seconds to pause between downloads (default: 1).
 #'
 #' @return Invisible character vector of downloaded file paths.
-#' @export
-#' @examples
-#' \dontrun{
-#' download_htmls("https://www.gao.gov/products/gao-24-106198",
-#'                target_directory = tempdir())
-#' }
+#' @keywords internal
+#' @noRd
 download_htmls <- function(links,
                            target_directory = getwd(),
                            sleep_time = 1) {
