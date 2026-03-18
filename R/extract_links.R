@@ -133,6 +133,7 @@ extract_links <- function(base_url = "https://www.gao.gov/reports-testimonies",
       agencies_affected = character(0),
       stringsAsFactors = FALSE
     )
+    for (col in .indicator_colnames()) all.data[[col]] <- integer(0)
   } else {
     all.data$url <- paste0("https://www.gao.gov", all.data$url)
     all.data <- all.data[!duplicated(all.data$url), , drop = FALSE]

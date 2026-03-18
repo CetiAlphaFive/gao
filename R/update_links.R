@@ -98,8 +98,12 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
 #'   released, summary, page_count (integer, may be `NA` for reports
 #'   without a matching PDF in the bundled archive), topics,
 #'   subject_terms, has_recommendations (logical), n_recommendations
-#'   (integer), has_matters (logical), n_matters (integer), and
-#'   agencies_affected (character, semicolon-separated).
+#'   (integer), has_matters (logical), n_matters (integer),
+#'   agencies_affected (character, semicolon-separated), plus 82 integer
+#'   indicator columns: 31 `topic_*` columns (one per topic), 50
+#'   `agency_*` columns (one per top-50 agency), and `agency_other`
+#'   (1 if any non-top-50 agency appears). Indicator columns are
+#'   `NA_integer_` where the source field is missing.
 #' @export
 #' @examples
 #' reports <- gao_links()
@@ -110,7 +114,7 @@ gao_links <- function() {
   if (path == "") {
     warning("No bundled link data found. Run extract_links() to build it.",
             call. = FALSE)
-    return(data.frame(
+    empty <- data.frame(
       url = character(0), title = character(0), report_id = character(0),
       published = character(0), released = character(0), summary = character(0),
       page_count = integer(0), topics = character(0),
@@ -119,7 +123,9 @@ gao_links <- function() {
       has_matters = logical(0), n_matters = integer(0),
       agencies_affected = character(0),
       stringsAsFactors = FALSE
-    ))
+    )
+    for (col in .indicator_colnames()) empty[[col]] <- integer(0)
+    return(empty)
   }
   readRDS(path)
 }

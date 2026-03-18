@@ -11,8 +11,12 @@ A data.frame with columns: url, title, report_id, published,
 released, summary, page_count (integer, may be \code{NA} for reports
 without a matching PDF in the bundled archive), topics,
 subject_terms, has_recommendations (logical), n_recommendations
-(integer), has_matters (logical), n_matters (integer), and
-agencies_affected (character, semicolon-separated).
+(integer), has_matters (logical), n_matters (integer),
+agencies_affected (character, semicolon-separated), plus 82 integer
+indicator columns: 31 \verb{topic_*} columns (one per topic), 50
+\verb{agency_*} columns (one per top-50 agency), and \code{agency_other}
+(1 if any non-top-50 agency appears). Indicator columns are
+\code{NA_integer_} where the source field is missing.
 }
 \description{
 Returns a data.frame of GAO report metadata bundled with the package.
