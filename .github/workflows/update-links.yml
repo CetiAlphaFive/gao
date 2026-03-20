@@ -36,10 +36,11 @@ jobs:
           known <- gao_links()
           updated <- gao:::update_links(verbose = TRUE, sleep_time = 1)
           n.new <- nrow(updated) - nrow(known)
+          tmp.dir <- tempdir()
 
+          # ── Phase 1: Process new reports ──
           if (n.new > 0) {
             new.idx <- which(!updated$url %in% known$url)
-            tmp.dir <- tempdir()
 
             for (i in new.idx) {
               report.url <- updated$url[i]
@@ -48,16 +49,13 @@ jobs:
               tryCatch({
                 page <- gao:::.fetch_html(report.url)
                 meta <- gao:::.scrape_report_metadata(page)
-                if (!is.na(meta$topics))
-                  updated$topics[i] <- meta$topics
-                if (!is.na(meta$subject_terms))
-                  updated$subject_terms[i] <- meta$subject_terms
+                updated$topics[i]              <- if (is.na(meta$topics)) "" else meta$topics
+                updated$subject_terms[i]       <- if (is.na(meta$subject_terms)) "" else meta$subject_terms
                 updated$has_recommendations[i] <- meta$has_recommendations
-                updated$n_recommendations[i] <- meta$n_recommendations
-                updated$has_matters[i] <- meta$has_matters
-                updated$n_matters[i] <- meta$n_matters
-                if (!is.na(meta$agencies_affected))
-                  updated$agencies_affected[i] <- meta$agencies_affected
+                updated$n_recommendations[i]   <- meta$n_recommendations
+                updated$has_matters[i]         <- meta$has_matters
+                updated$n_matters[i]           <- meta$n_matters
+                updated$agencies_affected[i]   <- if (is.na(meta$agencies_affected)) "" else meta$agencies_affected
               }, error = function(e) {
                 message("metadata failed for ", report.url, ": ", e$message)
               })
@@ -78,32 +76,90 @@ jobs:
                 message("page_count failed for ", report.url, ": ", e$message)
               })
             }
+            message("Added ", n.new, " new reports")
+          } else {
+            message("No new reports found")
+          }
 
-            ## Save core columns only (indicators computed on the fly)
+          # ── Phase 2: Gap-fill existing reports with missing metadata ──
+          BATCH_SIZE <- 50L
+          gap.idx <- which(is.na(updated$topics))
+          if (n.new > 0) gap.idx <- setdiff(gap.idx, new.idx)
+          # Prioritize recent reports first
+          gap.idx <- gap.idx[order(updated$published[gap.idx], decreasing = TRUE)]
+          n.to.fill <- min(length(gap.idx), BATCH_SIZE)
+          n.filled <- 0L
+
+          if (n.to.fill > 0) {
+            message("Gap-filling ", n.to.fill, " of ", length(gap.idx), " reports")
+            for (i in gap.idx[seq_len(n.to.fill)]) {
+              tryCatch({
+                page <- gao:::.fetch_html(updated$url[i])
+                meta <- gao:::.scrape_report_metadata(page)
+                updated$topics[i]              <- if (is.na(meta$topics)) "" else meta$topics
+                updated$subject_terms[i]       <- if (is.na(meta$subject_terms)) "" else meta$subject_terms
+                updated$has_recommendations[i] <- meta$has_recommendations
+                updated$n_recommendations[i]   <- meta$n_recommendations
+                updated$has_matters[i]         <- meta$has_matters
+                updated$n_matters[i]           <- meta$n_matters
+                updated$agencies_affected[i]   <- if (is.na(meta$agencies_affected)) "" else meta$agencies_affected
+                n.filled <- n.filled + 1L
+              }, error = function(e) {
+                message("gap-fill failed: ", updated$url[i], ": ", e$message)
+              })
+              Sys.sleep(1)
+
+              # Page count if missing
+              if (is.na(updated$page_count[i])) {
+                pdf.url <- paste0(sub("/products/", "/assets/", updated$url[i]), ".pdf")
+                pdf.path <- file.path(tmp.dir, basename(pdf.url))
+                tryCatch({
+                  gao:::download_pdfs(pdf.url, download_dir = tmp.dir, sleep_time = 1)
+                  if (file.exists(pdf.path)) {
+                    updated$page_count[i] <- pdftools::pdf_length(pdf.path)
+                    unlink(pdf.path)
+                  }
+                }, error = function(e) {
+                  message("gap-fill page_count failed: ", e$message)
+                })
+              }
+            }
+            message("Gap-filled ", n.filled, " reports")
+          }
+
+          # ── Phase 3: Save if anything changed ──
+          if (n.new > 0 || n.filled > 0) {
             core.cols <- c("url", "title", "report_id", "published", "released",
                            "summary", "page_count", "topics", "subject_terms",
                            "has_recommendations", "n_recommendations",
                            "has_matters", "n_matters", "agencies_affected")
             updated <- updated[, intersect(core.cols, names(updated)), drop = FALSE]
             saveRDS(updated, "inst/extdata/gao_links.rds", compress = "xz")
-            message("Added ", n.new, " new reports")
-          } else {
-            message("No new reports found")
           }
-          # Write output for conditional commit step
+
+          # Write outputs for conditional commit step
           writeLines(as.character(n.new), "n_new.txt")
+          writeLines(as.character(n.filled), "n_filled.txt")
         shell: Rscript {0}
 
       - name: Commit and push if updated
         id: commit
         run: |
           N_NEW=$(cat n_new.txt)
-          rm -f n_new.txt
-          if [ "$N_NEW" -gt 0 ]; then
+          N_FILLED=$(cat n_filled.txt)
+          rm -f n_new.txt n_filled.txt
+          if [ "$N_NEW" -gt 0 ] || [ "$N_FILLED" -gt 0 ]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add inst/extdata/gao_links.rds
-            git commit -m "update gao links (+${N_NEW} new)"
+            if [ "$N_NEW" -gt 0 ] && [ "$N_FILLED" -gt 0 ]; then
+              MSG="update gao links (+${N_NEW} new, ${N_FILLED} gaps filled)"
+            elif [ "$N_NEW" -gt 0 ]; then
+              MSG="update gao links (+${N_NEW} new)"
+            else
+              MSG="backfill gao metadata (${N_FILLED} gaps filled)"
+            fi
+            git commit -m "$MSG"
             git push
             echo "committed=true" >> "$GITHUB_OUTPUT"
           else
