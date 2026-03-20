@@ -164,6 +164,7 @@ jobs:
               MSG="backfill gao metadata (${N_FILLED} gaps filled)"
             fi
             git commit -m "$MSG"
+            git pull --rebase
             git push
             echo "committed=true" >> "$GITHUB_OUTPUT"
           else
