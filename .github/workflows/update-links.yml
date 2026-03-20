@@ -82,7 +82,7 @@ jobs:
           }
 
           # ── Phase 2: Gap-fill existing reports with missing metadata ──
-          BATCH_SIZE <- 50L
+          BATCH_SIZE <- 1000L
           gap.idx <- which(is.na(updated$topics))
           if (n.new > 0) gap.idx <- setdiff(gap.idx, new.idx)
           # Prioritize recent reports first
