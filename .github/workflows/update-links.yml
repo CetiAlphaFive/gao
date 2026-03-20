@@ -8,10 +8,6 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: gao-update
-  cancel-in-progress: false
-
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -86,7 +82,7 @@ jobs:
           }
 
           # ── Phase 2: Gap-fill existing reports with missing metadata ──
-          BATCH_SIZE <- 1000L
+          BATCH_SIZE <- 5000L
           gap.idx <- which(is.na(updated$topics))
           if (n.new > 0) gap.idx <- setdiff(gap.idx, new.idx)
           # Prioritize recent reports first
