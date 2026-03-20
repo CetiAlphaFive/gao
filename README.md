@@ -12,11 +12,11 @@ status](https://www.r-pkg.org/badges/version/gao)](https://CRAN.R-project.org/pa
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-`gao` provides tools for downloading reports and associated metadata
+This package `gao` provides tools for downloading reports and associated metadata
 published by the United States Government Accountability Office (GAO).
 It ships with a bundled dataset covering over 55,000 reports
 (1921–present, updated daily) and a one-step function for batch
-downloading reports as PDF, HTML, or both.
+downloading reports as PDF, HTML, or both. 
 
 **Disclaimer:** This package is not affiliated with, endorsed by, or in
 any way officially connected to the U.S. Government Accountability
@@ -64,12 +64,3 @@ auto_download(format = "pdf", year = 2020:2024, confirm = FALSE)
 `auto_download()` loads the bundled dataset, filters by fiscal year, and
 downloads PDFs, HTMLs, or both into `gao_reports/pdf/` and
 `gao_reports/html/`.
-
-The package has three main functions:
-
-- **`gao_links()`** — access the bundled dataset (56,000+ reports with
-  metadata and one-hot indicator columns)
-- **`auto_download()`** — download reports as PDF, HTML, or both (or
-  export metadata as CSV)
-- **`extract_text()`** — extract text from downloaded PDFs via
-  `pdftools`
