@@ -15,6 +15,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Fetch latest data from release
+        run: |
+          gh release download data-latest -p gao_links.rds -D inst/extdata --clobber || echo "No release found, using bundled"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install curl-impersonate
         run: |
           curl -L -o curl-impersonate.tar.gz \
@@ -82,7 +88,7 @@ jobs:
           }
 
           # ── Phase 2: Gap-fill existing reports with missing metadata ──
-          BATCH_SIZE <- 1000L
+          BATCH_SIZE <- 5000L
           gap.idx <- which(is.na(updated$topics))
           if (n.new > 0) gap.idx <- setdiff(gap.idx, new.idx)
           # Prioritize recent reports first
