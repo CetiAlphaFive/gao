@@ -61,339 +61,346 @@ head(reports)
 #> 5 GAO reported on its activities for the fiscal year ended June 30, 1970. GAO highlighted its: (1) assistance to Congress; (2) audits of civil, defense...
 #> 6 GAO reported on its activities for the fiscal year ended June 30, 1966. GAO highlighted its: (1) assistance to Congress; (2) audits of defense, civil...
 #>   page_count topics subject_terms has_recommendations n_recommendations
-#> 1          2   <NA>          <NA>               FALSE                 0
-#> 2         NA   <NA>          <NA>               FALSE                 0
-#> 3         NA   <NA>          <NA>               FALSE                 0
-#> 4        399   <NA>          <NA>               FALSE                 0
+#> 1          2                                    FALSE                 0
+#> 2         NA                                    FALSE                 0
+#> 3         NA                                    FALSE                 0
+#> 4        399                                    FALSE                 0
 #> 5        179                                    FALSE                 0
-#> 6        315   <NA>          <NA>               FALSE                 0
-#>   has_matters n_matters agencies_affected topic_agriculture_and_food
-#> 1       FALSE         0              <NA>                         NA
-#> 2       FALSE         0              <NA>                         NA
-#> 3       FALSE         0              <NA>                         NA
-#> 4       FALSE         0              <NA>                         NA
-#> 5       FALSE         0                                            0
-#> 6       FALSE         0              <NA>                         NA
+#> 6        315                                    FALSE                 0
+#>   has_matters n_matters agencies_affected requester_type requester_committees
+#> 1       FALSE         0                             <NA>                 <NA>
+#> 2       FALSE         0                             <NA>                 <NA>
+#> 3       FALSE         0                             <NA>                 <NA>
+#> 4       FALSE         0                             <NA>                 <NA>
+#> 5       FALSE         0                             <NA>                 <NA>
+#> 6       FALSE         0                             <NA>                 <NA>
+#>   requester_members topic_agriculture_and_food
+#> 1              <NA>                          0
+#> 2              <NA>                          0
+#> 3              <NA>                          0
+#> 4              <NA>                          0
+#> 5              <NA>                          0
+#> 6              <NA>                          0
 #>   topic_auditing_and_financial_management topic_budget_and_spending
-#> 1                                      NA                        NA
-#> 2                                      NA                        NA
-#> 3                                      NA                        NA
-#> 4                                      NA                        NA
+#> 1                                       0                         0
+#> 2                                       0                         0
+#> 3                                       0                         0
+#> 4                                       0                         0
 #> 5                                       0                         0
-#> 6                                      NA                        NA
+#> 6                                       0                         0
 #>   topic_business_regulation_and_consumer_protection topic_economic_development
-#> 1                                                NA                         NA
-#> 2                                                NA                         NA
-#> 3                                                NA                         NA
-#> 4                                                NA                         NA
+#> 1                                                 0                          0
+#> 2                                                 0                          0
+#> 3                                                 0                          0
+#> 4                                                 0                          0
 #> 5                                                 0                          0
-#> 6                                                NA                         NA
+#> 6                                                 0                          0
 #>   topic_education topic_employment topic_energy topic_equal_opportunity
-#> 1              NA               NA           NA                      NA
-#> 2              NA               NA           NA                      NA
-#> 3              NA               NA           NA                      NA
-#> 4              NA               NA           NA                      NA
+#> 1               0                0            0                       0
+#> 2               0                0            0                       0
+#> 3               0                0            0                       0
+#> 4               0                0            0                       0
 #> 5               0                0            0                       0
-#> 6              NA               NA           NA                      NA
+#> 6               0                0            0                       0
 #>   topic_financial_markets_and_institutions topic_gao_mission_and_operations
-#> 1                                       NA                               NA
-#> 2                                       NA                               NA
-#> 3                                       NA                               NA
-#> 4                                       NA                               NA
+#> 1                                        0                                0
+#> 2                                        0                                0
+#> 3                                        0                                0
+#> 4                                        0                                0
 #> 5                                        0                                0
-#> 6                                       NA                               NA
+#> 6                                        0                                0
 #>   topic_government_operations topic_health_care topic_homeland_security
-#> 1                          NA                NA                      NA
-#> 2                          NA                NA                      NA
-#> 3                          NA                NA                      NA
-#> 4                          NA                NA                      NA
+#> 1                           0                 0                       0
+#> 2                           0                 0                       0
+#> 3                           0                 0                       0
+#> 4                           0                 0                       0
 #> 5                           0                 0                       0
-#> 6                          NA                NA                      NA
+#> 6                           0                 0                       0
 #>   topic_housing topic_human_capital topic_information_management
-#> 1            NA                  NA                           NA
-#> 2            NA                  NA                           NA
-#> 3            NA                  NA                           NA
-#> 4            NA                  NA                           NA
+#> 1             0                   0                            0
+#> 2             0                   0                            0
+#> 3             0                   0                            0
+#> 4             0                   0                            0
 #> 5             0                   0                            0
-#> 6            NA                  NA                           NA
+#> 6             0                   0                            0
 #>   topic_information_security topic_information_technology
-#> 1                         NA                           NA
-#> 2                         NA                           NA
-#> 3                         NA                           NA
-#> 4                         NA                           NA
+#> 1                          0                            0
+#> 2                          0                            0
+#> 3                          0                            0
+#> 4                          0                            0
 #> 5                          0                            0
-#> 6                         NA                           NA
+#> 6                          0                            0
 #>   topic_international_affairs topic_justice_and_law_enforcement
-#> 1                          NA                                NA
-#> 2                          NA                                NA
-#> 3                          NA                                NA
-#> 4                          NA                                NA
+#> 1                           0                                 0
+#> 2                           0                                 0
+#> 3                           0                                 0
+#> 4                           0                                 0
 #> 5                           0                                 0
-#> 6                          NA                                NA
+#> 6                           0                                 0
 #>   topic_national_defense topic_natural_resources_and_environment
-#> 1                     NA                                      NA
-#> 2                     NA                                      NA
-#> 3                     NA                                      NA
-#> 4                     NA                                      NA
+#> 1                      0                                       0
+#> 2                      0                                       0
+#> 3                      0                                       0
+#> 4                      0                                       0
 #> 5                      0                                       0
-#> 6                     NA                                      NA
+#> 6                      0                                       0
 #>   topic_retirement_security topic_science_and_technology topic_space
-#> 1                        NA                           NA          NA
-#> 2                        NA                           NA          NA
-#> 3                        NA                           NA          NA
-#> 4                        NA                           NA          NA
+#> 1                         0                            0           0
+#> 2                         0                            0           0
+#> 3                         0                            0           0
+#> 4                         0                            0           0
 #> 5                         0                            0           0
-#> 6                        NA                           NA          NA
+#> 6                         0                            0           0
 #>   topic_tax_policy_and_administration topic_telecommunications
-#> 1                                  NA                       NA
-#> 2                                  NA                       NA
-#> 3                                  NA                       NA
-#> 4                                  NA                       NA
+#> 1                                   0                        0
+#> 2                                   0                        0
+#> 3                                   0                        0
+#> 4                                   0                        0
 #> 5                                   0                        0
-#> 6                                  NA                       NA
+#> 6                                   0                        0
 #>   topic_transportation topic_veterans topic_worker_and_family_assistance
-#> 1                   NA             NA                                 NA
-#> 2                   NA             NA                                 NA
-#> 3                   NA             NA                                 NA
-#> 4                   NA             NA                                 NA
+#> 1                    0              0                                  0
+#> 2                    0              0                                  0
+#> 3                    0              0                                  0
+#> 4                    0              0                                  0
 #> 5                    0              0                                  0
-#> 6                   NA             NA                                 NA
+#> 6                    0              0                                  0
 #>   agency_board_of_governors agency_centers_for_medicare_medicaid_services
-#> 1                        NA                                            NA
-#> 2                        NA                                            NA
-#> 3                        NA                                            NA
-#> 4                        NA                                            NA
+#> 1                         0                                             0
+#> 2                         0                                             0
+#> 3                         0                                             0
+#> 4                         0                                             0
 #> 5                         0                                             0
-#> 6                        NA                                            NA
+#> 6                         0                                             0
 #>   agency_department_of_agriculture agency_department_of_commerce
-#> 1                               NA                            NA
-#> 2                               NA                            NA
-#> 3                               NA                            NA
-#> 4                               NA                            NA
+#> 1                                0                             0
+#> 2                                0                             0
+#> 3                                0                             0
+#> 4                                0                             0
 #> 5                                0                             0
-#> 6                               NA                            NA
+#> 6                                0                             0
 #>   agency_department_of_defense agency_department_of_education
-#> 1                           NA                             NA
-#> 2                           NA                             NA
-#> 3                           NA                             NA
-#> 4                           NA                             NA
+#> 1                            0                              0
+#> 2                            0                              0
+#> 3                            0                              0
+#> 4                            0                              0
 #> 5                            0                              0
-#> 6                           NA                             NA
+#> 6                            0                              0
 #>   agency_department_of_energy agency_department_of_health_and_human_services
-#> 1                          NA                                             NA
-#> 2                          NA                                             NA
-#> 3                          NA                                             NA
-#> 4                          NA                                             NA
+#> 1                           0                                              0
+#> 2                           0                                              0
+#> 3                           0                                              0
+#> 4                           0                                              0
 #> 5                           0                                              0
-#> 6                          NA                                             NA
+#> 6                           0                                              0
 #>   agency_department_of_homeland_security
-#> 1                                     NA
-#> 2                                     NA
-#> 3                                     NA
-#> 4                                     NA
+#> 1                                      0
+#> 2                                      0
+#> 3                                      0
+#> 4                                      0
 #> 5                                      0
-#> 6                                     NA
+#> 6                                      0
 #>   agency_department_of_housing_and_urban_development
-#> 1                                                 NA
-#> 2                                                 NA
-#> 3                                                 NA
-#> 4                                                 NA
+#> 1                                                  0
+#> 2                                                  0
+#> 3                                                  0
+#> 4                                                  0
 #> 5                                                  0
-#> 6                                                 NA
+#> 6                                                  0
 #>   agency_department_of_justice agency_department_of_labor
-#> 1                           NA                         NA
-#> 2                           NA                         NA
-#> 3                           NA                         NA
-#> 4                           NA                         NA
+#> 1                            0                          0
+#> 2                            0                          0
+#> 3                            0                          0
+#> 4                            0                          0
 #> 5                            0                          0
-#> 6                           NA                         NA
+#> 6                            0                          0
 #>   agency_department_of_state agency_department_of_the_air_force
-#> 1                         NA                                 NA
-#> 2                         NA                                 NA
-#> 3                         NA                                 NA
-#> 4                         NA                                 NA
+#> 1                          0                                  0
+#> 2                          0                                  0
+#> 3                          0                                  0
+#> 4                          0                                  0
 #> 5                          0                                  0
-#> 6                         NA                                 NA
+#> 6                          0                                  0
 #>   agency_department_of_the_army agency_department_of_the_interior
-#> 1                            NA                                NA
-#> 2                            NA                                NA
-#> 3                            NA                                NA
-#> 4                            NA                                NA
+#> 1                             0                                 0
+#> 2                             0                                 0
+#> 3                             0                                 0
+#> 4                             0                                 0
 #> 5                             0                                 0
-#> 6                            NA                                NA
+#> 6                             0                                 0
 #>   agency_department_of_the_navy agency_department_of_the_treasury
-#> 1                            NA                                NA
-#> 2                            NA                                NA
-#> 3                            NA                                NA
-#> 4                            NA                                NA
+#> 1                             0                                 0
+#> 2                             0                                 0
+#> 3                             0                                 0
+#> 4                             0                                 0
 #> 5                             0                                 0
-#> 6                            NA                                NA
+#> 6                             0                                 0
 #>   agency_department_of_transportation agency_department_of_veterans_affairs
-#> 1                                  NA                                    NA
-#> 2                                  NA                                    NA
-#> 3                                  NA                                    NA
-#> 4                                  NA                                    NA
+#> 1                                   0                                     0
+#> 2                                   0                                     0
+#> 3                                   0                                     0
+#> 4                                   0                                     0
 #> 5                                   0                                     0
-#> 6                                  NA                                    NA
+#> 6                                   0                                     0
 #>   agency_directorate_of_border_and_transportation_security
-#> 1                                                       NA
-#> 2                                                       NA
-#> 3                                                       NA
-#> 4                                                       NA
+#> 1                                                        0
+#> 2                                                        0
+#> 3                                                        0
+#> 4                                                        0
 #> 5                                                        0
-#> 6                                                       NA
+#> 6                                                        0
 #>   agency_environmental_protection_agency agency_federal_aviation_administration
-#> 1                                     NA                                     NA
-#> 2                                     NA                                     NA
-#> 3                                     NA                                     NA
-#> 4                                     NA                                     NA
+#> 1                                      0                                      0
+#> 2                                      0                                      0
+#> 3                                      0                                      0
+#> 4                                      0                                      0
 #> 5                                      0                                      0
-#> 6                                     NA                                     NA
+#> 6                                      0                                      0
 #>   agency_federal_communications_commission
-#> 1                                       NA
-#> 2                                       NA
-#> 3                                       NA
-#> 4                                       NA
+#> 1                                        0
+#> 2                                        0
+#> 3                                        0
+#> 4                                        0
 #> 5                                        0
-#> 6                                       NA
+#> 6                                        0
 #>   agency_federal_deposit_insurance_corporation
-#> 1                                           NA
-#> 2                                           NA
-#> 3                                           NA
-#> 4                                           NA
+#> 1                                            0
+#> 2                                            0
+#> 3                                            0
+#> 4                                            0
 #> 5                                            0
-#> 6                                           NA
+#> 6                                            0
 #>   agency_federal_emergency_management_agency
-#> 1                                         NA
-#> 2                                         NA
-#> 3                                         NA
-#> 4                                         NA
+#> 1                                          0
+#> 2                                          0
+#> 3                                          0
+#> 4                                          0
 #> 5                                          0
-#> 6                                         NA
+#> 6                                          0
 #>   agency_federal_energy_regulatory_commission agency_federal_reserve_system
-#> 1                                          NA                            NA
-#> 2                                          NA                            NA
-#> 3                                          NA                            NA
-#> 4                                          NA                            NA
+#> 1                                           0                             0
+#> 2                                           0                             0
+#> 3                                           0                             0
+#> 4                                           0                             0
 #> 5                                           0                             0
-#> 6                                          NA                            NA
+#> 6                                           0                             0
 #>   agency_food_and_drug_administration agency_general_services_administration
-#> 1                                  NA                                     NA
-#> 2                                  NA                                     NA
-#> 3                                  NA                                     NA
-#> 4                                  NA                                     NA
+#> 1                                   0                                      0
+#> 2                                   0                                      0
+#> 3                                   0                                      0
+#> 4                                   0                                      0
 #> 5                                   0                                      0
-#> 6                                  NA                                     NA
+#> 6                                   0                                      0
 #>   agency_health_care_financing_administration agency_internal_revenue_service
-#> 1                                          NA                              NA
-#> 2                                          NA                              NA
-#> 3                                          NA                              NA
-#> 4                                          NA                              NA
+#> 1                                           0                               0
+#> 2                                           0                               0
+#> 3                                           0                               0
+#> 4                                           0                               0
 #> 5                                           0                               0
-#> 6                                          NA                              NA
+#> 6                                           0                               0
 #>   agency_national_aeronautics_and_space_administration
-#> 1                                                   NA
-#> 2                                                   NA
-#> 3                                                   NA
-#> 4                                                   NA
+#> 1                                                    0
+#> 2                                                    0
+#> 3                                                    0
+#> 4                                                    0
 #> 5                                                    0
-#> 6                                                   NA
+#> 6                                                    0
 #>   agency_national_nuclear_security_administration
-#> 1                                              NA
-#> 2                                              NA
-#> 3                                              NA
-#> 4                                              NA
+#> 1                                               0
+#> 2                                               0
+#> 3                                               0
+#> 4                                               0
 #> 5                                               0
-#> 6                                              NA
+#> 6                                               0
 #>   agency_national_science_foundation agency_nuclear_regulatory_commission
-#> 1                                 NA                                   NA
-#> 2                                 NA                                   NA
-#> 3                                 NA                                   NA
-#> 4                                 NA                                   NA
+#> 1                                  0                                    0
+#> 2                                  0                                    0
+#> 3                                  0                                    0
+#> 4                                  0                                    0
 #> 5                                  0                                    0
-#> 6                                 NA                                   NA
+#> 6                                  0                                    0
 #>   agency_office_of_federal_procurement_policy
-#> 1                                          NA
-#> 2                                          NA
-#> 3                                          NA
-#> 4                                          NA
+#> 1                                           0
+#> 2                                           0
+#> 3                                           0
+#> 4                                           0
 #> 5                                           0
-#> 6                                          NA
+#> 6                                           0
 #>   agency_office_of_management_and_budget agency_office_of_personnel_management
-#> 1                                     NA                                    NA
-#> 2                                     NA                                    NA
-#> 3                                     NA                                    NA
-#> 4                                     NA                                    NA
+#> 1                                      0                                     0
+#> 2                                      0                                     0
+#> 3                                      0                                     0
+#> 4                                      0                                     0
 #> 5                                      0                                     0
-#> 6                                     NA                                    NA
+#> 6                                      0                                     0
 #>   agency_office_of_the_comptroller_of_the_currency
-#> 1                                               NA
-#> 2                                               NA
-#> 3                                               NA
-#> 4                                               NA
+#> 1                                                0
+#> 2                                                0
+#> 3                                                0
+#> 4                                                0
 #> 5                                                0
-#> 6                                               NA
+#> 6                                                0
 #>   agency_resolution_trust_corporation agency_small_business_administration
-#> 1                                  NA                                   NA
-#> 2                                  NA                                   NA
-#> 3                                  NA                                   NA
-#> 4                                  NA                                   NA
+#> 1                                   0                                    0
+#> 2                                   0                                    0
+#> 3                                   0                                    0
+#> 4                                   0                                    0
 #> 5                                   0                                    0
-#> 6                                  NA                                   NA
+#> 6                                   0                                    0
 #>   agency_social_security_administration
-#> 1                                    NA
-#> 2                                    NA
-#> 3                                    NA
-#> 4                                    NA
+#> 1                                     0
+#> 2                                     0
+#> 3                                     0
+#> 4                                     0
 #> 5                                     0
-#> 6                                    NA
+#> 6                                     0
 #>   agency_transportation_security_administration
-#> 1                                            NA
-#> 2                                            NA
-#> 3                                            NA
-#> 4                                            NA
+#> 1                                             0
+#> 2                                             0
+#> 3                                             0
+#> 4                                             0
 #> 5                                             0
-#> 6                                            NA
+#> 6                                             0
 #>   agency_u_s_agency_for_international_development
-#> 1                                              NA
-#> 2                                              NA
-#> 3                                              NA
-#> 4                                              NA
+#> 1                                               0
+#> 2                                               0
+#> 3                                               0
+#> 4                                               0
 #> 5                                               0
-#> 6                                              NA
+#> 6                                               0
 #>   agency_united_states_coast_guard
-#> 1                               NA
-#> 2                               NA
-#> 3                               NA
-#> 4                               NA
+#> 1                                0
+#> 2                                0
+#> 3                                0
+#> 4                                0
 #> 5                                0
-#> 6                               NA
+#> 6                                0
 #>   agency_united_states_customs_and_border_protection
-#> 1                                                 NA
-#> 2                                                 NA
-#> 3                                                 NA
-#> 4                                                 NA
+#> 1                                                  0
+#> 2                                                  0
+#> 3                                                  0
+#> 4                                                  0
 #> 5                                                  0
-#> 6                                                 NA
+#> 6                                                  0
 #>   agency_united_states_postal_service
-#> 1                                  NA
-#> 2                                  NA
-#> 3                                  NA
-#> 4                                  NA
+#> 1                                   0
+#> 2                                   0
+#> 3                                   0
+#> 4                                   0
 #> 5                                   0
-#> 6                                  NA
+#> 6                                   0
 #>   agency_united_states_securities_and_exchange_commission
-#> 1                                                      NA
-#> 2                                                      NA
-#> 3                                                      NA
-#> 4                                                      NA
+#> 1                                                       0
+#> 2                                                       0
+#> 3                                                       0
+#> 4                                                       0
 #> 5                                                       0
-#> 6                                                      NA
+#> 6                                                       0
 #>   agency_veterans_administration agency_other
-#> 1                             NA           NA
-#> 2                             NA           NA
-#> 3                             NA           NA
-#> 4                             NA           NA
+#> 1                              0            0
+#> 2                              0            0
+#> 3                              0            0
+#> 4                              0            0
 #> 5                              0            0
-#> 6                             NA           NA
+#> 6                              0            0
 ```
