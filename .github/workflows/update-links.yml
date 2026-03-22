@@ -36,6 +36,9 @@ jobs:
         with:
           extra-packages: any::remotes, any::pdftools
 
+      - name: Reinstall local package (bypass dep cache)
+        run: Rscript -e "install.packages('.', repos = NULL, type = 'source')"
+
       - name: Update links and backfill metadata
         run: |
           library(gao)
