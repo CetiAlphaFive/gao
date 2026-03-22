@@ -69,7 +69,7 @@ jobs:
               Sys.sleep(1)
 
               ## Backfill page_count from PDF
-              pdf.url <- if (!is.null(meta) && !is.na(meta$pdf_url)) {
+              pdf.url <- if (!is.null(meta) && "pdf_url" %in% names(meta) && !is.na(meta$pdf_url)) {
                 meta$pdf_url
               } else {
                 paste0(sub("/products/", "/assets/", report.url), ".pdf")
@@ -121,7 +121,7 @@ jobs:
 
               # Page count if missing
               if (is.na(updated$page_count[i])) {
-                pdf.url <- if (!is.null(meta) && !is.na(meta$pdf_url)) {
+                pdf.url <- if (!is.null(meta) && "pdf_url" %in% names(meta) && !is.na(meta$pdf_url)) {
                   meta$pdf_url
                 } else {
                   paste0(sub("/products/", "/assets/", updated$url[i]), ".pdf")
