@@ -134,7 +134,7 @@
 #' @param page An xml_document of a single report page.
 #' @return A 1-row data.frame with columns: title, report_id, published,
 #'   released, summary, topics, subject_terms, has_recommendations,
-#'   n_recommendations, has_matters, n_matters, agencies_affected.
+#'   n_recommendations, has_matters, n_matters, agencies_affected, pdf_url.
 #' @importFrom rvest html_node html_nodes html_attr html_text
 #' @keywords internal
 #' @noRd
@@ -219,6 +219,9 @@
     n.matters <- 0L
   }
 
+  # PDF URL from download link on page
+  pdf.url <- .extract_pdf_url(page)
+
   data.frame(
     title = title, report_id = report.id, published = published,
     released = released, summary = summary, topics = topics,
@@ -228,8 +231,26 @@
     has_matters = has.matters,
     n_matters = as.integer(n.matters),
     agencies_affected = agencies.affected,
+    pdf_url = pdf.url,
     stringsAsFactors = FALSE
   )
+}
+
+#' Extract PDF URL from a GAO Report Page
+#'
+#' Finds the first non-highlights PDF link on the page. Used to get the real
+#' download URL for legacy reports where the constructed URL pattern fails.
+#'
+#' @param page An xml_document of a single report page.
+#' @return Character scalar: the PDF URL, or `NA_character_` if none found.
+#' @keywords internal
+#' @noRd
+.extract_pdf_url <- function(page) {
+  pdfs <- rvest::html_attr(rvest::html_nodes(page, "a[href$='.pdf']"), "href")
+  if (length(pdfs) == 0L) return(NA_character_)
+  pdfs <- unique(pdfs[!grepl("highlights", pdfs, ignore.case = TRUE)])
+  if (length(pdfs) == 0L) return(NA_character_)
+  pdfs[1L]
 }
 
 #' Compute Fiscal Year from Date Strings

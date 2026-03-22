@@ -50,6 +50,7 @@ jobs:
 
             for (i in new.idx) {
               report.url <- updated$url[i]
+              meta <- NULL
 
               ## Backfill metadata from individual report page
               tryCatch({
@@ -68,9 +69,11 @@ jobs:
               Sys.sleep(1)
 
               ## Backfill page_count from PDF
-              pdf.url <- paste0(
-                sub("/products/", "/assets/", report.url), ".pdf"
-              )
+              pdf.url <- if (!is.null(meta) && !is.na(meta$pdf_url)) {
+                meta$pdf_url
+              } else {
+                paste0(sub("/products/", "/assets/", report.url), ".pdf")
+              }
               pdf.path <- file.path(tmp.dir, basename(pdf.url))
               tryCatch({
                 gao:::download_pdfs(pdf.url, download_dir = tmp.dir, sleep_time = 1)
@@ -99,6 +102,7 @@ jobs:
           if (n.to.fill > 0) {
             message("Gap-filling ", n.to.fill, " of ", length(gap.idx), " reports")
             for (i in gap.idx[seq_len(n.to.fill)]) {
+              meta <- NULL
               tryCatch({
                 page <- gao:::.fetch_html(updated$url[i])
                 meta <- gao:::.scrape_report_metadata(page)
@@ -117,7 +121,11 @@ jobs:
 
               # Page count if missing
               if (is.na(updated$page_count[i])) {
-                pdf.url <- paste0(sub("/products/", "/assets/", updated$url[i]), ".pdf")
+                pdf.url <- if (!is.null(meta) && !is.na(meta$pdf_url)) {
+                  meta$pdf_url
+                } else {
+                  paste0(sub("/products/", "/assets/", updated$url[i]), ".pdf")
+                }
                 pdf.path <- file.path(tmp.dir, basename(pdf.url))
                 tryCatch({
                   gao:::download_pdfs(pdf.url, download_dir = tmp.dir, sleep_time = 1)

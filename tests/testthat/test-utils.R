@@ -135,6 +135,41 @@ test_that(".infer_fiscal_year() returns NA when both sources are NA", {
   expect_true(is.na(result))
 })
 
+# --- .extract_pdf_url() ---
+
+test_that(".extract_pdf_url() extracts non-highlights PDF link", {
+  html <- rvest::read_html('
+    <html><body>
+      <a href="/assets/gao-24-106335-highlights.pdf">Highlights</a>
+      <a href="/assets/gao-24-106335.pdf">Full Report</a>
+    </body></html>
+  ')
+  expect_equal(.extract_pdf_url(html), "/assets/gao-24-106335.pdf")
+})
+
+test_that(".extract_pdf_url() works with legacy PDF paths", {
+  html <- rvest::read_html('
+    <html><body>
+      <a href="/assets/b-163058-25.pdf">Full Report</a>
+    </body></html>
+  ')
+  expect_equal(.extract_pdf_url(html), "/assets/b-163058-25.pdf")
+})
+
+test_that(".extract_pdf_url() returns NA when no PDFs on page", {
+  html <- rvest::read_html("<html><body><a href='/about'>About</a></body></html>")
+  expect_true(is.na(.extract_pdf_url(html)))
+})
+
+test_that(".extract_pdf_url() returns NA when only highlights PDF exists", {
+  html <- rvest::read_html('
+    <html><body>
+      <a href="/assets/gao-24-100-highlights.pdf">Highlights</a>
+    </body></html>
+  ')
+  expect_true(is.na(.extract_pdf_url(html)))
+})
+
 # --- .scrape_report_metadata() ---
 
 test_that(".scrape_report_metadata() extracts metadata from modern page", {
@@ -158,6 +193,7 @@ test_that(".scrape_report_metadata() extracts metadata from modern page", {
         <div class="field-content"><span>Military spending</span></div>
         <div class="field-content"><span>Appropriations</span></div>
       </div>
+      <a href="/assets/gao-24-106335.pdf">Full Report PDF</a>
     </body>
     </html>
   ')
@@ -175,6 +211,7 @@ test_that(".scrape_report_metadata() extracts metadata from modern page", {
   expect_equal(result$n_recommendations, 0L)
   expect_false(result$has_matters)
   expect_equal(result$n_matters, 0L)
+  expect_equal(result$pdf_url, "/assets/gao-24-106335.pdf")
 })
 
 test_that(".scrape_report_metadata() handles legacy page without topics", {
@@ -202,6 +239,7 @@ test_that(".scrape_report_metadata() handles legacy page without topics", {
   expect_true(is.na(result$subject_terms))
   expect_false(result$has_recommendations)
   expect_equal(result$n_recommendations, 0L)
+  expect_true(is.na(result$pdf_url))
 })
 
 test_that(".scrape_report_metadata() returns NA/FALSE for missing fields", {
@@ -220,6 +258,7 @@ test_that(".scrape_report_metadata() returns NA/FALSE for missing fields", {
   expect_false(result$has_matters)
   expect_equal(result$n_matters, 0L)
   expect_true(is.na(result$agencies_affected))
+  expect_true(is.na(result$pdf_url))
 })
 
 # --- Recommendation & matter extraction ---
@@ -350,4 +389,5 @@ test_that(".scrape_report_metadata() returns new columns in modern page test", {
   expect_true("has_matters" %in% names(result))
   expect_true("n_matters" %in% names(result))
   expect_true("agencies_affected" %in% names(result))
+  expect_true("pdf_url" %in% names(result))
 })
