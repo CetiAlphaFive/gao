@@ -222,6 +222,11 @@
   # PDF URL from download link on page
   pdf.url <- .extract_pdf_url(page)
 
+  # Requester info from highlights subtitle + report ID
+  hl.info <- .parse_highlights_subtitle(page)
+  id.type <- .classify_report_type(report.id)
+  req.type <- if (!is.na(id.type)) id.type else hl.info$requester_type
+
   data.frame(
     title = title, report_id = report.id, published = published,
     released = released, summary = summary, topics = topics,
@@ -231,9 +236,228 @@
     has_matters = has.matters,
     n_matters = as.integer(n.matters),
     agencies_affected = agencies.affected,
+    requester_type = req.type,
+    requester_committees = hl.info$requester_committees,
+    requester_members = hl.info$requester_members,
     pdf_url = pdf.url,
     stringsAsFactors = FALSE
   )
+}
+
+#' Extract Requester Info from All Sources
+#'
+#' Orchestrates requester parsing by merging report ID classification,
+#' highlights subtitle, and (optionally) the addressee block from the
+#' report letter text. Used by the backfill script when both product page
+#' HTML and report text are available.
+#'
+#' @param page An xml_document of a GAO product page (or `NULL`).
+#' @param report_id Character scalar. The report ID.
+#' @param report_text Character scalar. Full text from the report PDF or
+#'   HTML (optional; `NULL` to skip addressee block parsing).
+#' @return A list with elements `requester_type`, `requester_committees`,
+#'   `requester_members`.
+#' @keywords internal
+#' @noRd
+.extract_requester_info <- function(page, report_id, report_text = NULL) {
+  # Source 1: ID-based classification (highest priority for type)
+  id.type <- .classify_report_type(report_id)
+
+  # Source 2: Highlights subtitle (from product page)
+  if (!is.null(page)) {
+    hl <- .parse_highlights_subtitle(page)
+  } else {
+    hl <- list(requester_type = NA_character_,
+               requester_committees = NA_character_,
+               requester_members = NA_character_)
+  }
+
+  # Source 3: Addressee block (from report body text)
+  if (!is.null(report_text) && !is.na(report_text) && nzchar(report_text)) {
+    ab <- .parse_addressee_block(report_text)
+  } else {
+    ab <- list(requester_type = NA_character_,
+               requester_committees = NA_character_,
+               requester_members = NA_character_)
+  }
+
+  # Merge with priority: ID type > addressee type > highlights type
+  req.type <- id.type
+  if (is.na(req.type)) req.type <- ab$requester_type
+  if (is.na(req.type)) req.type <- hl$requester_type
+
+  # Committees: addressee block > highlights (richer data)
+  req.committees <- ab$requester_committees
+  if (is.na(req.committees)) req.committees <- hl$requester_committees
+
+  # Members: addressee block only (highlights rarely has full names)
+  req.members <- ab$requester_members
+  if (is.na(req.members)) req.members <- hl$requester_members
+
+  list(requester_type = req.type,
+       requester_committees = req.committees,
+       requester_members = req.members)
+}
+
+#' Classify Report Type from Report ID
+#'
+#' Determines `requester_type` from the report ID format alone. Testimony,
+#' legal decisions, and correspondence have distinctive ID patterns.
+#'
+#' @param report_id Character vector of report IDs (e.g., `"GAO-24-106335"`,
+#'   `"B-100063"`, `"T-AFMD-87-1"`).
+#' @return Character vector: `"testimony"`, `"legal_decision"`,
+#'   `"correspondence"`, or `NA_character_`.
+#' @keywords internal
+#' @noRd
+.classify_report_type <- function(report_id) {
+  if (length(report_id) == 0L) return(character(0))
+  id <- as.character(report_id)
+  type <- rep(NA_character_, length(id))
+  # Testimony: T- prefix (legacy, e.g. T-AFMD-87-1) or ends in T (modern, e.g. GAO-24-107436T)
+  type[grepl("^T-", id) | grepl("^GAO-\\d{2}-\\d+T$", id)] <- "testimony"
+  # Legal decision: B- prefix (e.g. B-422122)
+  type[is.na(type) & grepl("^B-", id)] <- "legal_decision"
+  # Correspondence: ends in digit(s)+R (excludes BR, TR, PR since those have a letter before R)
+  type[is.na(type) & grepl("\\d+R$", id)] <- "correspondence"
+  type
+}
+
+#' Parse Addressee Text from Highlights Subtitle
+#'
+#' Parses the addressee portion of a highlights subtitle string (everything
+#' after "a report to"). Returns requester type, committee names, and member
+#' names.
+#'
+#' @param text Character scalar. The addressee portion, e.g.
+#'   `"the Ranking Member, Committee on Homeland Security and Governmental
+#'   Affairs, U.S. Senate"` or `"congressional requesters"`.
+#' @return A list with elements `requester_type`, `requester_committees`,
+#'   `requester_members` (each `NA_character_` if not identifiable).
+#' @keywords internal
+#' @noRd
+.parse_subtitle_addressee <- function(text) {
+  if (is.na(text) || !nzchar(trimws(text))) {
+    return(list(requester_type = NA_character_,
+                requester_committees = NA_character_,
+                requester_members = NA_character_))
+  }
+
+  text <- trimws(text)
+
+  # "congressional addressees" → statutory mandate (always mandated by law)
+  if (tolower(text) == "congressional addressees") {
+    return(list(requester_type = "statutory_mandate",
+                requester_committees = NA_character_,
+                requester_members = NA_character_))
+  }
+
+  # "congressional requesters" → congressional request but no specific committee
+  if (tolower(text) == "congressional requesters") {
+    return(list(requester_type = "congressional_request",
+                requester_committees = NA_character_,
+                requester_members = NA_character_))
+  }
+
+  # "congressional committees" → could be either; default to congressional_request.
+  # The backfill script checks "Why GAO Did This Study" for mandate language to override.
+  if (tolower(text) == "congressional committees") {
+    return(list(requester_type = "congressional_request",
+                requester_committees = NA_character_,
+                requester_members = NA_character_))
+  }
+
+  # Specific addressee: parse committee and role
+  # Patterns like:
+  #   "the Ranking Member, Committee on X, U.S. Senate"
+  #   "the Committee on X, House of Representatives"
+  #   "the Chairman, Committee on X, U.S. Senate"
+
+  # Normalize chamber names for extraction
+  chamber.map <- c(
+    "U.S. Senate" = "Senate",
+    "United States Senate" = "Senate",
+    "House of Representatives" = "House"
+  )
+
+  # Extract committee names with their chambers
+  committees <- character(0)
+  members <- character(0)
+
+  # Try to extract committee + chamber pairs
+  # Pattern: "Committee on [Name], [Chamber]" or "Subcommittee on [Name], [Chamber]"
+  committee.pattern <- "((?:Committee|Subcommittee) on [^,]+),\\s*(U\\.S\\. Senate|United States Senate|House of Representatives)"
+  m <- gregexpr(committee.pattern, text, perl = TRUE)
+  matches <- regmatches(text, m)[[1]]
+
+  if (length(matches) > 0) {
+    for (match in matches) {
+      parts <- regmatches(match, regexec(committee.pattern, match, perl = TRUE))[[1]]
+      committee.name <- trimws(parts[2])
+      chamber <- chamber.map[parts[3]]
+      committees <- c(committees, paste0(committee.name, " (", chamber, ")"))
+    }
+  }
+
+  # Extract role (Chairman, Ranking Member, etc.) if present
+  role.pattern <- "the\\s+(Chairman|Chairwoman|Chair|Ranking Member|Vice Chair(?:man|woman)?)"
+  role.match <- regmatches(text, regexec(role.pattern, text, perl = TRUE))[[1]]
+  if (length(role.match) > 1) {
+    members <- role.match[2]  # Just the role, no name in subtitle
+  }
+
+  req.type <- "congressional_request"
+  req.committees <- if (length(committees) > 0) paste(committees, collapse = "; ") else NA_character_
+  req.members <- if (length(members) > 0) paste(members, collapse = "; ") else NA_character_
+
+
+  list(requester_type = req.type,
+       requester_committees = req.committees,
+       requester_members = req.members)
+}
+
+#' Parse Highlights Subtitle from a GAO Product Page
+#'
+#' Extracts the "Highlights of GAO-XX-XXXXXX, a report to ..." subtitle from
+#' the product page HTML and parses the addressee information.
+#'
+#' @param page An xml_document of a single GAO product page.
+#' @return A list with elements `requester_type`, `requester_committees`,
+#'   `requester_members` (each `NA_character_` if not found).
+#' @keywords internal
+#' @noRd
+.parse_highlights_subtitle <- function(page) {
+  na.result <- list(requester_type = NA_character_,
+                    requester_committees = NA_character_,
+                    requester_members = NA_character_)
+
+  # The highlights content lives in the field__item div inside the highlights block
+  hl.node <- rvest::html_node(page, "div.js-endpoint-highlights .field__item")
+  if (is.na(hl.node)) {
+    # Fallback selector
+    hl.node <- rvest::html_node(page, ".field--name-product-highlights-custom .field__item")
+  }
+  if (is.na(hl.node)) return(na.result)
+
+  hl.text <- rvest::html_text(hl.node)
+  if (is.na(hl.text) || !nzchar(trimws(hl.text))) return(na.result)
+
+  # Collapse whitespace (newlines, tabs, multiple spaces) into single spaces
+  # so the regex can match across line breaks in the HTML text
+  hl.text <- gsub("\\s+", " ", hl.text)
+
+  # Find the subtitle: "Highlights of [ID], a [report/letter/testimony] to [addressee]"
+  # The subtitle appears before "What GAO Found"
+  subtitle.pattern <- "Highlights\\s+of\\s+[A-Z0-9][A-Z0-9-]+,\\s*a\\s+(?:report|letter|testimony)\\s+to\\s+(.+?)(?=\\s*What GAO|\\s*$)"
+  m <- regmatches(hl.text, regexec(subtitle.pattern, hl.text, perl = TRUE))[[1]]
+
+  if (length(m) < 2) return(na.result)
+
+  addressee.text <- trimws(m[2])
+  # Clean trailing period or whitespace
+  addressee.text <- sub("\\.$", "", addressee.text)
+
+  .parse_subtitle_addressee(addressee.text)
 }
 
 #' Extract PDF URL from a GAO Report Page

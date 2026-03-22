@@ -212,6 +212,9 @@ test_that(".scrape_report_metadata() extracts metadata from modern page", {
   expect_false(result$has_matters)
   expect_equal(result$n_matters, 0L)
   expect_equal(result$pdf_url, "/assets/gao-24-106335.pdf")
+  expect_true("requester_type" %in% names(result))
+  expect_true("requester_committees" %in% names(result))
+  expect_true("requester_members" %in% names(result))
 })
 
 test_that(".scrape_report_metadata() handles legacy page without topics", {
@@ -258,6 +261,9 @@ test_that(".scrape_report_metadata() returns NA/FALSE for missing fields", {
   expect_false(result$has_matters)
   expect_equal(result$n_matters, 0L)
   expect_true(is.na(result$agencies_affected))
+  expect_true(is.na(result$requester_type))
+  expect_true(is.na(result$requester_committees))
+  expect_true(is.na(result$requester_members))
   expect_true(is.na(result$pdf_url))
 })
 
@@ -389,5 +395,8 @@ test_that(".scrape_report_metadata() returns new columns in modern page test", {
   expect_true("has_matters" %in% names(result))
   expect_true("n_matters" %in% names(result))
   expect_true("agencies_affected" %in% names(result))
+  expect_true("requester_type" %in% names(result))
+  expect_true("requester_committees" %in% names(result))
+  expect_true("requester_members" %in% names(result))
   expect_true("pdf_url" %in% names(result))
 })

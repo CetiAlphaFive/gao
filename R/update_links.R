@@ -99,11 +99,17 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
 #'   without a matching PDF in the bundled archive), topics,
 #'   subject_terms, has_recommendations (logical), n_recommendations
 #'   (integer), has_matters (logical), n_matters (integer),
-#'   agencies_affected (character, semicolon-separated), plus 82 integer
-#'   indicator columns: 31 `topic_*` columns (one per topic), 50
-#'   `agency_*` columns (one per top-50 agency), and `agency_other`
-#'   (1 if any non-top-50 agency appears). Indicator columns are
-#'   `NA_integer_` where the source field is missing.
+#'   agencies_affected (character, semicolon-separated),
+#'   requester_type (character: `"congressional_request"`,
+#'   `"statutory_mandate"`, `"cg_initiated"`, `"testimony"`,
+#'   `"correspondence"`, or `"legal_decision"`),
+#'   requester_committees (character, semicolon-separated committee names
+#'   with chamber), requester_members (character, semicolon-separated
+#'   member names with roles), plus 82 integer indicator columns:
+#'   31 `topic_*` columns (one per topic), 50 `agency_*` columns
+#'   (one per top-50 agency), and `agency_other` (1 if any non-top-50
+#'   agency appears). Indicator columns are `NA_integer_` where the
+#'   source field is missing.
 #' @export
 #' @examples
 #' reports <- gao_links()
@@ -133,6 +139,9 @@ gao_links <- function() {
       has_recommendations = logical(0), n_recommendations = integer(0),
       has_matters = logical(0), n_matters = integer(0),
       agencies_affected = character(0),
+      requester_type = character(0),
+      requester_committees = character(0),
+      requester_members = character(0),
       stringsAsFactors = FALSE
     )
     for (col in .indicator_colnames()) empty[[col]] <- integer(0)
@@ -140,6 +149,12 @@ gao_links <- function() {
   }
 
   d <- readRDS(path)
+  # Add requester columns on the fly if not already present
+  if (!"requester_type" %in% names(d)) {
+    d$requester_type <- NA_character_
+    d$requester_committees <- NA_character_
+    d$requester_members <- NA_character_
+  }
   # Expand indicator columns on the fly if not already present
   if (!"agency_other" %in% names(d)) {
     d <- .expand_indicators(d)

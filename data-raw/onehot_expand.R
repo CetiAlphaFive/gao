@@ -32,7 +32,8 @@ message("Rows with any agency indicator: ", n.with.agency)
 # Save core columns only (indicators computed on the fly by gao_links())
 core.cols <- c("url", "title", "report_id", "published", "released", "summary",
                "page_count", "topics", "subject_terms", "has_recommendations",
-               "n_recommendations", "has_matters", "n_matters", "agencies_affected")
+               "n_recommendations", "has_matters", "n_matters", "agencies_affected",
+               "requester_type", "requester_committees", "requester_members")
 d <- d[, intersect(core.cols, names(d)), drop = FALSE]
 saveRDS(d, rds.path, compress = "xz")
 message("\nSaved ", ncol(d), " core columns to ", rds.path,
