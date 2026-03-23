@@ -68,7 +68,7 @@ head(reports)
 #> 5        179                                    FALSE                 0
 #> 6        315                                    FALSE                 0
 #>   has_matters n_matters agencies_affected requester_type requester_committees
-#> 1       FALSE         0                             <NA>                 <NA>
+#> 1       FALSE         0                     cg_initiated                 <NA>
 #> 2       FALSE         0                             <NA>                 <NA>
 #> 3       FALSE         0                             <NA>                 <NA>
 #> 4       FALSE         0                             <NA>                 <NA>
