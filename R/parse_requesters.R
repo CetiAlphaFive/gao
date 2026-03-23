@@ -36,8 +36,9 @@
   # Normalize multiple blank lines to single
   text <- gsub("\n{3,}", "\n\n", text)
 
-  # Only search the first ~5000 characters (addressee block is always at the top)
-  search.text <- substr(text, 1, min(nchar(text), 5000L))
+  # Only search the first ~8000 characters (addressee block is at the top,
+  # but legacy PDFs may have long headers/metadata before it)
+  search.text <- substr(text, 1, min(nchar(text), 8000L))
 
   # Pattern for addressee with committee role:
   # The Honorable [Name]
@@ -48,7 +49,7 @@
     "The Honorable\\s+([^\n]+?)\\s*\n\\s*",
     "(Chairman|Chairwoman|Chair|Ranking Member|Vice Chair(?:man|woman)?)\\s*\n\\s*",
     "((?:Committee|Subcommittee) on [^\n]+?)\\s*\n\\s*",
-    "(United States Senate|House of Representatives)"
+    "(United States Senate|U\\.?\\s?S\\.? Senate|House of Representatives)"
   )
 
   role.matches <- gregexpr(role.pattern, search.text, perl = TRUE)
@@ -57,10 +58,11 @@
   committees <- character(0)
   members <- character(0)
 
-  chamber.map <- c(
-    "United States Senate" = "Senate",
-    "House of Representatives" = "House"
-  )
+  map.chamber <- function(x) {
+    x <- trimws(x)
+    ifelse(grepl("Senate", x, ignore.case = TRUE), "Senate",
+           ifelse(grepl("House", x, ignore.case = TRUE), "House", x))
+  }
 
   if (length(role.all) > 0) {
     for (match.str in role.all) {
@@ -68,7 +70,7 @@
       name <- trimws(parts[2])
       role <- trimws(parts[3])
       committee <- trimws(parts[4])
-      chamber <- chamber.map[trimws(parts[5])]
+      chamber <- map.chamber(parts[5])
 
       committees <- c(committees, paste0(committee, " (", chamber, ")"))
       members <- c(members, paste0(name, ", ", role))
@@ -85,7 +87,7 @@
     "((?:The Honorable\\s+[^\n]+\\s*\n\\s*",
     "(?:Chairman|Chairwoman|Chair|Ranking Member|Vice Chair(?:man|woman)?)\\s*\n\\s*)+)",
     "((?:Committee|Subcommittee) on [^\n]+?)\\s*\n\\s*",
-    "(United States Senate|House of Representatives)"
+    "(United States Senate|U\\.?\\s?S\\.? Senate|House of Representatives)"
   )
 
   group.matches <- gregexpr(group.pattern, search.text, perl = TRUE)
@@ -96,7 +98,7 @@
       parts <- regmatches(match.str, regexec(group.pattern, match.str, perl = TRUE))[[1]]
       members.block <- parts[2]
       committee <- trimws(parts[3])
-      chamber <- chamber.map[trimws(parts[4])]
+      chamber <- map.chamber(parts[4])
 
       committees <- c(committees, paste0(committee, " (", chamber, ")"))
 
@@ -116,7 +118,7 @@
   # [Chamber]
   indiv.pattern <- paste0(
     "The Honorable\\s+([^\n]+?)\\s*\n\\s*",
-    "(United States Senate|House of Representatives)"
+    "(United States Senate|U\\.?\\s?S\\.? Senate|House of Representatives)"
   )
 
   indiv.matches <- gregexpr(indiv.pattern, search.text, perl = TRUE)
@@ -132,7 +134,7 @@
       if (already) next
       parts <- regmatches(match.str, regexec(indiv.pattern, match.str, perl = TRUE))[[1]]
       name <- trimws(parts[2])
-      chamber <- chamber.map[trimws(parts[3])]
+      chamber <- map.chamber(parts[3])
       members <- c(members, paste0(name, " (", chamber, ")"))
     }
   }
@@ -141,12 +143,29 @@
   committees <- unique(committees)
   members <- unique(members)
 
-  # Check for Comptroller General initiation if no addressees found
+  # If no structured addressees found, check text signals
   if (length(committees) == 0 && length(members) == 0) {
+    # Congressional Requesters (generic, no specific committee)
+    if (grepl("Congressional Requesters", search.text, ignore.case = TRUE)) {
+      return(list(requester_type = "congressional_request",
+                  requester_committees = NA_character_,
+                  requester_members = NA_character_))
+    }
+
+    # Report "To The Congress" = CG-initiated (GAO convention)
+    if (grepl("Report\\s+To\\s+The\\s+Congress", search.text, ignore.case = TRUE, perl = TRUE)) {
+      return(list(requester_type = "cg_initiated",
+                  requester_committees = NA_character_,
+                  requester_members = NA_character_))
+    }
+
+    # Comptroller General initiation
     cg.patterns <- c(
       "under the Comptroller General",
+      "BY THE.{0,5}COMPTROLLER GENERAL",
       "Comptroller General.{0,20}authority",
-      "Comptroller General.{0,20}initiated"
+      "Comptroller General.{0,20}initiated",
+      "Comptroller General of the United States"
     )
     for (pat in cg.patterns) {
       if (grepl(pat, search.text, ignore.case = TRUE, perl = TRUE)) {
@@ -155,6 +174,15 @@
                     requester_members = NA_character_))
       }
     }
+
+    # Testimony fallback (if ID-based classification missed it)
+    if (grepl("(?:Testimony|Statement)\\s+(?:Before|of)", search.text,
+              ignore.case = TRUE, perl = TRUE)) {
+      return(list(requester_type = "testimony",
+                  requester_committees = NA_character_,
+                  requester_members = NA_character_))
+    }
+
     return(na.result)
   }
 
@@ -187,17 +215,35 @@
   # Collapse whitespace so the regex works across line breaks
   clean <- gsub("\\s+", " ", text)
 
-  # Match "Report to [addressee]" or "Letter to [addressee]" followed by a
+  # Match "Report/Letter to [addressee]" terminated by date, report ID,
+  # or uppercase title words common in legacy GAO PDFs
+  terminators <- paste0(
+    "(?:",
+    "January|February|March|April|May|June|July|August|September|",
+    "October|November|December|",
+    "\\d{4}|GAO-|GAO/|",
+    "OF THE UNITED STATES|",
+    "[A-Z][A-Z]+\\s+[A-Z][A-Z]+\\s+[A-Z][A-Z]+",  # 3+ uppercase words (title)
+    ")"
+  )
+  pattern <- paste0(
+    "(?:Report|Letter)\\s+[Tt]o\\s+(?:[Tt]he\\s+)?(.+?)\\s+", terminators
+  )
+  m <- regmatches(clean, regexec(pattern, clean, perl = TRUE))[[1]]
 
-  # date (month name or 4-digit year) or report ID (GAO-XX-...)
-  m <- regmatches(clean, regexec(
-    "(?:Report|Letter)\\s+to\\s+(?:the\\s+)?(.+?)\\s+(?:January|February|March|April|May|June|July|August|September|October|November|December|\\d{4}|GAO-)",
-    clean, perl = TRUE))[[1]]
+  if (length(m) >= 2) {
+    addressee <- trimws(m[2])
+    # "Congress" alone (no specific committee) = CG-initiated
+    if (grepl("^Congress$", addressee, ignore.case = TRUE)) {
+      return(list(requester_type = "cg_initiated",
+                  requester_committees = NA_character_,
+                  requester_members = NA_character_))
+    }
+    result <- .parse_subtitle_addressee(addressee)
+    if (!is.na(result$requester_type)) return(result)
+  }
 
-  if (length(m) < 2) return(na.result)
-
-  addressee <- trimws(m[2])
-  .parse_subtitle_addressee(addressee)
+  na.result
 }
 
 #' Parse Requester Info from GAO HTML Report
