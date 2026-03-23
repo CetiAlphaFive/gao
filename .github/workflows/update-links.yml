@@ -47,6 +47,13 @@ jobs:
           n.new <- nrow(updated) - nrow(known)
           tmp.dir <- tempdir()
 
+          # Initialize requester columns if missing
+          if (!"requester_type" %in% names(updated)) {
+            updated$requester_type <- NA_character_
+            updated$requester_committees <- NA_character_
+            updated$requester_members <- NA_character_
+          }
+
           # ── Phase 1: Process new reports ──
           if (n.new > 0) {
             new.idx <- which(!updated$url %in% known$url)
@@ -66,6 +73,9 @@ jobs:
                 updated$has_matters[i]         <- meta$has_matters
                 updated$n_matters[i]           <- meta$n_matters
                 updated$agencies_affected[i]   <- if (is.na(meta$agencies_affected)) "" else meta$agencies_affected
+                updated$requester_type[i]       <- meta$requester_type
+                updated$requester_committees[i] <- meta$requester_committees
+                updated$requester_members[i]    <- meta$requester_members
               }, error = function(e) {
                 message("metadata failed for ", report.url, ": ", e$message)
               })
@@ -95,7 +105,7 @@ jobs:
 
           # ── Phase 2: Gap-fill existing reports with missing metadata ──
           BATCH_SIZE <- 5000L
-          gap.idx <- which(is.na(updated$topics))
+          gap.idx <- which(is.na(updated$topics) | is.na(updated$requester_type))
           if (n.new > 0) gap.idx <- setdiff(gap.idx, new.idx)
           # Prioritize recent reports first
           gap.idx <- gap.idx[order(updated$published[gap.idx], decreasing = TRUE)]
@@ -116,6 +126,9 @@ jobs:
                 updated$has_matters[i]         <- meta$has_matters
                 updated$n_matters[i]           <- meta$n_matters
                 updated$agencies_affected[i]   <- if (is.na(meta$agencies_affected)) "" else meta$agencies_affected
+                updated$requester_type[i]       <- meta$requester_type
+                updated$requester_committees[i] <- meta$requester_committees
+                updated$requester_members[i]    <- meta$requester_members
                 n.filled <- n.filled + 1L
               }, error = function(e) {
                 message("gap-fill failed: ", updated$url[i], ": ", e$message)
@@ -149,7 +162,9 @@ jobs:
             core.cols <- c("url", "title", "report_id", "published", "released",
                            "summary", "page_count", "topics", "subject_terms",
                            "has_recommendations", "n_recommendations",
-                           "has_matters", "n_matters", "agencies_affected")
+                           "has_matters", "n_matters", "agencies_affected",
+                           "requester_type", "requester_committees",
+                           "requester_members")
             updated <- updated[, intersect(core.cols, names(updated)), drop = FALSE]
             saveRDS(updated, "inst/extdata/gao_links.rds", compress = "xz")
           }

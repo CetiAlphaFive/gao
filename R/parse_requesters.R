@@ -165,6 +165,41 @@
   )
 }
 
+#' Parse Cover-Page Subtitle from PDF Text
+#'
+#' Extracts the "Report to..." or "Letter to..." subtitle from the cover
+#' page of a GAO report PDF and parses the addressee using
+#' `.parse_subtitle_addressee()`. Complements `.parse_addressee_block()`
+#' which looks for "The Honorable" patterns in the letter body.
+#'
+#' @param text Character scalar. First 1-2 pages of PDF text.
+#' @return A list with elements `requester_type`, `requester_committees`,
+#'   `requester_members`.
+#' @keywords internal
+#' @noRd
+.parse_pdf_cover_subtitle <- function(text) {
+  na.result <- list(requester_type = NA_character_,
+                    requester_committees = NA_character_,
+                    requester_members = NA_character_)
+
+  if (is.null(text) || is.na(text) || !nzchar(text)) return(na.result)
+
+  # Collapse whitespace so the regex works across line breaks
+  clean <- gsub("\\s+", " ", text)
+
+  # Match "Report to [addressee]" or "Letter to [addressee]" followed by a
+
+  # date (month name or 4-digit year) or report ID (GAO-XX-...)
+  m <- regmatches(clean, regexec(
+    "(?:Report|Letter)\\s+to\\s+(?:the\\s+)?(.+?)\\s+(?:January|February|March|April|May|June|July|August|September|October|November|December|\\d{4}|GAO-)",
+    clean, perl = TRUE))[[1]]
+
+  if (length(m) < 2) return(na.result)
+
+  addressee <- trimws(m[2])
+  .parse_subtitle_addressee(addressee)
+}
+
 #' Parse Requester Info from GAO HTML Report
 #'
 #' Extracts the "H-Requesters" subtitle and addressee block from the

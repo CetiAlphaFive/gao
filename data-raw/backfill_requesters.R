@@ -1,20 +1,19 @@
 # data-raw/backfill_requesters.R
-# One-time backfill of requester columns from report HTMLs
+# One-time backfill of requester columns from local cache
 #
 # Adds: requester_type, requester_committees, requester_members
 #
 # Data sources (in priority order):
 #   1. Report ID format (testimony, legal_decision, correspondence) — no I/O
-#   2. HTML reports from files.gao.gov — subtitle + addressee block + mandate check
+#   2. Product page HTMLs (gao.gov/products/) — highlights subtitle parsing
 #   3. Report PDFs (fallback) — addressee block from PDF text
 #
 # Run phases independently — each is resumable/idempotent.
 #
 # ── Config ────────────────────────────────────────────────────────────────────
-# Set these paths before running:
 
-report.html.dir  <- NULL   # path to HTML reports from files.gao.gov/reports/[ID]/
-report.pdf.dir   <- NULL   # path to downloaded report PDFs (fallback)
+page.html.dir   <- "/run/media/jack/Storage/gao_reports/gao_page_archive_html"
+report.pdf.dir  <- "/run/media/jack/Storage/gao_reports/gao_report_archive_pdf"
 
 # ── Phase 0: Setup ───────────────────────────────────────────────────────────
 
@@ -42,31 +41,30 @@ message("  correspondence: ", sum(id.types == "correspondence", na.rm = TRUE))
 # ID classification takes priority — overwrite any existing value
 current$requester_type[!is.na(id.types)] <- id.types[!is.na(id.types)]
 
-# ── Phase 2: Parse HTML reports (subtitle + addressee + mandate check) ───────
+# ── Phase 2: Parse product page HTMLs (highlights subtitle) ──────────────────
 
-message("\n=== Phase 2: HTML report parsing ===")
+message("\n=== Phase 2: Product page HTML parsing ===")
 
-if (is.null(report.html.dir) || !dir.exists(report.html.dir)) {
-  message("HTML report directory not set or not found: ", report.html.dir)
-  message("Skipping Phase 2. Set report.html.dir to the path containing")
-  message("  HTML reports from files.gao.gov/reports/[ID]/index.html")
+if (is.null(page.html.dir) || !dir.exists(page.html.dir)) {
+  message("Product page HTML directory not set or not found: ", page.html.dir)
+  message("Skipping Phase 2.")
 } else {
-  html.files <- list.files(report.html.dir, pattern = "\\.html$", full.names = TRUE)
+  html.files <- list.files(page.html.dir, pattern = "\\.html$", full.names = TRUE)
   html.files <- html.files[file.size(html.files) >= 200]
-  message("HTML report files to parse: ", length(html.files))
+  message("Product page HTML files to parse: ", length(html.files))
 
-  rh.parsed <- vector("list", length(html.files))
+  hl.parsed <- vector("list", length(html.files))
 
   for (i in seq_along(html.files)) {
-    rh.parsed[[i]] <- tryCatch({
+    hl.parsed[[i]] <- tryCatch({
       page <- rvest::read_html(html.files[i])
-      info <- .parse_report_html(page)
+      info <- .parse_highlights_subtitle(page)
       slug <- sub("\\.html$", "", tolower(basename(html.files[i])))
       data.frame(
         slug = slug,
-        rh_requester_type = info$requester_type,
-        rh_requester_committees = info$requester_committees,
-        rh_requester_members = info$requester_members,
+        hl_requester_type = info$requester_type,
+        hl_requester_committees = info$requester_committees,
+        hl_requester_members = info$requester_members,
         stringsAsFactors = FALSE
       )
     }, error = function(e) {
@@ -75,85 +73,129 @@ if (is.null(report.html.dir) || !dir.exists(report.html.dir)) {
     if (i %% 5000 == 0) message("Parsed: ", i, "/", length(html.files))
   }
 
-  rh.data <- do.call(rbind, rh.parsed[!vapply(rh.parsed, is.null, logical(1))])
-  message("Successfully parsed: ", nrow(rh.data), " reports")
-  message("  with requester_type: ", sum(!is.na(rh.data$rh_requester_type)))
-  message("  with committees: ", sum(!is.na(rh.data$rh_requester_committees)))
-  message("  with members: ", sum(!is.na(rh.data$rh_requester_members)))
+  hl.data <- do.call(rbind, hl.parsed[!vapply(hl.parsed, is.null, logical(1))])
+  message("Successfully parsed: ", nrow(hl.data), " reports")
+  message("  with requester_type: ", sum(!is.na(hl.data$hl_requester_type)))
+  message("  with committees: ", sum(!is.na(hl.data$hl_requester_committees)))
+  message("  with members: ", sum(!is.na(hl.data$hl_requester_members)))
 
-  # Merge: HTML report data fills or overwrites
+  # Merge: product page data fills where still NA
   current$slug <- tolower(basename(current$url))
-  idx <- match(current$slug, rh.data$slug)
+  idx <- match(current$slug, hl.data$slug)
   matched <- !is.na(idx)
   message("Matched to dataset: ", sum(matched))
 
   # requester_type: fill where still NA (ID-based takes priority)
   needs.type <- matched & is.na(current$requester_type)
-  current$requester_type[needs.type] <- rh.data$rh_requester_type[idx[needs.type]]
+  current$requester_type[needs.type] <- hl.data$hl_requester_type[idx[needs.type]]
 
-  # committees: HTML report data overwrites (richest source)
-  has.comm <- matched & !is.na(rh.data$rh_requester_committees[idx])
-  current$requester_committees[has.comm] <- rh.data$rh_requester_committees[idx[has.comm]]
+  # committees: product page data fills where still NA
+  needs.comm <- matched & is.na(current$requester_committees)
+  current$requester_committees[needs.comm] <- hl.data$hl_requester_committees[idx[needs.comm]]
 
-  # members: HTML report data overwrites
-  has.mem <- matched & !is.na(rh.data$rh_requester_members[idx])
-  current$requester_members[has.mem] <- rh.data$rh_requester_members[idx[has.mem]]
+  # members: product page data fills where still NA
+  needs.mem <- matched & is.na(current$requester_members)
+  current$requester_members[needs.mem] <- hl.data$hl_requester_members[idx[needs.mem]]
 
   current$slug <- NULL
 }
 
-# ── Phase 3: Parse report PDFs (fallback for missing HTML) ───────────────────
+# ── Phase 3: Parse report PDFs (fallback for reports still missing data) ─────
 
 message("\n=== Phase 3: PDF fallback parsing ===")
 
 if (is.null(report.pdf.dir) || !dir.exists(report.pdf.dir)) {
   message("PDF directory not set or not found.")
-  message("Skipping Phase 3. Set report.pdf.dir to enable PDF fallback parsing.")
+  message("Skipping Phase 3.")
 } else {
   if (!requireNamespace("pdftools", quietly = TRUE)) {
     stop("pdftools package required. Install with: install.packages('pdftools')")
   }
-  pdf.files <- list.files(report.pdf.dir, pattern = "\\.pdf$", full.names = TRUE)
-  pdf.files <- pdf.files[file.size(pdf.files) >= 200]
-  message("PDF files to parse: ", length(pdf.files))
 
-  ab.parsed <- vector("list", length(pdf.files))
-
-  for (i in seq_along(pdf.files)) {
-    ab.parsed[[i]] <- tryCatch({
-      pages <- pdftools::pdf_text(pdf.files[i])
-      text <- paste(pages[seq_len(min(2, length(pages)))], collapse = "\n")
-      info <- .parse_addressee_block(text)
-      slug <- sub("\\.pdf$", "", tolower(basename(pdf.files[i])))
-      data.frame(
-        slug = slug,
-        ab_requester_type = info$requester_type,
-        ab_requester_committees = info$requester_committees,
-        ab_requester_members = info$requester_members,
-        stringsAsFactors = FALSE
-      )
-    }, error = function(e) {
-      NULL
-    })
-    if (i %% 5000 == 0) message("Parsed: ", i, "/", length(pdf.files))
-  }
-
-  ab.data <- do.call(rbind, ab.parsed[!vapply(ab.parsed, is.null, logical(1))])
-  message("Successfully parsed: ", nrow(ab.data), " reports")
-
-  # Merge: only fill where still NA (HTML report data takes priority)
+  # Only parse PDFs for reports still missing requester_type
   current$slug <- tolower(basename(current$url))
-  idx <- match(current$slug, ab.data$slug)
-  matched <- !is.na(idx)
+  needs.pdf <- which(is.na(current$requester_type))
+  message("Reports still missing requester_type: ", length(needs.pdf))
 
-  needs.type <- matched & is.na(current$requester_type)
-  current$requester_type[needs.type] <- ab.data$ab_requester_type[idx[needs.type]]
+  if (length(needs.pdf) > 0) {
+    pdf.slugs <- current$slug[needs.pdf]
+    pdf.paths <- file.path(report.pdf.dir, paste0(pdf.slugs, ".pdf"))
+    exists.mask <- file.exists(pdf.paths)
+    pdf.paths <- pdf.paths[exists.mask]
+    message("PDF files found for missing reports: ", length(pdf.paths))
 
-  needs.comm <- matched & is.na(current$requester_committees)
-  current$requester_committees[needs.comm] <- ab.data$ab_requester_committees[idx[needs.comm]]
+    if (length(pdf.paths) > 0) {
+      if (requireNamespace("furrr", quietly = TRUE) &&
+          requireNamespace("future", quietly = TRUE)) {
+        message("Using parallel processing...")
+        future::plan(future::multisession,
+                     workers = max(1, parallel::detectCores() - 1))
 
-  needs.mem <- matched & is.na(current$requester_members)
-  current$requester_members[needs.mem] <- ab.data$ab_requester_members[idx[needs.mem]]
+        ab.parsed <- furrr::future_map(pdf.paths, function(f) {
+          tryCatch({
+            pages <- pdftools::pdf_text(f)
+            text <- paste(pages[seq_len(min(2, length(pages)))], collapse = "\n")
+            # Try addressee block first ("The Honorable" patterns)
+            info <- gao:::.parse_addressee_block(text)
+            # Fall back to cover-page subtitle ("Report to..." patterns)
+            if (is.na(info$requester_type)) {
+              info2 <- gao:::.parse_pdf_cover_subtitle(text)
+              if (!is.na(info2$requester_type)) info <- info2
+            }
+            slug <- sub("\\.pdf$", "", tolower(basename(f)))
+            data.frame(
+              slug = slug,
+              ab_requester_type = info$requester_type,
+              ab_requester_committees = info$requester_committees,
+              ab_requester_members = info$requester_members,
+              stringsAsFactors = FALSE
+            )
+          }, error = function(e) NULL)
+        }, .progress = TRUE)
+
+        future::plan(future::sequential)
+      } else {
+        message("furrr not available, using sequential processing...")
+        ab.parsed <- vector("list", length(pdf.paths))
+        for (i in seq_along(pdf.paths)) {
+          ab.parsed[[i]] <- tryCatch({
+            pages <- pdftools::pdf_text(pdf.paths[i])
+            text <- paste(pages[seq_len(min(2, length(pages)))], collapse = "\n")
+            info <- .parse_addressee_block(text)
+            if (is.na(info$requester_type)) {
+              info2 <- .parse_pdf_cover_subtitle(text)
+              if (!is.na(info2$requester_type)) info <- info2
+            }
+            slug <- sub("\\.pdf$", "", tolower(basename(pdf.paths[i])))
+            data.frame(
+              slug = slug,
+              ab_requester_type = info$requester_type,
+              ab_requester_committees = info$requester_committees,
+              ab_requester_members = info$requester_members,
+              stringsAsFactors = FALSE
+            )
+          }, error = function(e) NULL)
+          if (i %% 5000 == 0) message("Parsed: ", i, "/", length(pdf.paths))
+        }
+      }
+
+      ab.data <- do.call(rbind, ab.parsed[!vapply(ab.parsed, is.null, logical(1))])
+      message("Successfully parsed: ", nrow(ab.data), " PDFs")
+
+      # Merge: only fill where still NA
+      idx <- match(current$slug, ab.data$slug)
+      matched <- !is.na(idx)
+
+      needs.type <- matched & is.na(current$requester_type)
+      current$requester_type[needs.type] <- ab.data$ab_requester_type[idx[needs.type]]
+
+      needs.comm <- matched & is.na(current$requester_committees)
+      current$requester_committees[needs.comm] <- ab.data$ab_requester_committees[idx[needs.comm]]
+
+      needs.mem <- matched & is.na(current$requester_members)
+      current$requester_members[needs.mem] <- ab.data$ab_requester_members[idx[needs.mem]]
+    }
+  }
 
   current$slug <- NULL
 }
