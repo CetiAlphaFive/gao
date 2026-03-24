@@ -134,7 +134,7 @@ if (is.null(report.pdf.dir) || !dir.exists(report.pdf.dir)) {
         ab.parsed <- furrr::future_map(pdf.paths, function(f) {
           tryCatch({
             pages <- pdftools::pdf_text(f)
-            text <- paste(pages[seq_len(min(2, length(pages)))], collapse = "\n")
+            text <- paste(pages[seq_len(min(5, length(pages)))], collapse = "\n")
             # Try addressee block first ("The Honorable" patterns)
             info <- gao:::.parse_addressee_block(text)
             # Fall back to cover-page subtitle ("Report to..." patterns)
@@ -160,7 +160,7 @@ if (is.null(report.pdf.dir) || !dir.exists(report.pdf.dir)) {
         for (i in seq_along(pdf.paths)) {
           ab.parsed[[i]] <- tryCatch({
             pages <- pdftools::pdf_text(pdf.paths[i])
-            text <- paste(pages[seq_len(min(2, length(pages)))], collapse = "\n")
+            text <- paste(pages[seq_len(min(5, length(pages)))], collapse = "\n")
             info <- .parse_addressee_block(text)
             if (is.na(info$requester_type)) {
               info2 <- .parse_pdf_cover_subtitle(text)

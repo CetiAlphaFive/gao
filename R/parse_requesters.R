@@ -36,9 +36,10 @@
   # Normalize multiple blank lines to single
   text <- gsub("\n{3,}", "\n\n", text)
 
-  # Only search the first ~8000 characters (addressee block is at the top,
-  # but legacy PDFs may have long headers/metadata before it)
-  search.text <- substr(text, 1, min(nchar(text), 8000L))
+  # Search first ~15000 characters. Legacy reports (1970s-1990s) have the
+  # letter on page 3 (cover + TOC + letter), so with 5 pages of text we
+  # need a generous limit.
+  search.text <- substr(text, 1, min(nchar(text), 15000L))
 
   # Pattern for addressee with committee role:
   # The Honorable [Name]
@@ -73,6 +74,38 @@
       chamber <- map.chamber(parts[5])
 
       committees <- c(committees, paste0(committee, " (", chamber, ")"))
+      members <- c(members, paste0(name, ", ", role))
+    }
+  }
+
+  # 1990s format: role and committee on the SAME line.
+  # E.g.: "Chairman, Subcommittee on Transportation\n and Related Agencies\n
+  #         Committee on Appropriations\n House of Representatives"
+  inline.role.pattern <- paste0(
+    "The Honorable\\s+([^\n]+?)\\s*\n\\s*",
+    "(Chairman|Chairwoman|Chair|Ranking (?:Minority )?Member|Vice Chair(?:man|woman)?)",
+    ",?\\s+((?:Sub)?[Cc]ommittee\\s+on\\s+[^\n]+?)",
+    "\\s*\n",
+    "(?:\\s*and\\s+[^\n]+?\\s*\n)?",             # optional continuation ("and Related Agencies")
+    "(?:\\s*(Committee\\s+on\\s+[^\n]+?)\\s*\n)?", # optional parent committee
+    "\\s*(United States Senate|U\\.?\\s?S\\.? Senate|House of Representatives)"
+  )
+
+  inline.matches <- gregexpr(inline.role.pattern, search.text, perl = TRUE)
+  inline.all <- regmatches(search.text, inline.matches)[[1]]
+
+  if (length(inline.all) > 0) {
+    for (match.str in inline.all) {
+      parts <- regmatches(match.str, regexec(inline.role.pattern, match.str, perl = TRUE))[[1]]
+      name <- trimws(parts[2])
+      role <- trimws(parts[3])
+      sub.committee <- trimws(parts[4])
+      parent.committee <- trimws(parts[5])
+      chamber <- map.chamber(parts[6])
+
+      # Use parent committee if present, otherwise the subcommittee
+      comm <- if (nzchar(parent.committee)) parent.committee else sub.committee
+      committees <- c(committees, paste0(comm, " (", chamber, ")"))
       members <- c(members, paste0(name, ", ", role))
     }
   }
