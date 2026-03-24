@@ -10,3 +10,5 @@ gao_report_links.csv
 .claude/
 data-raw/gao_pages/
 data-raw/gao_report_pages/
+data-raw/ocr-env/
+data-raw/ocr_text_cache/
