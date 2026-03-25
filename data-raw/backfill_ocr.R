@@ -19,29 +19,20 @@ current <- readRDS("inst/extdata/gao_links.rds")
 message("Total: ", nrow(current), " | With type: ", sum(!is.na(current$requester_type)),
         " | NA: ", sum(is.na(current$requester_type)))
 
-# Find NAs with local PDFs
+# Match OCR cache files to NA reports
 current$slug <- tolower(basename(current$url))
 na.idx <- which(is.na(current$requester_type))
-paths <- file.path(pdf.dir, paste0(current$slug[na.idx], ".pdf"))
-has.pdf <- file.exists(paths)
-target.paths <- paths[has.pdf]
-target.idx <- na.idx[has.pdf]
-message("PDFs to OCR: ", length(target.paths))
+message("Reports still NA: ", length(na.idx))
 
-# ── Step 1: Export PDF list ──────────────────────────────────────────────────
+ocr.files <- list.files(ocr.dir, pattern = "\\.txt$", full.names = FALSE)
+ocr.slugs <- sub("\\.txt$", "", ocr.files)
+message("OCR text files available: ", length(ocr.files))
 
-list.file <- file.path(tempdir(), "ocr_pdf_list.txt")
-writeLines(target.paths, list.file)
+# Find NAs that have OCR text
+target.idx <- na.idx[current$slug[na.idx] %in% ocr.slugs]
+message("NAs with OCR text: ", length(target.idx))
 
-# ── Step 2: Run tesseract OCR ────────────────────────────────────────────────
-
-message("\nStarting tesseract OCR (parallel)...")
-exit.code <- system2("python3",
-                     c("data-raw/ocr_backfill.py", list.file, ocr.dir, "12"),
-                     stdout = "", stderr = "")
-if (exit.code != 0) warning("OCR script exited with code ", exit.code)
-
-# ── Step 3: Parse OCR'd text ─────────────────────────────────────────────────
+# ── Parse OCR'd text ─────────────────────────────────────────────────────────
 
 message("\nParsing OCR results...")
 n.filled <- 0L
