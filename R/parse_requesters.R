@@ -225,6 +225,14 @@
                   requester_members = NA_character_))
     }
 
+    # Last resort: any "Comptroller General" reference in a document with no
+    # other requester signal = CG-authored internal publication
+    if (grepl("Comptroller General", search.text, ignore.case = TRUE)) {
+      return(list(requester_type = "cg_initiated",
+                  requester_committees = NA_character_,
+                  requester_members = NA_character_))
+    }
+
     return(na.result)
   }
 
@@ -269,7 +277,8 @@
     ")"
   )
   pattern <- paste0(
-    "(?:Report|Letter)\\s+[Tt]o\\s+(?:[Tt]he\\s+)?(.+?)\\s+", terminators
+    "(?:Report|Letter|Fact Sheet|Briefing Report|Summary)\\s+",
+    "(?:[Ff]or|[Tt]o)\\s+(?:[Tt]he\\s+)?(.+?)\\s+", terminators
   )
   m <- regmatches(clean, regexec(pattern, clean, perl = TRUE))[[1]]
 
