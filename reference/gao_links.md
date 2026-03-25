@@ -30,7 +30,7 @@ the source field is missing.
 ``` r
 reports <- gao_links()
 nrow(reports)
-#> [1] 56275
+#> [1] 56280
 head(reports)
 #>                                   url
 #> 1 https://www.gao.gov/products/087286
@@ -71,8 +71,8 @@ head(reports)
 #> 1       FALSE         0                     cg_initiated                 <NA>
 #> 2       FALSE         0                             <NA>                 <NA>
 #> 3       FALSE         0                             <NA>                 <NA>
-#> 4       FALSE         0                             <NA>                 <NA>
-#> 5       FALSE         0                             <NA>                 <NA>
+#> 4       FALSE         0                     cg_initiated                 <NA>
+#> 5       FALSE         0                     cg_initiated                 <NA>
 #> 6       FALSE         0                     cg_initiated                 <NA>
 #>   requester_members topic_agriculture_and_food
 #> 1              <NA>                          0
