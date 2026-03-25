@@ -192,6 +192,15 @@
                   requester_members = NA_character_))
     }
 
+    # Addressed to "President of the Senate" / "Speaker of the House" = CG-initiated
+    # (CG legal opinions and reports addressed to Congress generally)
+    if (grepl("(?:President of the Senate|Speaker of the House)", search.text,
+              ignore.case = TRUE, perl = TRUE)) {
+      return(list(requester_type = "cg_initiated",
+                  requester_committees = NA_character_,
+                  requester_members = NA_character_))
+    }
+
     # Comptroller General initiation
     cg.patterns <- c(
       "under the Comptroller General",
