@@ -12,11 +12,17 @@ released, summary, page_count (integer, may be \code{NA} for reports
 without a matching PDF in the bundled archive), topics,
 subject_terms, has_recommendations (logical), n_recommendations
 (integer), has_matters (logical), n_matters (integer),
-agencies_affected (character, semicolon-separated), plus 82 integer
-indicator columns: 31 \verb{topic_*} columns (one per topic), 50
-\verb{agency_*} columns (one per top-50 agency), and \code{agency_other}
-(1 if any non-top-50 agency appears). Indicator columns are
-\code{NA_integer_} where the source field is missing.
+agencies_affected (character, semicolon-separated),
+requester_type (character: \code{"congressional_request"},
+\code{"statutory_mandate"}, \code{"cg_initiated"}, \code{"testimony"},
+\code{"correspondence"}, or \code{"legal_decision"}),
+requester_committees (character, semicolon-separated committee names
+with chamber), requester_members (character, semicolon-separated
+member names with roles), plus 82 integer indicator columns:
+31 \verb{topic_*} columns (one per topic), 50 \verb{agency_*} columns
+(one per top-50 agency), and \code{agency_other} (1 if any non-top-50
+agency appears). Indicator columns are \code{NA_integer_} where the
+source field is missing.
 }
 \description{
 Returns a data.frame of GAO report metadata. Checks for a user-local

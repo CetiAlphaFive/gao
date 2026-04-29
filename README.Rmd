@@ -26,7 +26,20 @@ knitr::opts_chunk$set(
 **Disclaimer:** This package is not affiliated with, endorsed by, or in any way officially connected to the U.S. Government Accountability Office. All data is obtained from public web pages at [gao.gov](https://www.gao.gov). 
 ## Installation
 
-`gao` requires [curl-impersonate](https://github.com/lexiforest/curl-impersonate) as a system dependency (GAO.gov uses TLS fingerprint filtering that blocks standard HTTP clients).
+```r
+# From CRAN (when available)
+install.packages("gao")
+
+# Development version from GitHub
+# install.packages("pak")
+pak::pak("CetiAlphaFive/gao")
+```
+
+The bundled dataset, metadata exports, and `extract_text()` work with no system dependencies.
+
+### Optional: live downloads from gao.gov
+
+Downloading PDFs or HTML directly from gao.gov (`auto_download(format = "pdf" | "html" | "both")`) requires [curl-impersonate](https://github.com/lexiforest/curl-impersonate), since GAO.gov uses TLS fingerprint filtering that blocks standard HTTP clients.
 
 ```bash
 # Arch Linux
@@ -36,16 +49,7 @@ sudo pacman -S curl-impersonate
 brew install lexiforest/curl-impersonate/curl-impersonate
 ```
 
-Then install the package:
-
-```r
-# From CRAN (when available)
-install.packages("gao")
-
-# Development version from GitHub
-# install.packages("pak")
-pak::pak("CetiAlphaFive/gao")
-```
+Functions that need it will print install instructions if it is missing. Without it, you can still browse the bundled dataset, export metadata, and use `gao_update_data()` to fetch the latest dataset from GitHub Releases.
 
 ## Quick start
 

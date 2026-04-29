@@ -47,6 +47,15 @@ PDF URLs are constructed directly from report IDs (e.g.,
 scraping each report page, so no extra HTTP requests are needed for
 link extraction.
 }
+\section{System requirements}{
+
+\code{format = "pdf"}, \code{"html"}, or \code{"both"} downloads files from
+\url{https://www.gao.gov} and requires
+\href{https://github.com/lexiforest/curl-impersonate}{curl-impersonate}
+as a system binary. \code{format = "metadata"} reads only the bundled
+dataset and works without it.
+}
+
 \examples{
 \dontrun{
 # Interactive: walks through prompts

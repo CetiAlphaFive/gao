@@ -10,6 +10,13 @@
 #' scraping each report page, so no extra HTTP requests are needed for
 #' link extraction.
 #'
+#' @section System requirements:
+#' `format = "pdf"`, `"html"`, or `"both"` downloads files from
+#' \url{https://www.gao.gov} and requires
+#' \href{https://github.com/lexiforest/curl-impersonate}{curl-impersonate}
+#' as a system binary. `format = "metadata"` reads only the bundled
+#' dataset and works without it.
+#'
 #' @param format Character. `"pdf"`, `"html"`, `"both"`, or `"metadata"`.
 #'   `"metadata"` writes a CSV of report metadata without downloading files.
 #'   `NULL` (default) prompts interactively; in non-interactive sessions

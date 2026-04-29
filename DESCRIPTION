@@ -5,14 +5,19 @@ Version: 0.5.0
 Authors@R: person(c("Jack", "T."), "Rametta", email = "jtrametta@gmail.com",
                   role = c("aut", "cre", "cph"),
                   comment = c(ORCID = "0000-0002-9841-146X"))
-Description: Download reports published by the United States Government
-    Accountability Office (GAO) directly from <https://www.gao.gov>. Ships
-    with a bundled dataset of over 55,000 report URLs spanning 1921 to the
-    present. Provides a one-step download function that filters by fiscal
-    year and format, and a text extraction utility for downloaded PDFs.
-    Requires 'curl-impersonate' as a system dependency to handle TLS
-    fingerprint filtering. Not affiliated with or endorsed by the
-    U.S. Government Accountability Office.
+Description: A complete library of metadata for reports published by
+    the United States Government Accountability Office (GAO), with tools
+    for downloading the report files. Ships with a bundled dataset of
+    over 55,000 report URLs spanning 1921 to the present, refreshed daily
+    via continuous integration and accessible offline. Provides a
+    one-step download function that filters by fiscal year and format,
+    and a text extraction utility for downloaded PDFs. Browsing the
+    bundled metadata and exporting it to CSV work with no system
+    dependencies; downloading PDFs or HTML directly from
+    <https://www.gao.gov> requires 'curl-impersonate' (see
+    SystemRequirements) to handle TLS fingerprint filtering. Not
+    affiliated with or endorsed by the U.S. Government Accountability
+    Office.
 License: GPL (>= 3)
 Depends: R (>= 4.1.0)
 Imports:

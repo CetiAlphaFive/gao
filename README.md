@@ -12,33 +12,16 @@ status](https://www.r-pkg.org/badges/version/gao)](https://CRAN.R-project.org/pa
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-This package `gao` provides tools for downloading reports and associated metadata
+`gao` provides tools for downloading reports and associated metadata
 published by the United States Government Accountability Office (GAO).
 It ships with a bundled dataset covering over 55,000 reports
 (1921–present, updated daily) and a one-step function for batch
-downloading reports as PDF, HTML, or both. 
+downloading reports as PDF, HTML, or both.
 
 **Disclaimer:** This package is not affiliated with, endorsed by, or in
 any way officially connected to the U.S. Government Accountability
 Office. All data is obtained from public web pages at
-[gao.gov](https://www.gao.gov). 
-
-## Installation
-
-`gao` requires
-[curl-impersonate](https://github.com/lexiforest/curl-impersonate) as a
-system dependency (GAO.gov uses TLS fingerprint filtering that blocks
-standard HTTP clients).
-
-``` bash
-# Arch Linux
-sudo pacman -S curl-impersonate
-
-# macOS
-brew install lexiforest/curl-impersonate/curl-impersonate
-```
-
-Then install the package:
+[gao.gov](https://www.gao.gov). \## Installation
 
 ``` r
 # From CRAN (when available)
@@ -48,6 +31,30 @@ install.packages("gao")
 # install.packages("pak")
 pak::pak("CetiAlphaFive/gao")
 ```
+
+The bundled dataset, metadata exports, and `extract_text()` work with no
+system dependencies.
+
+### Optional: live downloads from gao.gov
+
+Downloading PDFs or HTML directly from gao.gov
+(`auto_download(format = "pdf" | "html" | "both")`) requires
+[curl-impersonate](https://github.com/lexiforest/curl-impersonate),
+since GAO.gov uses TLS fingerprint filtering that blocks standard HTTP
+clients.
+
+``` bash
+# Arch Linux
+sudo pacman -S curl-impersonate
+
+# macOS
+brew install lexiforest/curl-impersonate/curl-impersonate
+```
+
+Functions that need it will print install instructions if it is missing.
+Without it, you can still browse the bundled dataset, export metadata,
+and use `gao_update_data()` to fetch the latest dataset from GitHub
+Releases.
 
 ## Quick start
 
@@ -64,3 +71,12 @@ auto_download(format = "pdf", year = 2020:2024, confirm = FALSE)
 `auto_download()` loads the bundled dataset, filters by fiscal year, and
 downloads PDFs, HTMLs, or both into `gao_reports/pdf/` and
 `gao_reports/html/`.
+
+The package has three main functions:
+
+- **`gao_links()`** — access the bundled dataset (56,000+ reports with
+  metadata and one-hot indicator columns)
+- **`auto_download()`** — download reports as PDF, HTML, or both (or
+  export metadata as CSV)
+- **`extract_text()`** — extract text from downloaded PDFs via
+  `pdftools`
