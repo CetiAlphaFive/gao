@@ -28,12 +28,10 @@ work with no system dependencies.
 
 Downloading PDFs or HTML directly from gao.gov
 (`auto_download(format = "pdf" | "html" | "both")`) requires
-[curl-impersonate](https://github.com/lexiforest/curl-impersonate),
-since GAO.gov uses TLS fingerprint filtering that blocks standard HTTP
-clients.
+[curl-impersonate](https://github.com/lexiforest/curl-impersonate).
 
 ``` bash
-# Arch Linux
+# arch linux
 sudo pacman -S curl-impersonate
 
 # macOS
