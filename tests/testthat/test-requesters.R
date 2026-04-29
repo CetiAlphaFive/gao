@@ -59,7 +59,6 @@ test_that(".parse_subtitle_addressee() parses 'congressional addressees' as stat
 
 test_that(".parse_subtitle_addressee() parses 'congressional committees' as congressional_request", {
   # "congressional committees" is ambiguous — defaults to congressional_request.
-  # The mandate check in .parse_report_html() can override to statutory_mandate.
   result <- .parse_subtitle_addressee("congressional committees")
   expect_equal(result$requester_type, "congressional_request")
   expect_true(is.na(result$requester_committees))
