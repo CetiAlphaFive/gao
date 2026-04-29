@@ -20,11 +20,10 @@ Description: A complete library of metadata for reports published by
     Office.
 License: GPL (>= 3)
 Depends: R (>= 4.1.0)
-Imports:
-    rvest
 Suggests:
     lifecycle,
     pdftools,
+    rvest,
     testthat (>= 3.0.0),
     withr
 Config/testthat/edition: 3

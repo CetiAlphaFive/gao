@@ -1,6 +1,25 @@
 # Package environment for caching
 .gao_env <- new.env(parent = emptyenv())
 
+#' Require rvest at Runtime
+#'
+#' Errors with an install hint if `rvest` is not available. `rvest` is in
+#' Suggests because the user-facing data path (bundled dataset, metadata
+#' export, PDF text extraction) does not need it; only live scraping does.
+#'
+#' @keywords internal
+#' @noRd
+.require_rvest <- function() {
+  if (!requireNamespace("rvest", quietly = TRUE)) {
+    stop(
+      "Live scraping from gao.gov requires the 'rvest' package.\n",
+      "Install with: install.packages(\"rvest\")",
+      call. = FALSE
+    )
+  }
+  invisible(TRUE)
+}
+
 #' Fetch and Parse a URL
 #'
 #' Uses curl-impersonate to fetch a URL and returns parsed HTML.
@@ -8,10 +27,10 @@
 #' @param url Character. URL to fetch.
 #' @param retries Integer. Number of retry attempts.
 #' @return An xml_document from rvest.
-#' @importFrom rvest read_html html_nodes html_attr
 #' @keywords internal
 #' @noRd
 .fetch_html <- function(url, retries = 3) {
+  .require_rvest()
   curl.bin <- .get_curl_bin()
   for (attempt in seq_len(retries)) {
     html.text <- system2(curl.bin, args = c("-s", "-L", url), stdout = TRUE,
@@ -87,7 +106,6 @@
 #' @param page An xml_document.
 #' @return A data.frame with columns: url, title, report_id, published,
 #'   released, summary. URLs are relative paths (e.g., "/products/gao-24-106198").
-#' @importFrom rvest html_nodes html_node html_attr html_text
 #' @keywords internal
 #' @noRd
 .scrape_page_links <- function(page) {
@@ -135,7 +153,6 @@
 #' @return A 1-row data.frame with columns: title, report_id, published,
 #'   released, summary, topics, subject_terms, has_recommendations,
 #'   n_recommendations, has_matters, n_matters, agencies_affected, pdf_url.
-#' @importFrom rvest html_node html_nodes html_attr html_text
 #' @keywords internal
 #' @noRd
 .scrape_report_metadata <- function(page) {

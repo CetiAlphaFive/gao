@@ -25,6 +25,7 @@ extract_links <- function(base_url = "https://www.gao.gov/reports-testimonies",
                           sleep_time = 1,
                           output_file = "gao_report_links.rds",
                           cache_dir = NULL) {
+  .require_rvest()
 
   if (!is.null(last_page)) {
     if (!is.numeric(last_page) || length(last_page) != 1 || last_page < 0) {
