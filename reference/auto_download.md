@@ -61,6 +61,14 @@ PDF URLs are constructed directly from report IDs (e.g.,
 than scraping each report page, so no extra HTTP requests are needed for
 link extraction.
 
+## System requirements
+
+`format = "pdf"`, `"html"`, or `"both"` downloads files from
+<https://www.gao.gov> and requires
+[curl-impersonate](https://github.com/lexiforest/curl-impersonate) as a
+system binary. `format = "metadata"` reads only the bundled dataset and
+works without it.
+
 ## Examples
 
 ``` r

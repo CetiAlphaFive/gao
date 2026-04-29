@@ -100,6 +100,16 @@ downloaded file paths. For <code>"metadata"</code>: invisible path to the writte
 scraping each report page, so no extra HTTP requests are needed for
 link extraction.</p>
     </div>
+    <div class="section level2">
+    <h2 id="system-requirements">System requirements<a class="anchor" aria-label="anchor" href="#system-requirements"></a></h2>
+
+
+<p><code>format = "pdf"</code>, <code>"html"</code>, or <code>"both"</code> downloads files from
+<a href="https://www.gao.gov" class="external-link">https://www.gao.gov</a> and requires
+<a href="https://github.com/lexiforest/curl-impersonate" class="external-link">curl-impersonate</a>
+as a system binary. <code>format = "metadata"</code> reads only the bundled
+dataset and works without it.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>

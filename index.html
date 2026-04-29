@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="A Complete Library of GAO Reports and Metadata">
-<meta name="description" content="Download reports published by the United States Government Accountability Office (GAO) directly from &lt;https://www.gao.gov&gt;. Ships with a bundled dataset of over 55,000 report URLs spanning 1921 to the present. Provides a one-step download function that filters by fiscal year and format, and a text extraction utility for downloaded PDFs. Requires curl-impersonate as a system dependency to handle TLS fingerprint filtering. Not affiliated with or endorsed by the U.S. Government Accountability Office.">
-<meta property="og:description" content="Download reports published by the United States Government Accountability Office (GAO) directly from &lt;https://www.gao.gov&gt;. Ships with a bundled dataset of over 55,000 report URLs spanning 1921 to the present. Provides a one-step download function that filters by fiscal year and format, and a text extraction utility for downloaded PDFs. Requires curl-impersonate as a system dependency to handle TLS fingerprint filtering. Not affiliated with or endorsed by the U.S. Government Accountability Office.">
+<meta name="description" content="A complete library of metadata for reports published by the United States Government Accountability Office (GAO), with tools for downloading the report files. Ships with a bundled dataset of over 55,000 report URLs spanning 1921 to the present, refreshed daily via continuous integration and accessible offline. Provides a one-step download function that filters by fiscal year and format, and a text extraction utility for downloaded PDFs. Browsing the bundled metadata and exporting it to CSV work with no system dependencies; downloading PDFs or HTML directly from &lt;https://www.gao.gov&gt; requires curl-impersonate (see SystemRequirements) to handle TLS fingerprint filtering. Not affiliated with or endorsed by the U.S. Government Accountability Office.">
+<meta property="og:description" content="A complete library of metadata for reports published by the United States Government Accountability Office (GAO), with tools for downloading the report files. Ships with a bundled dataset of over 55,000 report URLs spanning 1921 to the present, refreshed daily via continuous integration and accessible offline. Provides a one-step download function that filters by fiscal year and format, and a text extraction utility for downloaded PDFs. Browsing the bundled metadata and exporting it to CSV work with no system dependencies; downloading PDFs or HTML directly from &lt;https://www.gao.gov&gt; requires curl-impersonate (see SystemRequirements) to handle TLS fingerprint filtering. Not affiliated with or endorsed by the U.S. Government Accountability Office.">
 <meta property="og:image" content="https://cetialphafive.github.io/gao/logo.png">
 </head>
 <body>
@@ -55,25 +55,26 @@
 </div>
 <!-- badges: start -->
 
-<p>This package <code>gao</code> provides tools for downloading reports and associated metadata published by the United States Government Accountability Office (GAO). It ships with a bundled dataset covering over 55,000 reports (1921–present, updated daily) and a one-step function for batch downloading reports as PDF, HTML, or both.</p>
-<p><strong>Disclaimer:</strong> This package is not affiliated with, endorsed by, or in any way officially connected to the U.S. Government Accountability Office. All data is obtained from public web pages at <a href="https://www.gao.gov" class="external-link">gao.gov</a>.</p>
-<div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
-</h2>
-<p><code>gao</code> requires <a href="https://github.com/lexiforest/curl-impersonate" class="external-link">curl-impersonate</a> as a system dependency (GAO.gov uses TLS fingerprint filtering that blocks standard HTTP clients).</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># Arch Linux</span></span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">sudo</span> pacman <span class="at">-S</span> curl-impersonate</span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co"># macOS</span></span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="ex">brew</span> install lexiforest/curl-impersonate/curl-impersonate</span></code></pre></div>
-<p>Then install the package:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<p><code>gao</code> provides tools for downloading reports and associated metadata published by the United States Government Accountability Office (GAO). It ships with a bundled dataset covering over 55,000 reports (1921–present, updated daily) and a one-step function for batch downloading reports as PDF, HTML, or both.</p>
+<p><strong>Disclaimer:</strong> This package is not affiliated with, endorsed by, or in any way officially connected to the U.S. Government Accountability Office. All data is obtained from public web pages at <a href="https://www.gao.gov" class="external-link">gao.gov</a>. ## Installation</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># From CRAN (when available)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"gao"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Development version from GitHub</span></span>
 <span><span class="co"># install.packages("pak")</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"CetiAlphaFive/gao"</span><span class="op">)</span></span></code></pre></div>
+<p>The bundled dataset, metadata exports, and <code><a href="reference/extract_text.html">extract_text()</a></code> work with no system dependencies.</p>
+<div class="section level3">
+<h3 id="optional-live-downloads-from-gaogov">Optional: live downloads from gao.gov<a class="anchor" aria-label="anchor" href="#optional-live-downloads-from-gaogov"></a>
+</h3>
+<p>Downloading PDFs or HTML directly from gao.gov (<code>auto_download(format = "pdf" | "html" | "both")</code>) requires <a href="https://github.com/lexiforest/curl-impersonate" class="external-link">curl-impersonate</a>, since GAO.gov uses TLS fingerprint filtering that blocks standard HTTP clients.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Arch Linux</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">sudo</span> pacman <span class="at">-S</span> curl-impersonate</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co"># macOS</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="ex">brew</span> install lexiforest/curl-impersonate/curl-impersonate</span></code></pre></div>
+<p>Functions that need it will print install instructions if it is missing. Without it, you can still browse the bundled dataset, export metadata, and use <code><a href="reference/gao_update_data.html">gao_update_data()</a></code> to fetch the latest dataset from GitHub Releases.</p>
 </div>
 <div class="section level2">
 <h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
@@ -87,6 +88,16 @@
 <span><span class="co"># Or specify everything up front</span></span>
 <span><span class="fu"><a href="reference/auto_download.html">auto_download</a></span><span class="op">(</span>format <span class="op">=</span> <span class="st">"pdf"</span>, year <span class="op">=</span> <span class="fl">2020</span><span class="op">:</span><span class="fl">2024</span>, confirm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p><code><a href="reference/auto_download.html">auto_download()</a></code> loads the bundled dataset, filters by fiscal year, and downloads PDFs, HTMLs, or both into <code>gao_reports/pdf/</code> and <code>gao_reports/html/</code>.</p>
+<p>The package has three main functions:</p>
+<ul>
+<li>
+<strong><code><a href="reference/gao_links.html">gao_links()</a></code></strong> — access the bundled dataset (56,000+ reports with metadata and one-hot indicator columns)</li>
+<li>
+<strong><code><a href="reference/auto_download.html">auto_download()</a></code></strong> — download reports as PDF, HTML, or both (or export metadata as CSV)</li>
+<li>
+<strong><code><a href="reference/extract_text.html">extract_text()</a></code></strong> — extract text from downloaded PDFs via <code>pdftools</code>
+</li>
+</ul>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
