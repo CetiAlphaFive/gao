@@ -108,21 +108,44 @@
   df$n_subject_terms <- .count_delimited(df$subject_terms)
 
   # --- requester party/chamber/majority (uses bundled crosswalk) ---
+  # Fill plain vectors, then assign to df once (avoids copying 56k-row columns
+  # on every loop iteration).
+  n <- nrow(df)
+  party <- rep(NA_character_, n)
+  maj   <- rep(NA_character_, n)
+  cham  <- rep(NA_character_, n)
+  bip   <- rep(NA, n)
+
   has.req <- all(c("requester_members", "requester_committees") %in% names(df))
-  if (has.req) {
-    pf <- mapply(.requester_party_features,
-                 df$requester_members, df$requester_committees, df$published,
-                 SIMPLIFY = FALSE, USE.NAMES = FALSE)
-    df$requester_party           <- vapply(pf, `[[`, character(1), "requester_party")
-    df$requester_majority_status <- vapply(pf, `[[`, character(1), "requester_majority_status")
-    df$requester_chamber         <- vapply(pf, `[[`, character(1), "requester_chamber")
-    df$requester_bipartisan      <- vapply(pf, `[[`, logical(1),   "requester_bipartisan")
-  } else {
-    df$requester_party <- NA_character_
-    df$requester_majority_status <- NA_character_
-    df$requester_chamber <- NA_character_
-    df$requester_bipartisan <- NA
+  if (has.req && n > 0) {
+    comm <- df$requester_committees
+    # chamber from committee annotations, vectorized over all rows (cheap)
+    has.sen <- !is.na(comm) & grepl("Senate", comm)
+    has.hou <- !is.na(comm) & grepl("House",  comm)
+    cham[has.sen & has.hou]  <- "both"
+    cham[has.sen & !has.hou] <- "Senate"
+    cham[has.hou & !has.sen] <- "House"
+
+    # party/majority/bipartisan only for the (few) rows that name members
+    mem <- df$requester_members
+    pub <- df$published
+    mrows <- which(!is.na(mem) & nzchar(mem))
+    if (length(mrows) > 0L) {
+      lk <- .build_party_lookups()   # built once, shared
+      for (i in mrows) {
+        r <- .requester_party_features(mem[i], comm[i], pub[i], lk)
+        party[i] <- r$requester_party
+        maj[i]   <- r$requester_majority_status
+        cham[i]  <- r$requester_chamber
+        bip[i]   <- r$requester_bipartisan
+      }
+    }
   }
+
+  df$requester_party           <- party
+  df$requester_majority_status <- maj
+  df$requester_chamber         <- cham
+  df$requester_bipartisan      <- bip
 
   df
 }

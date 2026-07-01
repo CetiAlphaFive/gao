@@ -56,19 +56,44 @@
   }, character(1), USE.NAMES = FALSE)
 }
 
+#' Build hashed lookups from the bundled crosswalk
+#'
+#' Returns environments for O(1) party and majority lookups, so the per-report
+#' join in [.expand_features()] does not re-subset the 50k-row crosswalk on every
+#' row. Built once per `gao_links()` load.
+#' @keywords internal
+#' @noRd
+.build_party_lookups <- function() {
+  mp <- .member_party
+  party.env <- new.env(hash = TRUE, parent = emptyenv())
+  pk <- paste(mp$congress, mp$match_key, sep = "|")
+  for (i in seq_len(nrow(mp))) assign(pk[i], mp$party[i], envir = party.env)
+
+  mj <- .majority_by_congress
+  maj.env <- new.env(hash = TRUE, parent = emptyenv())
+  mk <- paste(mj$congress, mj$chamber, sep = "|")
+  for (i in seq_len(nrow(mj))) assign(mk[i], mj$majority_party[i], envir = maj.env)
+
+  list(party = party.env, maj = maj.env)
+}
+
 #' Requester party / chamber / majority / bipartisan for one report
 #'
 #' @param members Character scalar: semicolon-delimited requester member string.
 #' @param committees Character scalar: semicolon-delimited committee string
 #'   (used only to infer chamber when member names are absent).
 #' @param published Character/Date scalar publication date.
+#' @param lookups Optional list from [.build_party_lookups()]. Built on demand if
+#'   `NULL` (fine for single calls; pass a shared one for batch use).
 #' @return A one-row list: `requester_party` ("R"/"D"/"mixed"/NA),
 #'   `requester_majority_status` ("majority"/"minority"/"mixed"/NA),
 #'   `requester_chamber` ("House"/"Senate"/"both"/NA),
 #'   `requester_bipartisan` (logical).
 #' @keywords internal
 #' @noRd
-.requester_party_features <- function(members, committees, published) {
+.requester_party_features <- function(members, committees, published,
+                                      lookups = NULL) {
+  if (is.null(lookups)) lookups <- .build_party_lookups()
   cong <- .congress_for_date(published)
 
   # --- chamber from committee annotations "(Senate)"/"(House)" ---
@@ -91,12 +116,10 @@
   member.strs <- trimws(strsplit(members, ";")[[1]])
   keys <- .normalize_member_name(member.strs)
 
-  cw <- .member_party[.member_party$congress == cong, ]
   parties <- vapply(keys, function(k) {
     if (is.na(k)) return(NA_character_)
-    hit <- cw$party[cw$match_key == k]
-    hit <- hit[!is.na(hit)]
-    if (length(hit) >= 1L) hit[1] else NA_character_
+    get0(paste(cong, k, sep = "|"), envir = lookups$party,
+         inherits = FALSE, ifnotfound = NA_character_)
   }, character(1), USE.NAMES = FALSE)
 
   parties <- parties[!is.na(parties)]
@@ -112,10 +135,8 @@
   } else {
     "House"
   }
-  maj <- .majority_by_congress$majority_party[
-    .majority_by_congress$congress == cong &
-    .majority_by_congress$chamber == maj.chamber]
-  maj <- if (length(maj) == 1L) maj else NA_character_
+  maj <- get0(paste(cong, maj.chamber, sep = "|"), envir = lookups$maj,
+              inherits = FALSE, ifnotfound = NA_character_)
 
   maj.status <- if (is.na(maj)) {
     NA_character_

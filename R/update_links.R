@@ -159,6 +159,11 @@ gao_links <- function() {
   if (!"agency_other" %in% names(d)) {
     d <- .expand_indicators(d)
   }
+  # Expand derived covariates (division, product type, temporal, requester
+  # party) on the fly if not already present
+  if (!"issuing_division" %in% names(d)) {
+    d <- .expand_features(d)
+  }
   .gao_env$links <- d
   d
 }

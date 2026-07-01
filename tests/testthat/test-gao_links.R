@@ -7,6 +7,20 @@ test_that("gao_links() returns a data.frame with correct columns", {
                  "n_matters", "agencies_affected",
                  "requester_type", "requester_committees",
                  "requester_members")
-  expected <- c(base.cols, .indicator_colnames())
+  feature.cols <- c("issuing_division", "product_type", "pub_month", "pub_dow",
+                    "pub_fiscal_year", "fiscal_quarter", "election_year",
+                    "release_lag_days", "n_topics", "n_subject_terms",
+                    "requester_party", "requester_majority_status",
+                    "requester_chamber", "requester_bipartisan")
+  expected <- c(base.cols, .indicator_colnames(), feature.cols)
   expect_named(links, expected)
+})
+
+test_that("gao_links exposes derived feature columns with expected types", {
+  d <- gao_links()
+  expect_true(all(c("issuing_division", "product_type", "pub_fiscal_year",
+                    "fiscal_quarter", "release_lag_days", "n_topics",
+                    "n_subject_terms", "requester_party") %in% names(d)))
+  expect_type(d$fiscal_quarter, "integer")
+  expect_type(d$requester_bipartisan, "logical")
 })

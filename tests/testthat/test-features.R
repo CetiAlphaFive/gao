@@ -50,3 +50,17 @@ test_that(".expand_features is idempotent and preserves row count", {
   expect_equal(nrow(twice), 1L)
   expect_equal(twice$issuing_division, "General Government")
 })
+
+test_that(".expand_features attaches requester party columns", {
+  d <- data.frame(
+    report_id = "NSIAD-95-1", published = "1995-06-01", released = "1995-06-01",
+    topics = "National Defense", subject_terms = "x",
+    requester_members = "Richard G. Lugar, Chairman",
+    requester_committees = "Committee on Armed Services (Senate)",
+    stringsAsFactors = FALSE)
+  out <- .expand_features(d)
+  expect_true(all(c("requester_party", "requester_majority_status",
+                    "requester_chamber", "requester_bipartisan") %in% names(out)))
+  expect_equal(out$requester_party, "R")
+  expect_equal(out$requester_majority_status, "majority")
+})
