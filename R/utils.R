@@ -33,13 +33,16 @@
   .require_rvest()
   curl.bin <- .get_curl_bin()
   for (attempt in seq_len(retries)) {
-    html.text <- system2(curl.bin, args = c("-s", "-L", url), stdout = TRUE,
-                          stderr = FALSE)
-    if (length(html.text) > 0) {
-      combined <- paste(html.text, collapse = "\n")
-      if (!grepl("Access Denied", combined, fixed = TRUE)) {
-        return(rvest::read_html(combined))
-      }
+    # "-f" fails on 4xx/5xx (403/429/5xx), "-S" surfaces the error; a non-zero
+    # exit sets the "status" attribute on the (empty) result.
+    html.text <- suppressWarnings(
+      system2(curl.bin, args = c("-s", "-S", "-f", "-L", url),
+              stdout = TRUE, stderr = FALSE))
+    status <- attr(html.text, "status")
+    ok <- (is.null(status) || identical(as.integer(status), 0L)) &&
+      length(html.text) > 0L
+    if (ok) {
+      return(rvest::read_html(paste(html.text, collapse = "\n")))
     }
     if (attempt < retries) Sys.sleep(2 * attempt)
   }
@@ -60,7 +63,9 @@
   curl.bin <- .get_curl_bin()
   tmpfile <- paste0(destfile, ".part")
   on.exit(unlink(tmpfile), add = TRUE)
-  exit.code <- system2(curl.bin, args = c("-s", "-L", "-o", tmpfile, url))
+  # "-f" makes curl exit non-zero on 4xx/5xx so error pages are not saved as
+  # the destination file.
+  exit.code <- system2(curl.bin, args = c("-s", "-f", "-L", "-o", tmpfile, url))
   if (exit.code != 0) {
     stop("curl failed with exit code ", exit.code, " for: ", url, call. = FALSE)
   }
@@ -144,6 +149,30 @@
   do.call(rbind, out)
 }
 
+#' Parse a US-format "Month DD, YYYY" date to ISO, locale-independently
+#'
+#' Avoids `as.Date(x, format = "%b %d, %Y")`, which depends on `LC_TIME` and
+#' silently returns `NA` under non-English locales. Matches full or 3-letter
+#' month names case-insensitively.
+#'
+#' @param raw Character scalar like `"March 5, 2024"` or `"Mar 5, 2024"`.
+#' @return ISO date string `"YYYY-MM-DD"`, or `NA_character_` on any failure.
+#' @keywords internal
+#' @noRd
+.parse_us_date <- function(raw) {
+  if (is.na(raw) || !nzchar(trimws(raw))) return(NA_character_)
+  months <- c(jan = 1L, feb = 2L, mar = 3L, apr = 4L, may = 5L, jun = 6L,
+              jul = 7L, aug = 8L, sep = 9L, oct = 10L, nov = 11L, dec = 12L)
+  m <- regmatches(raw,
+                  regexec("([A-Za-z]+)\\s+(\\d{1,2}),\\s*(\\d{4})", raw))[[1]]
+  if (length(m) < 4L) return(NA_character_)
+  mon  <- months[tolower(substr(m[2], 1, 3))]
+  day  <- suppressWarnings(as.integer(m[3]))
+  year <- suppressWarnings(as.integer(m[4]))
+  if (is.na(mon) || is.na(day) || is.na(year)) return(NA_character_)
+  sprintf("%04d-%02d-%02d", year, mon, day)
+}
+
 #' Extract Metadata from a Single GAO Report Page
 #'
 #' Parses metadata from the HTML of an individual GAO report page (not a
@@ -173,18 +202,14 @@
 
   pub.match <- regmatches(date.text, regexpr("Published:\\s*(\\w+ \\d{1,2}, \\d{4})", date.text))
   published <- if (length(pub.match) == 1L) {
-    raw <- sub("Published:\\s*", "", pub.match)
-    d <- as.Date(raw, format = "%b %d, %Y")
-    if (!is.na(d)) format(d, "%Y-%m-%d") else NA_character_
+    .parse_us_date(sub("Published:\\s*", "", pub.match))
   } else {
     NA_character_
   }
 
   rel.match <- regmatches(date.text, regexpr("Publicly Released:\\s*(\\w+ \\d{1,2}, \\d{4})", date.text))
   released <- if (length(rel.match) == 1L) {
-    raw <- sub("Publicly Released:\\s*", "", rel.match)
-    d <- as.Date(raw, format = "%b %d, %Y")
-    if (!is.na(d)) format(d, "%Y-%m-%d") else NA_character_
+    .parse_us_date(sub("Publicly Released:\\s*", "", rel.match))
   } else {
     NA_character_
   }
@@ -362,6 +387,11 @@
 
   text <- trimws(text)
 
+  # Strip a bare "GAO" wordmark that OCR/HTML sometimes injects mid-string
+  # (e.g. "Committee on GAO the Judiciary"). Protect "GAO-"/"GAO/" report IDs.
+  text <- trimws(gsub("\\s+", " ",
+                      gsub("\\bGAO\\b(?![-/])", " ", text, perl = TRUE)))
+
   # "congressional addressees" → statutory mandate (always mandated by law)
   if (tolower(text) == "congressional addressees") {
     return(list(requester_type = "statutory_mandate",
@@ -403,7 +433,10 @@
 
   # Try to extract committee + chamber pairs
   # Pattern: "Committee on [Name], [Chamber]" or "Subcommittee on [Name], [Chamber]"
-  committee.pattern <- "((?:Committee|Subcommittee) on [^,]+),\\s*(U\\.S\\. Senate|United States Senate|House of Representatives)"
+  # The non-greedy ".+?" may cross internal commas (e.g. "Science, Space, and
+  # Technology"; "Health, Education, Labor, and Pensions") but stops at the
+  # chamber tag.
+  committee.pattern <- "((?:Committee|Subcommittee) on .+?),\\s*(U\\.S\\. Senate|United States Senate|House of Representatives)"
   m <- gregexpr(committee.pattern, text, perl = TRUE)
   matches <- regmatches(text, m)[[1]]
 
@@ -467,7 +500,7 @@
 
   # Find the subtitle: "Highlights of [ID], a [report/letter/testimony] to [addressee]"
   # The subtitle appears before "What GAO Found"
-  subtitle.pattern <- "Highlights\\s+of\\s+[A-Z0-9][A-Z0-9-]+,\\s*a\\s+(?:report|letter|testimony)\\s+to\\s+(.+?)(?=\\s*What GAO|\\s*$)"
+  subtitle.pattern <- "Highlights\\s+of\\s+[A-Z0-9][A-Z0-9-]+,\\s*a\\s+(?:report|letter|testimony)\\s+to\\s+(.+?)(?=\\s*What GAO|\\s*Why GAO|\\s*$)"
   m <- regmatches(hl.text, regexec(subtitle.pattern, hl.text, perl = TRUE))[[1]]
 
   if (length(m) < 2) return(na.result)
@@ -528,8 +561,9 @@
   m <- regmatches(urls, regexpr("gao-([0-9]{2})-", urls))
   yy <- suppressWarnings(as.integer(sub("gao-([0-9]{2})-", "\\1", m)))
   yy[lengths(regmatches(urls, regexpr("gao-([0-9]{2})-", urls))) == 0L] <- NA_integer_
-  # 00-49 -> 2000-2049, 50-99 -> 1950-1999
-  ifelse(is.na(yy), NA_integer_, ifelse(yy <= 49L, 2000L + yy, 1900L + yy))
+  # The "gao-YY" scheme is entirely post-2000 (no gao-5x..9x URLs exist), so a
+  # two-digit YY always maps to 2000 + YY (correct through FY2099).
+  ifelse(is.na(yy), NA_integer_, 2000L + yy)
 }
 
 #' Infer Fiscal Year from Date or URL

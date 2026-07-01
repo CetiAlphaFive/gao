@@ -81,10 +81,48 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
 
   if (verbose) message("New reports found: ", nrow(combined) - nrow(known))
 
+  # Derived covariates (indicators + features) are intentionally recomputed
+  # on-the-fly by gao_links()/.ensure_expanded() and are not persisted here.
   combined <- combined[!duplicated(combined$url), , drop = FALSE]
   combined <- combined[order(combined$url), , drop = FALSE]
   rownames(combined) <- NULL
   combined
+}
+
+#' Ensure a report frame carries current derived columns
+#'
+#' Idempotent, version-gated expansion: returns `d` unchanged if it already has
+#' the derived columns AND its stamped schema version matches
+#' [.gao_schema_version()]. Otherwise drops any stale derived columns and
+#' recomputes them from the base columns via [.expand_indicators()] and
+#' [.expand_features()].
+#'
+#' @param d A data.frame of report metadata (base columns required).
+#' @return `d` with a current, fully-derived column set.
+#' @keywords internal
+#' @noRd
+.ensure_expanded <- function(d) {
+  derived_present <- "agency_other" %in% names(d) &&
+    "issuing_division" %in% names(d)
+  current <- identical(attr(d, "gao_schema_version"), .gao_schema_version())
+  if (derived_present && current) return(d)
+
+  # Drop any stale derived columns, then recompute from the base columns.
+  drop <- c(.indicator_colnames(),
+            "issuing_division", "product_type", "pub_month", "pub_dow",
+            "pub_fiscal_year", "fiscal_quarter", "election_year",
+            "release_lag_days", "n_topics", "n_subject_terms",
+            "requester_party", "requester_majority_status",
+            "requester_chamber", "requester_bipartisan")
+  d <- d[, setdiff(names(d), drop), drop = FALSE]
+  if (!"requester_type" %in% names(d)) {
+    d$requester_type <- NA_character_
+    d$requester_committees <- NA_character_
+    d$requester_members <- NA_character_
+  }
+  d <- .expand_indicators(d)
+  d <- .expand_features(d)   # stamps gao_schema_version
+  d
 }
 
 #' Get GAO Report Data
@@ -108,8 +146,9 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
 #'   member names with roles), plus 82 integer indicator columns:
 #'   31 `topic_*` columns (one per topic), 50 `agency_*` columns
 #'   (one per top-50 agency), and `agency_other` (1 if any non-top-50
-#'   agency appears). Indicator columns are `NA_integer_` where the
-#'   source field is missing.
+#'   agency appears). Matching is exact per semicolon-delimited item.
+#'   Indicator columns are `NA_integer_` where the source field is
+#'   missing or empty.
 #'
 #'   Additional derived covariates are computed on the fly:
 #'   `issuing_division` (GAO producing unit decoded from the report-ID prefix,
@@ -120,13 +159,16 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
 #'   (federal FY, starts October), `election_year` (1 if even calendar year),
 #'   `release_lag_days` (`released - published`), `n_topics`,
 #'   `n_subject_terms`, and requester party covariates `requester_party`
-#'   (`"R"`/`"D"`/`"mixed"`/`NA`), `requester_majority_status`
+#'   (`"R"`/`"D"`/`"Other"`/`"mixed"`/`NA`, where `"Other"` marks a lone
+#'   independent/third-party requester), `requester_majority_status`
 #'   (`"majority"`/`"minority"`/`"mixed"`/`NA`), `requester_chamber`
 #'   (`"House"`/`"Senate"`/`"both"`/`NA`), and `requester_bipartisan`
 #'   (logical). Requester party is resolved by matching parsed member names
 #'   against a bundled VoteView crosswalk for the Congress active at
-#'   publication; it is populated only for reports that name individual
-#'   requesters.
+#'   publication (chamber-aware, so House/Senate namesakes do not collide);
+#'   it is populated only for reports that name individual requesters. Majority
+#'   status is computed against the requester's own chamber, and for
+#'   independents is resolved via the party they caucus with.
 #' @export
 #' @examples
 #' reports <- gao_links()
@@ -161,26 +203,18 @@ gao_links <- function() {
       requester_members = character(0),
       stringsAsFactors = FALSE
     )
-    for (col in .indicator_colnames()) empty[[col]] <- integer(0)
+    # Give the fallback the full derived schema so it matches a normal return.
+    # Both expanders handle 0-row frames.
+    empty <- .expand_indicators(empty)
+    empty <- .expand_features(empty)
     return(empty)
   }
 
   d <- readRDS(path)
-  # Add requester columns on the fly if not already present
-  if (!"requester_type" %in% names(d)) {
-    d$requester_type <- NA_character_
-    d$requester_committees <- NA_character_
-    d$requester_members <- NA_character_
-  }
-  # Expand indicator columns on the fly if not already present
-  if (!"agency_other" %in% names(d)) {
-    d <- .expand_indicators(d)
-  }
-  # Expand derived covariates (division, product type, temporal, requester
-  # party) on the fly if not already present
-  if (!"issuing_division" %in% names(d)) {
-    d <- .expand_features(d)
-  }
+  # Add requester columns and derived covariates (indicators, division, product
+  # type, temporal, requester party) on the fly, version-gated so a frame that
+  # is already fully derived at the current schema is returned unchanged.
+  d <- .ensure_expanded(d)
   .gao_env$links <- d
   d
 }
@@ -214,10 +248,13 @@ gao_update_data <- function(quiet = FALSE) {
                                  quiet = quiet)
   if (status != 0L) stop("Download failed (status ", status, ")", call. = FALSE)
 
-  # Validate the download is a readable RDS
-  tryCatch(readRDS(tmp), error = function(e) {
+  # Validate the download is a readable RDS with the required base columns.
+  obj <- tryCatch(readRDS(tmp), error = function(e) {
     stop("Downloaded file is not a valid RDS: ", e$message, call. = FALSE)
   })
+  if (!all(c("url", "report_id", "published") %in% names(obj))) {
+    stop("Downloaded file is missing required columns", call. = FALSE)
+  }
 
   file.copy(tmp, cache.path, overwrite = TRUE)
   .gao_env$links <- NULL

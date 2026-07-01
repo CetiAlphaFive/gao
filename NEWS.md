@@ -10,6 +10,24 @@
 * Fixed noise in `requester_committees` / `requester_members` (injected "GAO"
   tokens, "RELEASED" bleed, OCR mid-word capitalization); the daily update now
   cleans these fields on save.
+* Requester party/majority covariates corrected: multi-word, hyphenated, and
+  suffixed surnames (Van Hollen, Ros-Lehtinen, de la Garza, Wasserman Schultz,
+  Diaz-Balart, Dingell Jr.) now resolve; the lookup is chamber-aware so
+  House/Senate namesakes (Mark/Mike Kelly, Rick/Bobby Scott, John/Joe Kennedy)
+  no longer collide; majority status is computed per the requester's chamber;
+  independents are labeled `requester_party = "Other"` with majority status
+  resolved via caucus.
+* Senate majority table corrected for independents/near-ties (e.g. the 110th and
+  117th Senates are now "D").
+* Parser root-cause fixes: injected "GAO" wordmark, distribution/security stamp
+  bleed ("RELEASED"/"RESTRICTED"/OCR "PESTRICTUD"), committee names with
+  internal commas, and highlights over-capture of "Why GAO Did This Study"
+  prose.
+* Indicators use exact per-item matching for agencies and topics (GAO
+  sub-office strings no longer flip a parent-department flag); empty source
+  fields now yield `NA` rather than all-zero.
+* Downloads use curl `--fail`; HTML fetch keys on HTTP status; dates parse
+  locale-independently; `gao-YY` URL fiscal years pivot to the 2000s.
 
 # gao 0.5.0
 

@@ -118,6 +118,51 @@ test_that(".expand_indicators() on zero-row data.frame", {
   expect_true(all(.indicator_colnames() %in% names(result)))
 })
 
+test_that("topics use exact per-item matching over the split list (C6)", {
+  df <- data.frame(
+    topics = c("National Defense; Space", "Health Care; Education; Energy"),
+    agencies_affected = NA_character_,
+    stringsAsFactors = FALSE
+  )
+  result <- .expand_indicators(df)
+  # A multi-topic string flags EACH listed topic (not just an exact whole-string
+  # match), and only those.
+  expect_equal(result$topic_national_defense, c(1L, 0L))
+  expect_equal(result$topic_space,            c(1L, 0L))
+  expect_equal(result$topic_health_care,      c(0L, 1L))
+  expect_equal(result$topic_education,        c(0L, 1L))
+  expect_equal(result$topic_energy,           c(0L, 1L))
+  expect_equal(result$topic_transportation,   c(0L, 0L))
+})
+
+test_that("agency matching is exact, not substring (C1)", {
+  df <- data.frame(
+    topics = NA_character_,
+    agencies_affected = c(
+      "Internal Revenue Service Criminal Investigation",  # sub-office, not IRS
+      "Internal Revenue Service"                          # the real parent
+    ),
+    stringsAsFactors = FALSE
+  )
+  result <- .expand_indicators(df)
+  # A sub-office string must NOT flip the parent department flag.
+  expect_equal(result$agency_internal_revenue_service, c(0L, 1L))
+  expect_equal(result$agency_other, c(1L, 0L))
+})
+
+test_that("empty (non-NA) source fields yield NA indicators (C3)", {
+  df <- data.frame(
+    topics = c("", "   "),
+    agencies_affected = c("", "   "),
+    stringsAsFactors = FALSE
+  )
+  result <- .expand_indicators(df)
+  for (col in .indicator_colnames()) {
+    expect_true(all(is.na(result[[col]])),
+                info = paste("expected all NA for", col))
+  }
+})
+
 test_that("multiple agencies: each gets flagged", {
   df <- data.frame(
     topics = NA_character_,

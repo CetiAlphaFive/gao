@@ -1,3 +1,34 @@
+#' Strip OCR distribution/security stamps that bleed into a member name
+#'
+#' Legacy GAO PDFs carry distribution stamps ("- Not to be released...",
+#' "RESTRICTED", OCR variants like "PESTRICTUD") that the addressee regexes
+#' can capture as part of a member name. This trims them at the source.
+#'
+#' @param name Character scalar. A captured member name, possibly with a stamp.
+#' @return The name with any trailing stamp removed.
+#' @keywords internal
+#' @noRd
+.strip_name_stamp <- function(name) {
+  if (is.na(name) || !nzchar(name)) return(name)
+  # 1. Drop a dash-delimited trailing clause ("... - Not to be released ...").
+  name <- sub("\\s+[-–—]\\s+.*$", "", name)
+  # 2. Cut at the first all-caps (>= 5 letters) token at position >= 2. The
+  #    position guard protects a legitimate all-caps first token.
+  toks <- strsplit(trimws(name), "\\s+")[[1]]
+  toks <- toks[nzchar(toks)]
+  if (length(toks) >= 2L) {
+    stamp <- which(grepl("^[A-Z]{5,}$", toks))
+    stamp <- stamp[stamp >= 2L]
+    if (length(stamp) > 0L) {
+      name <- paste(toks[seq_len(stamp[1] - 1L)], collapse = " ")
+    }
+  }
+  # 3. Keyword backstop for stamps not caught above.
+  name <- sub("\\s*\\b(RELEASED|RESTRICTED|EMBARGOED|CONFIDENTIAL)\\b.*$", "",
+              name)
+  trimws(name)
+}
+
 #' Parse Addressee Block from Report Letter Text
 #'
 #' Extracts committee names and member names from the structured addressee
@@ -22,6 +53,9 @@
 #' @keywords internal
 #' @noRd
 .parse_addressee_block <- function(text) {
+  if (length(text) != 1L) {
+    stop("text must be a length-1 character scalar", call. = FALSE)
+  }
   na.result <- list(requester_type = NA_character_,
                     requester_committees = NA_character_,
                     requester_members = NA_character_)
@@ -68,7 +102,7 @@
   if (length(role.all) > 0) {
     for (match.str in role.all) {
       parts <- regmatches(match.str, regexec(role.pattern, match.str, perl = TRUE))[[1]]
-      name <- trimws(parts[2])
+      name <- .strip_name_stamp(trimws(parts[2]))
       role <- trimws(parts[3])
       committee <- trimws(parts[4])
       chamber <- map.chamber(parts[5])
@@ -97,7 +131,7 @@
   if (length(inline.all) > 0) {
     for (match.str in inline.all) {
       parts <- regmatches(match.str, regexec(inline.role.pattern, match.str, perl = TRUE))[[1]]
-      name <- trimws(parts[2])
+      name <- .strip_name_stamp(trimws(parts[2]))
       role <- trimws(parts[3])
       sub.committee <- trimws(parts[4])
       parent.committee <- trimws(parts[5])
@@ -141,7 +175,8 @@
       mm.all <- regmatches(members.block, mm)[[1]]
       for (m in mm.all) {
         mp <- regmatches(m, regexec(member.pattern, m, perl = TRUE))[[1]]
-        members <- c(members, paste0(trimws(mp[2]), ", ", trimws(mp[3])))
+        members <- c(members, paste0(.strip_name_stamp(trimws(mp[2])), ", ",
+                                     trimws(mp[3])))
       }
     }
   }
@@ -166,7 +201,7 @@
       }
       if (already) next
       parts <- regmatches(match.str, regexec(indiv.pattern, match.str, perl = TRUE))[[1]]
-      name <- trimws(parts[2])
+      name <- .strip_name_stamp(trimws(parts[2]))
       chamber <- map.chamber(parts[3])
       members <- c(members, paste0(name, " (", chamber, ")"))
     }
@@ -262,7 +297,11 @@
                     requester_committees = NA_character_,
                     requester_members = NA_character_)
 
-  if (is.null(text) || is.na(text) || !nzchar(text)) return(na.result)
+  if (is.null(text)) return(na.result)
+  if (length(text) != 1L) {
+    stop("text must be a length-1 character scalar", call. = FALSE)
+  }
+  if (is.na(text) || !nzchar(text)) return(na.result)
 
   # Collapse whitespace so the regex works across line breaks
   clean <- gsub("\\s+", " ", text)

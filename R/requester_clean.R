@@ -21,9 +21,12 @@
     items <- vapply(items, function(it) {
       # 1. injected "GAO" right after "Committee on"/"Subcommittee on"
       it <- sub("((?:Sub)?Committee on) GAO ", "\\1 ", it, perl = TRUE)
-      # 2. drop "RELEASED" / "Publicly Released" bleed
-      it <- gsub("\\s*(?:Publicly )?RELEASED\\b", "", it, perl = TRUE)
-      # 3. fix OCR mid-word caps like "LUgar" -> "Lugar" (upper, upper, lower-run)
+      # 2. drop "RELEASED"/"RESTRICTED"/OCR "PESTRICTUD" (+ "Publicly ") bleed
+      it <- gsub("\\s*(?:Publicly )?(?:RELEASED|RESTRICTED|PESTRICTUD)\\b", "",
+                 it, perl = TRUE)
+      # 3. drop a dash-delimited "- Not to be released ..." distribution stamp
+      it <- sub("\\s+[-–—]\\s+[Nn]ot to be released.*$", "", it)
+      # 4. fix OCR mid-word caps like "LUgar" -> "Lugar" (upper, upper, lower-run)
       it <- gsub("\\b([A-Z])([A-Z])([a-z]+)", "\\1\\L\\2\\3", it, perl = TRUE)
       trimws(gsub("\\s+", " ", it))
     }, character(1), USE.NAMES = FALSE)

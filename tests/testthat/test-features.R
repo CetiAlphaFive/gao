@@ -51,6 +51,47 @@ test_that(".expand_features is idempotent and preserves row count", {
   expect_equal(twice$issuing_division, "General Government")
 })
 
+test_that(".count_delimited ignores stray/empty tokens (A7)", {
+  expect_equal(.count_delimited("a;;b"),     2L)   # empty middle token
+  expect_equal(.count_delimited("a; b; "),   2L)   # trailing semicolon
+  expect_equal(.count_delimited(" ; "),      0L)   # only separators/space
+  expect_equal(.count_delimited("a; b; c"),  3L)
+  expect_equal(.count_delimited(NA_character_), 0L)
+  expect_equal(.count_delimited(""),         0L)
+})
+
+test_that("product_type precedence: testimony/legal override correspondence (A8)", {
+  # A testimony ID that also ends in "<digit>R" must resolve to testimony, not
+  # correspondence; a B- legal decision likewise overrides correspondence.
+  expect_equal(.gao_product_type("T-AFMD-87-1R"), "testimony")
+  expect_equal(.gao_product_type("T-HEHS-95-3R"), "testimony")
+  expect_equal(.gao_product_type("B-100063R"),    "legal_decision")
+  # And the plain channels still classify correctly.
+  expect_equal(.gao_product_type("GGD-95-12R"),   "correspondence")
+  expect_equal(.gao_product_type("OGC-95-1"),     "legal_other")
+})
+
+test_that(".expand_features stamps the schema version (C4)", {
+  d <- data.frame(report_id = "GGD-95-1", published = "1995-06-01",
+                  released = "1995-06-01", topics = "Government Operations",
+                  subject_terms = "x", stringsAsFactors = FALSE)
+  out <- .expand_features(d)
+  expect_identical(attr(out, "gao_schema_version"), .gao_schema_version())
+})
+
+test_that(".expand_features handles a 0-row frame (C5)", {
+  d <- data.frame(report_id = character(0), published = character(0),
+                  released = character(0), topics = character(0),
+                  subject_terms = character(0),
+                  requester_members = character(0),
+                  requester_committees = character(0),
+                  stringsAsFactors = FALSE)
+  out <- .expand_features(d)
+  expect_equal(nrow(out), 0L)
+  expect_true(all(c("requester_party", "issuing_division", "n_topics") %in%
+                    names(out)))
+})
+
 test_that(".expand_features attaches requester party columns", {
   d <- data.frame(
     report_id = "NSIAD-95-1", published = "1995-06-01", released = "1995-06-01",

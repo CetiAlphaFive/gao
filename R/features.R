@@ -63,19 +63,27 @@
 .gao_product_type <- function(report_id) {
   id <- toupper(trimws(as.character(report_id)))
   pt <- rep("report", length(id))
-  pt[grepl("^T-", id) | grepl("[0-9]T$", id)] <- "testimony"
-  pt[grepl("^B-", id)]                         <- "legal_decision"
+  # Ordered so testimony/legal_decision override correspondence for IDs that
+  # match more than one pattern (mirrors [.classify_report_type()] precedence).
   pt[grepl("[0-9]R$", id)]                     <- "correspondence"
   pt[grepl("^OGC", id) & pt == "report"]       <- "legal_other"
+  pt[grepl("^B-", id)]                         <- "legal_decision"
+  pt[grepl("^T-", id) | grepl("[0-9]T$", id)]  <- "testimony"
   pt[is.na(id) | !nzchar(id)]                  <- NA_character_
   pt
 }
 
 #' Count semicolon-delimited items (0 for NA/empty)
+#'
+#' Counts only non-empty trimmed tokens, so stray or trailing semicolons
+#' (e.g. `"a;;b"`, `"a; b;"`) do not inflate the count.
 #' @keywords internal
 #' @noRd
 .count_delimited <- function(x) {
-  ifelse(is.na(x) | !nzchar(x), 0L, lengths(strsplit(x, ";")))
+  vapply(x, function(s) {
+    if (is.na(s) || !nzchar(s)) return(0L)
+    sum(nzchar(trimws(strsplit(s, ";")[[1]])))
+  }, integer(1), USE.NAMES = FALSE)
 }
 
 #' Add all derived covariate columns to a report data.frame
@@ -146,6 +154,10 @@
   df$requester_majority_status <- maj
   df$requester_chamber         <- cham
   df$requester_bipartisan      <- bip
+
+  # This is the last expansion step, so stamp the schema version to mark the
+  # frame as fully derived (see [.ensure_expanded()]).
+  attr(df, "gao_schema_version") <- .gao_schema_version()
 
   df
 }

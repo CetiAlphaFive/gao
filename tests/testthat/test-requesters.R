@@ -413,3 +413,36 @@ test_that("parsed requester members are cleaned on the return path", {
   expect_false(grepl("LUgar", res$requester_members %||% ""))
   expect_true(grepl("Lugar", res$requester_members %||% ""))
 })
+
+# --- .strip_name_stamp() root-cause fix (B2) ---
+
+test_that(".strip_name_stamp() cuts OCR distribution/security stamps", {
+  expect_equal(.strip_name_stamp("Gary C. Peters RESTRICTED"), "Gary C. Peters")
+  expect_equal(.strip_name_stamp("Gary C. Peters PESTRICTUD"), "Gary C. Peters")
+  expect_equal(.strip_name_stamp("Jane Doe - Not to be released until 10 a.m."),
+               "Jane Doe")
+  # A clean name is unchanged (mixed-case surnames are never treated as stamps).
+  expect_equal(.strip_name_stamp("Gary C. Peters"), "Gary C. Peters")
+  # NA/empty pass through untouched.
+  expect_true(is.na(.strip_name_stamp(NA_character_)))
+})
+
+test_that(".parse_addressee_block() strips a stamp bleeding into a member name (B2)", {
+  text <- paste("The Honorable Gary C. Peters PESTRICTUD",
+                "United States Senate", sep = "\n")
+  res <- .parse_addressee_block(text)
+  expect_equal(res$requester_members, "Gary C. Peters (Senate)")
+  expect_false(grepl("PESTRICTUD", res$requester_members))
+})
+
+# --- length-1 guards (B9) ---
+
+test_that(".parse_addressee_block() rejects non-scalar text (B9)", {
+  expect_error(.parse_addressee_block(c("a", "b")), "length-1")
+})
+
+test_that(".parse_pdf_cover_subtitle() rejects non-scalar text but allows NULL (B9)", {
+  expect_error(.parse_pdf_cover_subtitle(c("a", "b")), "length-1")
+  res <- .parse_pdf_cover_subtitle(NULL)
+  expect_true(is.na(res$requester_type))
+})

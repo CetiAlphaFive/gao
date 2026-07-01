@@ -21,8 +21,9 @@ with chamber), requester_members (character, semicolon-separated
 member names with roles), plus 82 integer indicator columns:
 31 \verb{topic_*} columns (one per topic), 50 \verb{agency_*} columns
 (one per top-50 agency), and \code{agency_other} (1 if any non-top-50
-agency appears). Indicator columns are \code{NA_integer_} where the
-source field is missing.
+agency appears). Matching is exact per semicolon-delimited item.
+Indicator columns are \code{NA_integer_} where the source field is
+missing or empty.
 
 Additional derived covariates are computed on the fly:
 \code{issuing_division} (GAO producing unit decoded from the report-ID prefix,
@@ -33,13 +34,16 @@ legacy IDs), \code{product_type} (\code{"report"}, \code{"testimony"},
 (federal FY, starts October), \code{election_year} (1 if even calendar year),
 \code{release_lag_days} (\code{released - published}), \code{n_topics},
 \code{n_subject_terms}, and requester party covariates \code{requester_party}
-(\code{"R"}/\code{"D"}/\code{"mixed"}/\code{NA}), \code{requester_majority_status}
+(\code{"R"}/\code{"D"}/\code{"Other"}/\code{"mixed"}/\code{NA}, where \code{"Other"} marks a lone
+independent/third-party requester), \code{requester_majority_status}
 (\code{"majority"}/\code{"minority"}/\code{"mixed"}/\code{NA}), \code{requester_chamber}
 (\code{"House"}/\code{"Senate"}/\code{"both"}/\code{NA}), and \code{requester_bipartisan}
 (logical). Requester party is resolved by matching parsed member names
 against a bundled VoteView crosswalk for the Congress active at
-publication; it is populated only for reports that name individual
-requesters.
+publication (chamber-aware, so House/Senate namesakes do not collide);
+it is populated only for reports that name individual requesters. Majority
+status is computed against the requester's own chamber, and for
+independents is resolved via the party they caucus with.
 }
 \description{
 Returns a data.frame of GAO report metadata. Checks for a user-local

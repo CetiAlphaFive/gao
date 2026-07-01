@@ -104,11 +104,72 @@ test_that(".fiscal_year_from_url() returns NA for legacy URLs", {
   expect_true(all(is.na(.fiscal_year_from_url(legacy))))
 })
 
-test_that(".fiscal_year_from_url() handles century boundary", {
+test_that(".fiscal_year_from_url() pivots every YY into the 2000s (B7)", {
+  # The gao-YY scheme is entirely post-2000, so a two-digit YY always maps to
+  # 2000 + YY. There are no gao-5x..9x (1950s-1990s) product URLs.
   expect_equal(.fiscal_year_from_url("/products/gao-00-100"), 2000L)
   expect_equal(.fiscal_year_from_url("/products/gao-49-100"), 2049L)
-  expect_equal(.fiscal_year_from_url("/products/gao-50-100"), 1950L)
-  expect_equal(.fiscal_year_from_url("/products/gao-99-100"), 1999L)
+  expect_equal(.fiscal_year_from_url("/products/gao-50-100"), 2050L)
+  expect_equal(.fiscal_year_from_url("/products/gao-99-100"), 2099L)
+})
+
+# --- .parse_us_date() (B8) ---
+
+test_that(".parse_us_date() parses US dates locale-independently", {
+  expect_equal(.parse_us_date("March 5, 2024"),     "2024-03-05")
+  expect_equal(.parse_us_date("Mar 5, 2024"),       "2024-03-05")
+  expect_equal(.parse_us_date("September 30, 1999"), "1999-09-30")
+  expect_equal(.parse_us_date("January 1, 2000"),    "2000-01-01")
+})
+
+test_that(".parse_us_date() returns NA on failure", {
+  expect_true(is.na(.parse_us_date(NA_character_)))
+  expect_true(is.na(.parse_us_date("")))
+  expect_true(is.na(.parse_us_date("not a date")))
+  expect_true(is.na(.parse_us_date("Foo 5, 2024")))       # unknown month word
+  expect_true(is.na(.parse_us_date("March 5")))           # no year
+})
+
+# --- .parse_subtitle_addressee() root-cause fixes (B1, B3) ---
+
+test_that(".parse_subtitle_addressee() strips an injected 'GAO' wordmark (B1)", {
+  res <- .parse_subtitle_addressee(
+    "the Committee on GAO the Judiciary, U.S. Senate")
+  expect_equal(res$requester_committees, "Committee on the Judiciary (Senate)")
+})
+
+test_that(".parse_subtitle_addressee() handles committee names with internal commas (B3)", {
+  res1 <- .parse_subtitle_addressee(
+    "the Committee on Science, Space, and Technology, House of Representatives")
+  expect_equal(res1$requester_committees,
+               "Committee on Science, Space, and Technology (House)")
+
+  res2 <- .parse_subtitle_addressee(
+    "the Committee on Health, Education, Labor, and Pensions, U.S. Senate")
+  expect_equal(res2$requester_committees,
+               "Committee on Health, Education, Labor, and Pensions (Senate)")
+})
+
+# --- .parse_highlights_subtitle() over-capture fix (B4) ---
+
+test_that(".parse_highlights_subtitle() stops at 'Why GAO' prose (B4)", {
+  html <- rvest::read_html('
+    <html><body>
+      <div class="js-endpoint-highlights">
+        <div class="field__item">
+          Highlights of GAO-25-1, a report to the Committee on Armed Services,
+          U.S. Senate
+          Why GAO Did This Study
+          The Committee on Foreign Affairs, House of Representatives asked GAO.
+        </div>
+      </div>
+    </body></html>
+  ')
+  res <- .parse_highlights_subtitle(html)
+  # Only the true subtitle addressee is captured; the "Why GAO" prose (with its
+  # decoy committee) is not swallowed.
+  expect_equal(res$requester_committees, "Committee on Armed Services (Senate)")
+  expect_false(grepl("Foreign Affairs", res$requester_committees %||% ""))
 })
 
 # --- .infer_fiscal_year() ---
