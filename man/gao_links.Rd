@@ -23,6 +23,23 @@ member names with roles), plus 82 integer indicator columns:
 (one per top-50 agency), and \code{agency_other} (1 if any non-top-50
 agency appears). Indicator columns are \code{NA_integer_} where the
 source field is missing.
+
+Additional derived covariates are computed on the fly:
+\code{issuing_division} (GAO producing unit decoded from the report-ID prefix,
+e.g. \code{"National Security & International Affairs"}; \code{NA} for pure-numeric
+legacy IDs), \code{product_type} (\code{"report"}, \code{"testimony"},
+\code{"correspondence"}, \code{"legal_decision"}, or \code{"legal_other"}), \code{pub_month}
+(1-12), \code{pub_dow} (1=Mon..7=Sun), \code{pub_fiscal_year}, \code{fiscal_quarter}
+(federal FY, starts October), \code{election_year} (1 if even calendar year),
+\code{release_lag_days} (\code{released - published}), \code{n_topics},
+\code{n_subject_terms}, and requester party covariates \code{requester_party}
+(\code{"R"}/\code{"D"}/\code{"mixed"}/\code{NA}), \code{requester_majority_status}
+(\code{"majority"}/\code{"minority"}/\code{"mixed"}/\code{NA}), \code{requester_chamber}
+(\code{"House"}/\code{"Senate"}/\code{"both"}/\code{NA}), and \code{requester_bipartisan}
+(logical). Requester party is resolved by matching parsed member names
+against a bundled VoteView crosswalk for the Congress active at
+publication; it is populated only for reports that name individual
+requesters.
 }
 \description{
 Returns a data.frame of GAO report metadata. Checks for a user-local

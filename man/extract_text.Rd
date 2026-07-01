@@ -25,7 +25,7 @@ single string separated by newlines.}
 }
 \description{
 Reads PDF files from a local directory and extracts their text content using
-\code{\link[pdftools:pdftools]{pdftools::pdf_text()}}. Designed to work with PDFs downloaded via
+\code{\link[pdftools:pdf_text]{pdftools::pdf_text()}}. Designed to work with PDFs downloaded via
 \code{\link[=auto_download]{auto_download()}}.
 }
 \details{

@@ -1,3 +1,16 @@
+# gao 0.6.0
+
+* `gao_links()` now returns derived covariate columns computed on the fly:
+  `issuing_division` and `product_type` (decoded from report-ID prefixes),
+  neutral temporal features (`pub_month`, `pub_dow`, `pub_fiscal_year`,
+  `fiscal_quarter`, `election_year`, `release_lag_days`), scope counts
+  (`n_topics`, `n_subject_terms`), and requester party covariates
+  (`requester_party`, `requester_majority_status`, `requester_chamber`,
+  `requester_bipartisan`) resolved against a bundled VoteView crosswalk.
+* Fixed noise in `requester_committees` / `requester_members` (injected "GAO"
+  tokens, "RELEASED" bleed, OCR mid-word capitalization); the daily update now
+  cleans these fields on save.
+
 # gao 0.5.0
 
 * CRAN preparation release.

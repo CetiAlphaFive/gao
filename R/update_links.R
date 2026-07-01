@@ -110,6 +110,23 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
 #'   (one per top-50 agency), and `agency_other` (1 if any non-top-50
 #'   agency appears). Indicator columns are `NA_integer_` where the
 #'   source field is missing.
+#'
+#'   Additional derived covariates are computed on the fly:
+#'   `issuing_division` (GAO producing unit decoded from the report-ID prefix,
+#'   e.g. `"National Security & International Affairs"`; `NA` for pure-numeric
+#'   legacy IDs), `product_type` (`"report"`, `"testimony"`,
+#'   `"correspondence"`, `"legal_decision"`, or `"legal_other"`), `pub_month`
+#'   (1-12), `pub_dow` (1=Mon..7=Sun), `pub_fiscal_year`, `fiscal_quarter`
+#'   (federal FY, starts October), `election_year` (1 if even calendar year),
+#'   `release_lag_days` (`released - published`), `n_topics`,
+#'   `n_subject_terms`, and requester party covariates `requester_party`
+#'   (`"R"`/`"D"`/`"mixed"`/`NA`), `requester_majority_status`
+#'   (`"majority"`/`"minority"`/`"mixed"`/`NA`), `requester_chamber`
+#'   (`"House"`/`"Senate"`/`"both"`/`NA`), and `requester_bipartisan`
+#'   (logical). Requester party is resolved by matching parsed member names
+#'   against a bundled VoteView crosswalk for the Congress active at
+#'   publication; it is populated only for reports that name individual
+#'   requesters.
 #' @export
 #' @examples
 #' reports <- gao_links()
