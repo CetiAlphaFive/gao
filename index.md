@@ -12,6 +12,7 @@ Office. All data is obtained from public web pages at
 [gao.gov](https://www.gao.gov). \## Installation
 
 ``` r
+
 # From CRAN (when available)
 install.packages("gao")
 
@@ -47,6 +48,7 @@ to fetch the latest dataset from GitHub Releases.
 ## Quick start
 
 ``` r
+
 library(gao)
 
 # Interactive --- prompts for format and year range
