@@ -392,21 +392,21 @@
   text <- trimws(gsub("\\s+", " ",
                       gsub("\\bGAO\\b(?![-/])", " ", text, perl = TRUE)))
 
-  # "congressional addressees" → statutory mandate (always mandated by law)
+  # "congressional addressees" -> statutory mandate (always mandated by law)
   if (tolower(text) == "congressional addressees") {
     return(list(requester_type = "statutory_mandate",
                 requester_committees = NA_character_,
                 requester_members = NA_character_))
   }
 
-  # "congressional requesters" → congressional request but no specific committee
+  # "congressional requesters" -> congressional request but no specific committee
   if (tolower(text) == "congressional requesters") {
     return(list(requester_type = "congressional_request",
                 requester_committees = NA_character_,
                 requester_members = NA_character_))
   }
 
-  # "congressional committees" → could be either; default to congressional_request.
+  # "congressional committees" -> could be either; default to congressional_request.
   # The backfill script checks "Why GAO Did This Study" for mandate language to override.
   if (tolower(text) == "congressional committees") {
     return(list(requester_type = "congressional_request",
@@ -558,9 +558,11 @@
 #' @keywords internal
 #' @noRd
 .fiscal_year_from_url <- function(urls) {
-  m <- regmatches(urls, regexpr("gao-([0-9]{2})-", urls))
-  yy <- suppressWarnings(as.integer(sub("gao-([0-9]{2})-", "\\1", m)))
-  yy[lengths(regmatches(urls, regexpr("gao-([0-9]{2})-", urls))) == 0L] <- NA_integer_
+  if (length(urls) == 0L) return(integer(0))
+  # Length-preserving: sub() returns one element per input, leaving non-matching
+  # URLs unchanged so as.integer() yields NA there (rather than dropping them,
+  # which regmatches(regexpr()) would do and misalign the vector).
+  yy <- suppressWarnings(as.integer(sub(".*gao-([0-9]{2})-.*", "\\1", urls)))
   # The "gao-YY" scheme is entirely post-2000 (no gao-5x..9x URLs exist), so a
   # two-digit YY always maps to 2000 + YY (correct through FY2099).
   ifelse(is.na(yy), NA_integer_, 2000L + yy)

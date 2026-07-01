@@ -1,7 +1,7 @@
 # Derived report-level covariates, computed on the fly by gao_links().
 # All functions here are deterministic transforms of columns the scraper
 # already produces (report_id, published, released, topics, subject_terms,
-# requester_members, requester_committees) — no network access.
+# requester_members, requester_committees) -- no network access.
 
 # GAO issuing division / office codes (used in report IDs ~1970s-2000, before
 # the agency dropped division codes for the flat "GAO-YY-NNNN" scheme).

@@ -101,7 +101,23 @@ test_that(".fiscal_year_from_url() returns NA for legacy URLs", {
     "/products/ggd-96-100",
     "https://www.gao.gov/products/t-hehs-00-50"
   )
-  expect_true(all(is.na(.fiscal_year_from_url(legacy))))
+  # Length-preserving: one NA per legacy URL (not a dropped/empty vector, which
+  # would make the old all(is.na(...)) check pass vacuously).
+  expect_identical(.fiscal_year_from_url(legacy),
+                   c(NA_integer_, NA_integer_, NA_integer_))
+  # A single non-matching URL returns NA_integer_, not logical(0).
+  expect_identical(.fiscal_year_from_url("/products/aimd-98-123"), NA_integer_)
+})
+
+test_that(".fiscal_year_from_url() is length-preserving on mixed vectors", {
+  # Non-match -> NA, match -> its FY, positions stay aligned.
+  expect_identical(
+    .fiscal_year_from_url(c("no-match",
+                            "https://www.gao.gov/products/gao-24-1")),
+    c(NA_integer_, 2024L)
+  )
+  # Empty input returns an empty integer vector (not integer NA, not logical(0)).
+  expect_identical(.fiscal_year_from_url(character(0)), integer(0))
 })
 
 test_that(".fiscal_year_from_url() pivots every YY into the 2000s (B7)", {

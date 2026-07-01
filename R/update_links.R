@@ -223,7 +223,7 @@ gao_links <- function() {
 #'
 #' Downloads the latest `gao_links.rds` from the package's GitHub
 #' Releases and caches it locally. Subsequent calls to [gao_links()]
-#' will use the updated data. Uses base R [download.file()] — no
+#' will use the updated data. Uses base R [download.file()] -- no
 #' `curl-impersonate` needed.
 #'
 #' @param quiet Logical. Suppress progress messages (default: `FALSE`).

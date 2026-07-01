@@ -11,7 +11,7 @@
 .strip_name_stamp <- function(name) {
   if (is.na(name) || !nzchar(name)) return(name)
   # 1. Drop a dash-delimited trailing clause ("... - Not to be released ...").
-  name <- sub("\\s+[-–—]\\s+.*$", "", name)
+  name <- sub("\\s+[-\u2013\u2014]\\s+.*$", "", name)
   # 2. Cut at the first all-caps (>= 5 letters) token at position >= 2. The
   #    position guard protects a legitimate all-caps first token.
   toks <- strsplit(trimws(name), "\\s+")[[1]]
@@ -65,7 +65,7 @@
   # Normalize whitespace: collapse multiple spaces/tabs but preserve newlines
   text <- gsub("\r\n", "\n", text)
   text <- gsub("\r", "\n", text)
-  # PDF text often has extra spaces — collapse runs of spaces
+  # PDF text often has extra spaces -- collapse runs of spaces
   text <- gsub("[ \t]+", " ", text)
   # Normalize multiple blank lines to single
   text <- gsub("\n{3,}", "\n\n", text)

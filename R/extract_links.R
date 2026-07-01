@@ -47,7 +47,7 @@ extract_links <- function(base_url = "https://www.gao.gov/reports-testimonies",
   pages <- 0:last_page
   n.pages <- length(pages)
 
-  # ── Step 1: fetch (or read from cache) ──────────────────────────────────────
+  # -- Step 1: fetch (or read from cache) --------------------------------------
   if (use.cache) {
     # Download missing pages
     todo <- vapply(pages, function(pg) {
@@ -107,7 +107,7 @@ extract_links <- function(base_url = "https://www.gao.gov/reports-testimonies",
     if (verbose) close(pb)
   }
 
-  # ── Step 2: combine ────────────────────────────────────────────────────────
+  # -- Step 2: combine ---------------------------------------------------------
   all.data <- do.call(rbind, report.links)
   if (is.null(all.data) || nrow(all.data) == 0) {
     if (verbose) message("Found 0 report links")

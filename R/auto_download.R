@@ -29,7 +29,7 @@
 #' @param sleep_time Numeric. Seconds to pause between downloads.
 #' @param confirm Logical. If `TRUE` (default), prompts for confirmation before
 #'   downloading. In non-interactive sessions, `confirm = TRUE` raises an error
-#'   to prevent accidental mass downloads — set `confirm = FALSE` explicitly.
+#'   to prevent accidental mass downloads -- set `confirm = FALSE` explicitly.
 #'
 #' @return For `"pdf"`, `"html"`, or `"both"`: invisible character vector of
 #'   downloaded file paths. For `"metadata"`: invisible path to the written CSV.
@@ -131,7 +131,7 @@ auto_download <- function(format = NULL,
         stop("Could not parse year input: ", yr.input, call. = FALSE)
       }
     }
-    # non-interactive NULL year means all years — no filtering needed
+    # non-interactive NULL year means all years -- no filtering needed
   }
 
   # --- Filter ---
