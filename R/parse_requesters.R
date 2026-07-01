@@ -238,8 +238,10 @@
 
   list(
     requester_type = "congressional_request",
-    requester_committees = if (length(committees) > 0) paste(committees, collapse = "; ") else NA_character_,
-    requester_members = if (length(members) > 0) paste(members, collapse = "; ") else NA_character_
+    requester_committees = .clean_requester_string(
+      if (length(committees) > 0) paste(committees, collapse = "; ") else NA_character_),
+    requester_members = .clean_requester_string(
+      if (length(members) > 0) paste(members, collapse = "; ") else NA_character_)
   )
 }
 

@@ -404,3 +404,12 @@ test_that(".extract_requester_info() returns all NA when no info available", {
   expect_true(is.na(result$requester_committees))
   expect_true(is.na(result$requester_members))
 })
+
+test_that("parsed requester members are cleaned on the return path", {
+  txt <- paste("The Honorable Richard G. LUgar",
+               "United States Senate", sep = "\n")
+  res <- .parse_addressee_block(txt)
+  # OCR mid-word caps fixed by .clean_requester_string on the return path
+  expect_false(grepl("LUgar", res$requester_members %||% ""))
+  expect_true(grepl("Lugar", res$requester_members %||% ""))
+})

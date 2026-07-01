@@ -424,8 +424,10 @@
   }
 
   req.type <- "congressional_request"
-  req.committees <- if (length(committees) > 0) paste(committees, collapse = "; ") else NA_character_
-  req.members <- if (length(members) > 0) paste(members, collapse = "; ") else NA_character_
+  req.committees <- .clean_requester_string(
+    if (length(committees) > 0) paste(committees, collapse = "; ") else NA_character_)
+  req.members <- .clean_requester_string(
+    if (length(members) > 0) paste(members, collapse = "; ") else NA_character_)
 
 
   list(requester_type = req.type,
