@@ -1,5 +1,10 @@
 name: Update GAO Links
 
+# NOTE: R/sysdata.rda (member/majority crosswalk for requester party features)
+# is rebuilt manually via data-raw/build_member_crosswalk.R when a new Congress
+# seats (every 2 years). It is deliberately not part of this job, to keep the
+# daily run free of the external VoteView CSV dependency.
+
 on:
   schedule:
     - cron: '0 6 * * *'  # daily at 6am UTC
@@ -168,6 +173,10 @@ jobs:
                            "requester_type", "requester_committees",
                            "requester_members")
             updated <- updated[, intersect(core.cols, names(updated)), drop = FALSE]
+            # Clean requester fields on the way out (safety net for parser noise)
+            updated$requester_committees <- gao:::.clean_requester_string(updated$requester_committees)
+            updated$requester_members    <- gao:::.clean_requester_string(updated$requester_members)
+            stopifnot(!any(grepl("on GAO ", updated$requester_committees), na.rm = TRUE))
             saveRDS(updated, "inst/extdata/gao_links.rds", compress = "xz")
           }
 
