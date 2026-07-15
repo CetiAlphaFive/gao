@@ -20,9 +20,61 @@
   invisible(TRUE)
 }
 
+#' Require xml2 at Runtime
+#'
+#' Errors with an install hint if `xml2` is not available. `xml2` ships as
+#' an `rvest` dependency, so it is normally present alongside it, but is
+#' guarded separately here (matching [.require_rvest()]) because it is used
+#' directly to parse the RSS feed. `xml2` is in Suggests because only live
+#' scraping/discovery needs it.
+#'
+#' @keywords internal
+#' @noRd
+.require_xml2 <- function() {
+  if (!requireNamespace("xml2", quietly = TRUE)) {
+    stop(
+      "GAO RSS feed parsing requires the 'xml2' package.\n",
+      "Install with: install.packages(\"xml2\")",
+      call. = FALSE
+    )
+  }
+  invisible(TRUE)
+}
+
+#' Detect a Bot-Challenge / Blocked Response Body
+#'
+#' gao.gov sometimes returns HTTP 200 with a bot-challenge page instead of
+#' the requested content, most commonly an Akamai Bot Manager JS puzzle (a
+#' `bm-verify` query param, often paired with a `<meta
+#' http-equiv="refresh">` bounce back to a `bm-verify` URL) or the legacy
+#' "Access Denied" block page. curl-impersonate defeats TLS-fingerprint
+#' filtering but cannot execute JS, so a challenge body must be treated as
+#' a failed fetch rather than parsed as real content. Pure string predicate
+#' (no I/O) so it is unit-testable without curl.
+#'
+#' @param text Character scalar. Raw response body.
+#' @return Logical scalar: `TRUE` if `text` looks like a bot-challenge or
+#'   block page.
+#' @keywords internal
+#' @noRd
+.is_challenge_page <- function(text) {
+  if (is.null(text) || length(text) == 0L || is.na(text) || !nzchar(text)) {
+    return(FALSE)
+  }
+  if (grepl("bm-verify", text, fixed = TRUE)) return(TRUE)
+  if (grepl("<meta[^>]*http-equiv\\s*=\\s*[\"']refresh[\"'][^>]*bm-verify",
+            text, ignore.case = TRUE)) {
+    return(TRUE)
+  }
+  if (grepl("Access Denied", text, fixed = TRUE)) return(TRUE)
+  FALSE
+}
+
 #' Fetch and Parse a URL
 #'
-#' Uses curl-impersonate to fetch a URL and returns parsed HTML.
+#' Uses curl-impersonate to fetch a URL and returns parsed HTML. Treats a
+#' bot-challenge/block-page body (see [.is_challenge_page()]) the same as a
+#' non-zero curl exit status: retry, then error.
 #'
 #' @param url Character. URL to fetch.
 #' @param retries Integer. Number of retry attempts.
@@ -42,7 +94,10 @@
     ok <- (is.null(status) || identical(as.integer(status), 0L)) &&
       length(html.text) > 0L
     if (ok) {
-      return(rvest::read_html(paste(html.text, collapse = "\n")))
+      body <- paste(html.text, collapse = "\n")
+      if (!.is_challenge_page(body)) {
+        return(rvest::read_html(body))
+      }
     }
     if (attempt < retries) Sys.sleep(2 * attempt)
   }
@@ -168,6 +223,32 @@
   if (length(m) < 4L) return(NA_character_)
   mon  <- months[tolower(substr(m[2], 1, 3))]
   day  <- suppressWarnings(as.integer(m[3]))
+  year <- suppressWarnings(as.integer(m[4]))
+  if (is.na(mon) || is.na(day) || is.na(year)) return(NA_character_)
+  sprintf("%04d-%02d-%02d", year, mon, day)
+}
+
+#' Parse an RFC-822 `pubDate` to ISO, locale-independently
+#'
+#' RSS `<pubDate>` elements use RFC-822 format, e.g.
+#' `"Wed, 15 Jul 2026 07:18:12 -0400"`. Avoids `strptime()`/`as.POSIXct()`
+#' with `%a`/`%b`, which depend on `LC_TIME` and silently return `NA` under
+#' non-English locales. Matches full or 3-letter month names
+#' case-insensitively; the weekday name and time-of-day/offset are ignored.
+#'
+#' @param raw Character scalar like `"Wed, 15 Jul 2026 07:18:12 -0400"`.
+#' @return ISO date string `"YYYY-MM-DD"`, or `NA_character_` on any failure.
+#' @keywords internal
+#' @noRd
+.parse_rfc822_date <- function(raw) {
+  if (is.na(raw) || !nzchar(trimws(raw))) return(NA_character_)
+  months <- c(jan = 1L, feb = 2L, mar = 3L, apr = 4L, may = 5L, jun = 6L,
+              jul = 7L, aug = 8L, sep = 9L, oct = 10L, nov = 11L, dec = 12L)
+  m <- regmatches(raw,
+                  regexec("(\\d{1,2})\\s+([A-Za-z]+)\\s+(\\d{4})", raw))[[1]]
+  if (length(m) < 4L) return(NA_character_)
+  day  <- suppressWarnings(as.integer(m[2]))
+  mon  <- months[tolower(substr(m[3], 1, 3))]
   year <- suppressWarnings(as.integer(m[4]))
   if (is.na(mon) || is.na(day) || is.na(year)) return(NA_character_)
   sprintf("%04d-%02d-%02d", year, mon, day)

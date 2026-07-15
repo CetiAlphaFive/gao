@@ -22,6 +22,60 @@ test_that(".fetch_html() returns an xml_document", {
   expect_s3_class(page, "xml_document")
 })
 
+# --- .is_challenge_page() (bot-challenge / blocked-response detection) ---
+
+test_that(".is_challenge_page() detects a bm-verify challenge body", {
+  body <- '<html><body>Just a moment... bm-verify=abc123</body></html>'
+  expect_true(.is_challenge_page(body))
+})
+
+test_that(".is_challenge_page() detects a meta-refresh bounce to a bm-verify URL", {
+  body <- paste0(
+    '<html><head>',
+    '<meta http-equiv="refresh" content="5; URL=\'/reports-testimonies?bm-verify=xyz789\'">',
+    '</head><body></body></html>'
+  )
+  expect_true(.is_challenge_page(body))
+})
+
+test_that(".is_challenge_page() detects the legacy Access Denied page", {
+  expect_true(.is_challenge_page("<html><body>Access Denied</body></html>"))
+})
+
+test_that(".is_challenge_page() returns FALSE for ordinary content", {
+  ok.body <- '<html><body><div class="c-search-result">A real report</div></body></html>'
+  expect_false(.is_challenge_page(ok.body))
+})
+
+test_that(".is_challenge_page() handles NULL/NA/empty input", {
+  expect_false(.is_challenge_page(NULL))
+  expect_false(.is_challenge_page(NA_character_))
+  expect_false(.is_challenge_page(""))
+  expect_false(.is_challenge_page(character(0)))
+})
+
+test_that(".fetch_html() treats a bm-verify challenge body as a failed fetch and retries then errors", {
+  # base functions (system2) can't be mocked with local_mocked_bindings, so
+  # this drives .fetch_html() through a real (fake) executable standing in
+  # for curl-impersonate: it "succeeds" (exit 0) but returns a bm-verify
+  # challenge body, which .fetch_html() must treat as blocked, not content.
+  skip_on_os("windows")
+  fake.curl <- tempfile(fileext = ".sh")
+  writeLines(c("#!/bin/sh", "echo '<html><body>Just a moment... bm-verify=abc</body></html>'"),
+             fake.curl)
+  Sys.chmod(fake.curl, "0755")
+  withr::local_options(gao.curl_bin = fake.curl)
+  withr::defer(unlink(fake.curl))
+  # .get_curl_bin() only re-resolves when the option differs from its cache;
+  # clear the cache so it picks up the fake path.
+  old.cached <- .gao_env$curl_bin
+  .gao_env$curl_bin <- NULL
+  withr::defer(.gao_env$curl_bin <- old.cached)
+
+  expect_error(.fetch_html("https://www.gao.gov/reports-testimonies", retries = 1),
+               "Failed to fetch")
+})
+
 test_that(".scrape_page_links() extracts metadata from search results", {
   html <- rvest::read_html('
     <div class="c-search-result">
