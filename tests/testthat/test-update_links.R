@@ -82,14 +82,9 @@ test_that("update_links() returns sorted data.frame with correct columns", {
   result <- update_links(verbose = FALSE, sleep_time = 1)
 
   expect_s3_class(result, "data.frame")
-  base.cols <- c("url", "title", "report_id", "published", "released",
-                 "summary", "page_count", "topics", "subject_terms",
-                 "has_recommendations", "n_recommendations", "has_matters",
-                 "n_matters", "agencies_affected",
-                 "requester_type", "requester_committees",
-                 "requester_members")
-  expected <- c(base.cols, .indicator_colnames())
-  expect_named(result, expected)
+  # combined always keeps known's exact column set/order (see update_links()):
+  # RSS rows only ever contribute url/title/published, all already present.
+  expect_named(result, names(known))
   expect_true(nrow(result) >= nrow(known))
   expect_true(all(known$url %in% result$url))
   expect_equal(result$url, sort(unique(result$url)))

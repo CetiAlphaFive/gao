@@ -1,72 +1,134 @@
+#' Parse GAO RSS Feed XML into a data.frame
+#'
+#' Pure parsing step (no network I/O) so it is unit-testable with an inline
+#' XML fixture. Extracts `link`/`title`/`pubDate` from each `<item>`,
+#' normalizes the link by stripping any query string, and converts
+#' `pubDate` to an ISO date. Errors loudly on unparseable XML or a feed with
+#' no usable items, rather than returning an empty/partial result silently
+#' -- this is what makes a broken feed fail CI instead of committing
+#' "0 new" every day.
+#'
+#' @param xml_text Character scalar. Raw RSS XML.
+#' @return A data.frame with columns `url` (normalized, query string
+#'   stripped), `title`, `published` (ISO `"YYYY-MM-DD"`, `NA` if
+#'   `<pubDate>` is missing or unparseable), `report_id` (derived from the
+#'   url's `/products/<id>` tail, upper-cased, e.g. `"GAO-26-109098"`; `NA`
+#'   if the url does not match that pattern -- a fallback so `report_id` is
+#'   populated even if the later per-page metadata scrape fails).
+#' @keywords internal
+#' @noRd
+.parse_rss <- function(xml_text) {
+  .require_xml2()
+  .rss_error <- function() {
+    stop("GAO RSS feed unreachable or returned no items -- ",
+         "feed URL or format may have changed", call. = FALSE)
+  }
+
+  doc <- tryCatch(xml2::read_xml(xml_text), error = function(e) NULL)
+  if (is.null(doc)) .rss_error()
+
+  items <- xml2::xml_find_all(doc, ".//item")
+  if (length(items) == 0L) .rss_error()
+
+  link    <- trimws(xml2::xml_text(xml2::xml_find_first(items, "link")))
+  title   <- trimws(xml2::xml_text(xml2::xml_find_first(items, "title")))
+  pub.raw <- xml2::xml_text(xml2::xml_find_first(items, "pubDate"))
+
+  # Query-string stripping happens first so a tracking/challenge suffix
+  # (e.g. "?bm-verify=...") can never leak into the report_id derived below.
+  url <- sub("\\?.*$", "", link)
+  published <- vapply(pub.raw, .parse_rfc822_date, character(1), USE.NAMES = FALSE)
+
+  # report_id fallback: derive from the url's "/products/<id>" tail rather
+  # than blindly upper-casing the whole url, so non-product urls (or urls
+  # that don't match this shape) correctly yield NA instead of garbage.
+  report_id <- vapply(seq_along(url), function(i) {
+    m <- regmatches(url[i], regexpr("(?<=/products/)[^/]+$", url[i], perl = TRUE))
+    if (length(m) == 1L && nzchar(m)) toupper(m) else NA_character_
+  }, character(1))
+
+  # nzchar(NA) is TRUE by default (NA treated as nonzero-length), so an item
+  # with no <link> node (url = NA, from xml2's "missing" placeholder) must be
+  # excluded explicitly rather than relying on nzchar() alone.
+  keep <- !is.na(url) & nzchar(url)
+  out <- data.frame(url = url[keep], title = title[keep],
+                     published = published[keep],
+                     report_id = report_id[keep], stringsAsFactors = FALSE)
+  if (nrow(out) == 0L) .rss_error()
+  out
+}
+
+#' Fetch and Parse the GAO RSS Feed
+#'
+#' Fetches the GAO "reports and testimonies" RSS feed via curl-impersonate
+#' (same mechanism as [.fetch_html()]) and parses it with [.parse_rss()].
+#' New-report discovery uses this feed instead of the paginated HTML
+#' listing page, which is now behind an Akamai Bot Manager JS challenge
+#' (`bm-verify`) that curl-impersonate -- a TLS-fingerprint spoofer, not a
+#' JS engine -- cannot solve.
+#'
+#' @param url Character. RSS feed URL.
+#' @param retries Integer. Number of retry attempts.
+#' @return A data.frame; see [.parse_rss()].
+#' @keywords internal
+#' @noRd
+.fetch_rss_links <- function(url = "https://www.gao.gov/rss/reports.xml",
+                             retries = 3) {
+  .require_xml2()
+  curl.bin <- .get_curl_bin()
+  for (attempt in seq_len(retries)) {
+    rss.text <- suppressWarnings(
+      system2(curl.bin, args = c("-s", "-S", "-f", "-L", url),
+              stdout = TRUE, stderr = FALSE))
+    status <- attr(rss.text, "status")
+    ok <- (is.null(status) || identical(as.integer(status), 0L)) &&
+      length(rss.text) > 0L
+    if (ok) {
+      return(.parse_rss(paste(rss.text, collapse = "\n")))
+    }
+    if (attempt < retries) Sys.sleep(2 * attempt)
+  }
+  stop("GAO RSS feed unreachable or returned no items -- ",
+       "feed URL or format may have changed", call. = FALSE)
+}
+
 #' Update GAO Report Links
 #'
-#' Scrapes the most recent GAO report listing pages and appends any new links
-#' not already in the bundled dataset. Used by the daily CI workflow; most
-#' users should use [gao_links()] to access the bundled dataset.
+#' Fetches the GAO RSS feed and appends any new links not already in the
+#' bundled dataset. Used by the daily CI workflow; most users should use
+#' [gao_links()] to access the bundled dataset.
+#'
+#' New-report discovery is RSS-based ([.fetch_rss_links()]), not the
+#' paginated HTML listing: gao.gov now gates that page behind a JS bot
+#' challenge that curl-impersonate cannot solve, while individual report
+#' pages and the RSS feed remain reachable. The RSS feed carries only the
+#' ~25 most recent items, so this function can only discover reports still
+#' within that window -- it depends on the daily cadence running reliably;
+#' it does not retroactively rediscover URLs missed by a gap in runs (see
+#' NEWS.md).
 #'
 #' @param verbose Logical. Show progress messages (default: `TRUE`).
-#' @param sleep_time Numeric. Seconds between requests (default: 1).
+#' @param sleep_time Numeric. Unused; retained for call-site compatibility
+#'   with the daily CI workflow (default: 1).
 #'
 #' @return A data.frame of all known reports (old + new), sorted by url.
 #' @keywords internal
 #' @noRd
 update_links <- function(verbose = TRUE, sleep_time = 1) {
   .gao_env$links <- NULL
-  base.url <- "https://www.gao.gov/reports-testimonies"
   known <- gao_links()
   if (verbose) message("Bundled reports: ", nrow(known))
 
-  new.rows <- list()
-  page.num <- 0
-  consecutive.known <- 0L
-  consecutive.failures <- 0L
-  row.idx <- 0L
+  # LOUD FAILURE: .fetch_rss_links()/.parse_rss() stop() on a fetch failure,
+  # an empty feed, or a feed with 0 parseable items, so a broken feed makes
+  # this (and the CI job that calls it) fail rather than silently reporting
+  # "0 new" forever.
+  rss <- .fetch_rss_links()
+  if (verbose) message("RSS feed items: ", nrow(rss))
 
-  repeat {
-    url <- if (page.num == 0) base.url else paste0(base.url, "?page=", page.num)
+  new.data <- rss[!rss$url %in% known$url, , drop = FALSE]
 
-    page <- tryCatch(.fetch_html(url), error = function(e) {
-      if (verbose) message("Failed page ", page.num, ": ", e$message)
-      NULL
-    })
-
-    if (is.null(page)) {
-      consecutive.failures <- consecutive.failures + 1L
-      if (consecutive.failures >= 3) {
-        if (verbose) message("Stopping: 3 consecutive fetch failures")
-        break
-      }
-      page.num <- page.num + 1
-      Sys.sleep(sleep_time)
-      next
-    }
-
-    consecutive.failures <- 0L
-    page.data <- .scrape_page_links(page)
-    if (nrow(page.data) > 0) {
-      page.data$url <- paste0("https://www.gao.gov", page.data$url)
-      page.new <- page.data[!page.data$url %in% known$url, , drop = FALSE]
-    } else {
-      page.new <- page.data
-    }
-
-    if (nrow(page.new) == 0) {
-      consecutive.known <- consecutive.known + 1L
-      if (verbose) message("Page ", page.num, ": no new reports")
-    } else {
-      consecutive.known <- 0L
-      row.idx <- row.idx + 1L
-      new.rows[[row.idx]] <- page.new
-      if (verbose) message("Page ", page.num, ": +", nrow(page.new), " new reports")
-    }
-
-    if (consecutive.known >= 3) break
-    page.num <- page.num + 1
-    Sys.sleep(sleep_time)
-  }
-
-  if (length(new.rows) > 0) {
-    new.data <- do.call(rbind, new.rows)
+  if (nrow(new.data) > 0) {
     # Ensure consistent columns in both directions
     for (col in setdiff(names(new.data), names(known))) {
       known[[col]] <- NA_character_

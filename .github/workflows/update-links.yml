@@ -73,6 +73,9 @@ jobs:
               tryCatch({
                 page <- gao:::.fetch_html(report.url)
                 meta <- gao:::.scrape_report_metadata(page)
+                updated$report_id[i]           <- meta$report_id
+                updated$released[i]            <- meta$released
+                updated$summary[i]             <- meta$summary
                 updated$topics[i]              <- if (is.na(meta$topics)) "" else meta$topics
                 updated$subject_terms[i]       <- if (is.na(meta$subject_terms)) "" else meta$subject_terms
                 updated$has_recommendations[i] <- meta$has_recommendations
@@ -112,7 +115,14 @@ jobs:
 
           # ── Phase 2: Gap-fill existing reports with missing metadata ──
           BATCH_SIZE <- 5000L
-          gap.idx <- which(is.na(updated$topics) | is.na(updated$requester_type))
+          # Gate on topics only. topics="" is the self-clearing sentinel a
+          # successful scrape always writes (see Phase 1/2 body below), so
+          # this converges. requester_type is legitimately NA forever for
+          # reports with no named requester (statutory mandates, legal
+          # decisions) -- gating on it too re-selected ~9556 such reports
+          # every single day, wasting the whole 5000/day batch on reports
+          # that can never clear.
+          gap.idx <- which(is.na(updated$topics))
           if (n.new > 0) gap.idx <- setdiff(gap.idx, new.idx)
           # Prioritize recent reports first
           gap.idx <- gap.idx[order(updated$published[gap.idx], decreasing = TRUE)]
@@ -126,6 +136,11 @@ jobs:
               tryCatch({
                 page <- gao:::.fetch_html(updated$url[i])
                 meta <- gao:::.scrape_report_metadata(page)
+                # Restore discovery fields too, in case Phase 1's scrape on
+                # discovery day failed and left these permanently NA.
+                updated$report_id[i]           <- meta$report_id
+                updated$released[i]            <- meta$released
+                updated$summary[i]             <- meta$summary
                 updated$topics[i]              <- if (is.na(meta$topics)) "" else meta$topics
                 updated$subject_terms[i]       <- if (is.na(meta$subject_terms)) "" else meta$subject_terms
                 updated$has_recommendations[i] <- meta$has_recommendations
@@ -136,7 +151,13 @@ jobs:
                 updated$requester_type[i]       <- meta$requester_type
                 updated$requester_committees[i] <- meta$requester_committees
                 updated$requester_members[i]    <- meta$requester_members
-                n.filled <- n.filled + 1L
+                # Only count as "filled" when the scrape produced usable
+                # data (topics or requester_type), not merely the
+                # self-clearing "" sentinel -- avoids the commit message
+                # overcounting reports whose page yielded nothing new.
+                if (!is.na(meta$topics) || !is.na(meta$requester_type)) {
+                  n.filled <- n.filled + 1L
+                }
               }, error = function(e) {
                 message("gap-fill failed: ", updated$url[i], ": ", e$message)
               })
