@@ -1,5 +1,38 @@
 # Changelog
 
+## gao 0.6.1
+
+- **New-report discovery is now RSS-based.** gao.gov put the paginated
+  HTML listing page (`/reports-testimonies`) behind an Akamai Bot
+  Manager JS challenge (`bm-verify`); curl-impersonate defeats
+  TLS-fingerprint filtering but cannot execute JS, so the daily CI job
+  silently scraped 0 rows from that page for weeks while still exiting
+  green. `update_links()` now discovers new reports from the GAO RSS
+  feed (`https://www.gao.gov/rss/reports.xml`) instead, via a new
+  internal `.fetch_rss_links()`/`.parse_rss()`. Individual report-page
+  metadata scraping (`.fetch_html()`, `.scrape_report_metadata()`) is
+  unaffected – only the listing-page discovery path was replaced.
+  **Known limitation:** the RSS feed carries only the ~25 most recent
+  reports, so discovery depends on the daily job running reliably;
+  gap-fill (Phase 2) recovers missing *metadata* for known reports but
+  does not rediscover report URLs that fell outside the RSS window
+  between runs.
+- `.fetch_html()` now detects bot-challenge/blocked response bodies (a
+  `bm-verify` marker, a `<meta http-equiv="refresh">` bounce to a
+  `bm-verify` URL, or the legacy “Access Denied” page) via the new
+  `.is_challenge_page()` predicate and treats them the same as a failed
+  fetch (retry, then error) instead of parsing the challenge page as
+  content.
+- Daily CI workflow (`update-links.yml`) Phase 2 gap-fill selector no
+  longer re-selects reports every day solely because `requester_type` is
+  `NA` – that’s a legitimate, permanent state for reports with no named
+  requester (statutory mandates, legal decisions), and gating on it too
+  meant ~9556 reports were re-scraped in every run and the 5000/day
+  batch never converged. The selector now gates on `topics` only (the
+  self-clearing sentinel a successful scrape always writes). `n.filled`
+  is now incremented only when a scrape actually produced usable data,
+  so the “N gaps filled” commit message is accurate.
+
 ## gao 0.6.0
 
 - [`gao_links()`](https://cetialphafive.github.io/gao/reference/gao_links.md)

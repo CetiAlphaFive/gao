@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gao</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,6 +31,14 @@
       <small>Source: <a href="https://github.com/CetiAlphaFive/gao/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.1" id="gao-061">gao 0.6.1<a class="anchor" aria-label="anchor" href="#gao-061"></a></h2>
+<ul><li>
+<strong>New-report discovery is now RSS-based.</strong> gao.gov put the paginated HTML listing page (<code>/reports-testimonies</code>) behind an Akamai Bot Manager JS challenge (<code>bm-verify</code>); curl-impersonate defeats TLS-fingerprint filtering but cannot execute JS, so the daily CI job silently scraped 0 rows from that page for weeks while still exiting green. <code>update_links()</code> now discovers new reports from the GAO RSS feed (<code>https://www.gao.gov/rss/reports.xml</code>) instead, via a new internal <code>.fetch_rss_links()</code>/<code>.parse_rss()</code>. Individual report-page metadata scraping (<code>.fetch_html()</code>, <code>.scrape_report_metadata()</code>) is unaffected – only the listing-page discovery path was replaced. <strong>Known limitation:</strong> the RSS feed carries only the ~25 most recent reports, so discovery depends on the daily job running reliably; gap-fill (Phase 2) recovers missing <em>metadata</em> for known reports but does not rediscover report URLs that fell outside the RSS window between runs.</li>
+<li>
+<code>.fetch_html()</code> now detects bot-challenge/blocked response bodies (a <code>bm-verify</code> marker, a <code>&lt;meta http-equiv="refresh"&gt;</code> bounce to a <code>bm-verify</code> URL, or the legacy “Access Denied” page) via the new <code>.is_challenge_page()</code> predicate and treats them the same as a failed fetch (retry, then error) instead of parsing the challenge page as content.</li>
+<li>Daily CI workflow (<code>update-links.yml</code>) Phase 2 gap-fill selector no longer re-selects reports every day solely because <code>requester_type</code> is <code>NA</code> – that’s a legitimate, permanent state for reports with no named requester (statutory mandates, legal decisions), and gating on it too meant ~9556 reports were re-scraped in every run and the 5000/day batch never converged. The selector now gates on <code>topics</code> only (the self-clearing sentinel a successful scrape always writes). <code>n.filled</code> is now incremented only when a scrape actually produced usable data, so the “N gaps filled” commit message is accurate.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.0" id="gao-060">gao 0.6.0<a class="anchor" aria-label="anchor" href="#gao-060"></a></h2>
 <ul><li>
@@ -106,7 +114,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

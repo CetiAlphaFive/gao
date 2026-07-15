@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">gao</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,8 +47,14 @@
 </ul></div>
 <div class="section level2">
 <h2 id="tools--packages">Tools &amp; Packages<a class="anchor" aria-label="anchor" href="#tools--packages"></a></h2>
-<p>R package using <code>rvest</code> (scraping), <code>furrr</code>/<code>future</code> (parallel processing), <code>httr</code> (HTTP requests).</p>
+<p>R package using <code>rvest</code>/<code>xml2</code> (scraping/RSS parsing), <code>furrr</code>/<code>future</code> (parallel processing), <code>httr</code> (HTTP requests).</p>
+<div class="section level3">
+<h3 id="daily-ci-pipeline--internal-scraping-layer-as-of-061">Daily CI pipeline / internal scraping layer (as of 0.6.1)<a class="anchor" aria-label="anchor" href="#daily-ci-pipeline--internal-scraping-layer-as-of-061"></a></h3>
+<p>New-report discovery (<code>update_links()</code>) is RSS-based: it fetches <code>https://www.gao.gov/rss/reports.xml</code> via curl-impersonate and parses it with <code>xml2</code> (<code>.fetch_rss_links()</code> / <code>.parse_rss()</code>), not the paginated HTML listing page. gao.gov put that listing view (<code>/reports-testimonies</code>) behind an Akamai Bot Manager JS challenge (<code>bm-verify</code>) that curl-impersonate – a TLS-fingerprint spoofer, not a JS engine – cannot solve; the daily job was silently ingesting 0 new reports for weeks while exiting green. A broken/empty RSS feed now makes <code>update_links()</code> <code><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop()</a></code> loudly so CI goes red instead of committing “0 new” silently.</p>
+<p>Individual report-page metadata scraping (<code>.fetch_html()</code> + <code>.scrape_report_metadata()</code>) is unaffected by the above; <code>.fetch_html()</code> additionally now detects and rejects bot-challenge/blocked response bodies (<code>.is_challenge_page()</code>) rather than parsing them as content.</p>
+<p>Known limitation: the RSS feed carries only the ~25 most recent reports, so discovery depends on the daily cadence running reliably – gap-fill does not rediscover URLs missed by a gap in runs, only missing metadata for already-known reports.</p>
 <hr></div>
+</div>
 <div class="section level2">
 <h2 id="chief-of-staff-integration">Chief of Staff Integration<a class="anchor" aria-label="anchor" href="#chief-of-staff-integration"></a></h2>
 <p>The canonical project tracker lives at <code>~/Dropbox/chief_of_staff/CHIEF_OF_STAFF.md</code>.</p>
@@ -77,7 +83,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>
