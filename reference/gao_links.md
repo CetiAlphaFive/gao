@@ -56,7 +56,7 @@ independents is resolved via the party they caucus with.
 ``` r
 reports <- gao_links()
 nrow(reports)
-#> [1] 56390
+#> [1] 56416
 head(reports)
 #>                                   url
 #> 1 https://www.gao.gov/products/087286
