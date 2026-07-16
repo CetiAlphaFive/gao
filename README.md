@@ -21,7 +21,9 @@ downloading reports as PDF, HTML, or both.
 **Disclaimer:** This package is not affiliated with, endorsed by, or in
 any way officially connected to the U.S. Government Accountability
 Office. All data is obtained from public web pages at
-[gao.gov](https://www.gao.gov). \## Installation
+[gao.gov](https://www.gao.gov). 
+
+## Installation
 
 ``` r
 # From CRAN (when available)
@@ -71,10 +73,8 @@ downloads PDFs, HTMLs, or both into `gao_reports/pdf/` and
 `gao_reports/html/`.
 
 The package has three main functions:
-
+- **`auto_download()`** — download the bundled dataset and/or full reports as PDF, HTML, or both 
 - **`gao_links()`** — access the bundled dataset (56,000+ reports with
   metadata and one-hot indicator columns)
-- **`auto_download()`** — download reports as PDF, HTML, or both (or
-  export metadata as CSV)
 - **`extract_text()`** — extract text from downloaded PDFs via
   `pdftools`
