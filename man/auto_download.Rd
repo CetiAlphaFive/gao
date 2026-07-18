@@ -29,7 +29,7 @@ sessions uses all available years.}
 
 \item{confirm}{Logical. If \code{TRUE} (default), prompts for confirmation before
 downloading. In non-interactive sessions, \code{confirm = TRUE} raises an error
-to prevent accidental mass downloads — set \code{confirm = FALSE} explicitly.}
+to prevent accidental mass downloads -- set \code{confirm = FALSE} explicitly.}
 }
 \value{
 For \code{"pdf"}, \code{"html"}, or \code{"both"}: invisible character vector of
@@ -40,12 +40,6 @@ Convenience wrapper that loads the bundled report links, optionally filters
 by fiscal year, and downloads reports as PDF, HTML, or both. Use
 \code{format = "metadata"} to export a CSV of report metadata without
 downloading any files.
-}
-\details{
-PDF URLs are constructed directly from report IDs (e.g.,
-\verb{/products/gao-24-106198} becomes \verb{/assets/gao-24-106198.pdf}) rather than
-scraping each report page, so no extra HTTP requests are needed for
-link extraction.
 }
 \section{System requirements}{
 

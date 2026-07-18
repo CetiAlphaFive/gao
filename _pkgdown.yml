@@ -22,3 +22,10 @@ reference:
 - title: Deprecated
   contents:
   - extract_pdf_links
+
+articles:
+- title: Guides
+  navbar: ~
+  contents:
+  - articles/gao-dataset
+  - articles/downloading-reports

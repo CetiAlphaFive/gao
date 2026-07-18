@@ -1,130 +1,67 @@
 # gao 0.6.1
 
-* **New-report discovery is now RSS-based.** gao.gov put the paginated HTML
-  listing page (`/reports-testimonies`) behind an Akamai Bot Manager JS
-  challenge (`bm-verify`); curl-impersonate defeats TLS-fingerprint
-  filtering but cannot execute JS, so the daily CI job silently scraped 0
-  rows from that page for weeks while still exiting green. `update_links()`
-  now discovers new reports from the GAO RSS feed
-  (`https://www.gao.gov/rss/reports.xml`) instead, via a new internal
-  `.fetch_rss_links()`/`.parse_rss()`. Individual report-page metadata
-  scraping (`.fetch_html()`, `.scrape_report_metadata()`) is unaffected --
-  only the listing-page discovery path was replaced.
-  **Known limitation:** the RSS feed carries only the ~25 most recent
-  reports, so discovery depends on the daily job running reliably; gap-fill
-  (Phase 2) recovers missing *metadata* for known reports but does not
-  rediscover report URLs that fell outside the RSS window between runs.
-* `.fetch_html()` now detects bot-challenge/blocked response bodies (a
-  `bm-verify` marker, a `<meta http-equiv="refresh">` bounce to a
-  `bm-verify` URL, or the legacy "Access Denied" page) via the new
-  `.is_challenge_page()` predicate and treats them the same as a failed
-  fetch (retry, then error) instead of parsing the challenge page as
-  content.
-* Daily CI workflow (`update-links.yml`) Phase 2 gap-fill selector no
-  longer re-selects reports every day solely because `requester_type` is
-  `NA` -- that's a legitimate, permanent state for reports with no named
-  requester (statutory mandates, legal decisions), and gating on it too
-  meant ~9556 reports were re-scraped in every run and the 5000/day batch
-  never converged. The selector now gates on `topics` only (the
-  self-clearing sentinel a successful scrape always writes). `n.filled` is
-  now incremented only when a scrape actually produced usable data, so the
-  "N gaps filled" commit message is accurate.
+* Fixed daily data updates: new reports are now discovered through GAO's
+  official RSS feed after a change on gao.gov broke the previous approach.
+  If the feed is ever unavailable, the update fails with a clear error
+  instead of quietly adding nothing.
+* Metadata scraping now recognizes when gao.gov returns a block page
+  instead of a report page and treats it as a failed fetch, rather than
+  reading the block page as content.
 
 # gao 0.6.0
 
-* `gao_links()` now returns derived covariate columns computed on the fly:
-  `issuing_division` and `product_type` (decoded from report-ID prefixes),
-  neutral temporal features (`pub_month`, `pub_dow`, `pub_fiscal_year`,
-  `fiscal_quarter`, `election_year`, `release_lag_days`), scope counts
-  (`n_topics`, `n_subject_terms`), and requester party covariates
+* `gao_links()` now returns additional analysis-ready columns:
+  `issuing_division` and `product_type` (decoded from report IDs), temporal
+  covariates (`pub_month`, `pub_dow`, `pub_fiscal_year`, `fiscal_quarter`,
+  `election_year`, `release_lag_days`), scope counts (`n_topics`,
+  `n_subject_terms`), and congressional requester covariates
   (`requester_party`, `requester_majority_status`, `requester_chamber`,
-  `requester_bipartisan`) resolved against a bundled VoteView crosswalk.
-* Fixed noise in `requester_committees` / `requester_members` (injected "GAO"
-  tokens, "RELEASED" bleed, OCR mid-word capitalization); the daily update now
-  cleans these fields on save.
-* Requester party/majority covariates corrected: multi-word, hyphenated, and
-  suffixed surnames (Van Hollen, Ros-Lehtinen, de la Garza, Wasserman Schultz,
-  Diaz-Balart, Dingell Jr.) now resolve; the lookup is chamber-aware so
-  House/Senate namesakes (Mark/Mike Kelly, Rick/Bobby Scott, John/Joe Kennedy)
-  no longer collide; majority status is computed per the requester's chamber;
-  independents are labeled `requester_party = "Other"` with majority status
-  resolved via caucus.
-* Senate majority table corrected for independents/near-ties (e.g. the 110th and
-  117th Senates are now "D").
-* Parser root-cause fixes: injected "GAO" wordmark, distribution/security stamp
-  bleed ("RELEASED"/"RESTRICTED"/OCR "PESTRICTUD"), committee names with
-  internal commas, and highlights over-capture of "Why GAO Did This Study"
-  prose.
-* Indicators use exact per-item matching for agencies and topics (GAO
-  sub-office strings no longer flip a parent-department flag); empty source
-  fields now yield `NA` rather than all-zero.
-* Downloads use curl `--fail`; HTML fetch keys on HTTP status; dates parse
-  locale-independently; `gao-YY` URL fiscal years pivot to the 2000s.
+  `requester_bipartisan`) resolved against Voteview membership data.
+* Much cleaner requester fields: stray text no longer appears in
+  `requester_committees` / `requester_members`; multi-word, hyphenated, and
+  suffixed member names (Van Hollen, Ros-Lehtinen, Wasserman Schultz) now
+  resolve; House/Senate members who share a surname no longer collide; and
+  independents are labeled `"Other"` with majority status resolved via the
+  party they caucus with.
+* Topic and agency indicator columns now use exact matching, so similar
+  names no longer trigger the wrong flag; empty source fields yield `NA`
+  instead of all zeros.
+* More reliable downloads and locale-independent date parsing.
 
 # gao 0.5.0
 
-* CRAN preparation release.
-* Bundled RDS shrunk from 6.4 MB to 3.7 MB by storing only 14 core columns
-  with xz compression. The 82 indicator columns are now computed on the fly
-  by `gao_links()` and cached in memory.
-* New `gao_update_data()` function downloads the latest data from GitHub
-  Releases using base R `download.file()` — no `curl-impersonate` needed.
-  `gao_links()` checks for user-local cached data before the bundled copy.
-* `auto_download()` now offers to check for updated data in interactive
-  sessions before proceeding.
-* Daily CI workflow now uploads the RDS to a pinned GitHub Release
-  (`data-latest`) for `gao_update_data()` to fetch.
-* Fixed missing `lifecycle-deprecated.svg` badge referenced by
- `extract_pdf_links.Rd`.
-* Updated `CITATION.cff` to match current version and license.
+* Smaller package: the bundled dataset shrank from 6.4 MB to 3.7 MB.
+  Indicator columns are now computed when the data is loaded.
+* New `gao_update_data()` downloads the latest dataset (refreshed daily)
+  without any extra software; `gao_links()` then uses it automatically.
+* `auto_download()` offers to check for updated data in interactive
+  sessions.
 
 # gao 0.4.0
 
-* New `extract_text()` function for extracting text from downloaded PDFs.
-  Requires `pdftools` (added to `Suggests`).
-* Bundled dataset now includes `page_count`, `topics`, and `subject_terms`
-  columns. `gao_links()` returns a 9-column data.frame.
-* Full metadata backfill: `title`, `published`, `released` are now 100%
-  populated across all 56,000+ reports. `summary` at 97.5%.
-* Missing `report_id` values filled from URL slugs (now 100% complete).
-* Page counts extracted from 55,000+ PDF archive and matched to metadata
-  via URL slug and report ID (80.7% coverage).
-* Daily CI workflow now backfills `page_count` for newly added reports.
-* Fixed `update_links()` column mismatch when bundled data has columns
-  that new scrape results lack.
+* New `extract_text()` extracts text from downloaded PDFs (requires the
+  `pdftools` package).
+* The dataset gains `page_count`, `topics`, and `subject_terms` columns.
+  `title`, `published`, and `released` are now complete for all 56,000+
+  reports, and page counts cover about 80% of them.
 * License changed from MIT to GPL (>= 3).
 
 # gao 0.3.0
 
-* **Breaking:** `gao_links()` now returns a data.frame with columns `url`,
-  `title`, `report_id`, `published`, `released`, and `summary` instead of a
-  character vector.
-* Bundled dataset switched from text (`.txt`) to RDS (`.rds`) for compression
-  with rich metadata.
-* Year filtering in `auto_download()` now uses published date and fiscal year
-  calculation instead of regex on report IDs, fixing ~29% of reports with
-  legacy ID formats that previously yielded `NA` years.
-* `extract_links()` and `update_links()` now return data.frames with full
-  report metadata.
-* Fixed R-CMD-check GitHub Action syntax error (`args` parameter).
+* **Breaking:** `gao_links()` now returns a data.frame with full report
+  metadata instead of a character vector of URLs.
+* Fiscal-year filtering now uses publication dates rather than patterns in
+  report IDs, fixing missing years for roughly a third of older reports.
 
 # gao 0.2.0
 
-* Added `auto_download()` convenience wrapper that handles the full pipeline
-  (load links, filter by year, download as PDF/HTML) in one call.
-* PDF URLs are now constructed directly from report IDs, avoiding one HTTP
-  request per report compared to `extract_pdf_links()`.
-* Interactive prompts for format and year range when arguments are omitted.
-* Non-interactive safety: `confirm = TRUE` errors unless explicitly set to
-  `FALSE`, preventing accidental mass downloads.
+* New `auto_download()`: load the dataset, filter by year, and download
+  reports in one call, with interactive prompts and a confirmation guard
+  against accidental mass downloads.
+* Faster PDF downloads (one fewer web request per report).
 
 # gao 0.1.0
 
-* Initial release.
-* Bundled dataset of ~55,000 GAO report URLs (1921--present).
-* `gao_links()` to access bundled report URLs.
-* `update_links()` to scrape newly published reports.
-* `extract_links()` to build the full link list from scratch.
-* `extract_pdf_links()` to find PDF download links from report pages.
-* `download_pdfs()` and `download_htmls()` for batch downloading.
-* Requires 'curl-impersonate' for TLS fingerprint compatibility.
+* Initial release: bundled dataset of ~55,000 GAO report URLs
+  (1921--present), `gao_links()` for browsing, and batch download of
+  reports as PDF or HTML.

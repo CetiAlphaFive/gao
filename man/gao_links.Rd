@@ -7,49 +7,45 @@
 gao_links()
 }
 \value{
-A data.frame with columns: url, title, report_id, published,
-released, summary, page_count (integer, may be \code{NA} for reports
-without a matching PDF in the bundled archive), topics,
-subject_terms, has_recommendations (logical), n_recommendations
-(integer), has_matters (logical), n_matters (integer),
-agencies_affected (character, semicolon-separated),
-requester_type (character: \code{"congressional_request"},
-\code{"statutory_mandate"}, \code{"cg_initiated"}, \code{"testimony"},
-\code{"correspondence"}, or \code{"legal_decision"}),
-requester_committees (character, semicolon-separated committee names
-with chamber), requester_members (character, semicolon-separated
-member names with roles), plus 82 integer indicator columns:
-31 \verb{topic_*} columns (one per topic), 50 \verb{agency_*} columns
-(one per top-50 agency), and \code{agency_other} (1 if any non-top-50
-agency appears). Matching is exact per semicolon-delimited item.
-Indicator columns are \code{NA_integer_} where the source field is
-missing or empty.
+A data.frame with one row per GAO report and three groups of
+columns:
 
-Additional derived covariates are computed on the fly:
-\code{issuing_division} (GAO producing unit decoded from the report-ID prefix,
-e.g. \code{"National Security & International Affairs"}; \code{NA} for pure-numeric
-legacy IDs), \code{product_type} (\code{"report"}, \code{"testimony"},
-\code{"correspondence"}, \code{"legal_decision"}, or \code{"legal_other"}), \code{pub_month}
-(1-12), \code{pub_dow} (1=Mon..7=Sun), \code{pub_fiscal_year}, \code{fiscal_quarter}
-(federal FY, starts October), \code{election_year} (1 if even calendar year),
-\code{release_lag_days} (\code{released - published}), \code{n_topics},
+\strong{Core metadata:} \code{url}, \code{title}, \code{report_id}, \code{published},
+\code{released}, \code{summary}, \code{page_count} (\code{NA} when no PDF is available),
+\code{topics}, \code{subject_terms}, \code{agencies_affected} (semicolon-separated),
+\code{has_recommendations} / \code{n_recommendations}, \code{has_matters} /
+\code{n_matters}, \code{requester_type} (\code{"congressional_request"},
+\code{"statutory_mandate"}, \code{"cg_initiated"}, \code{"testimony"},
+\code{"correspondence"}, or \code{"legal_decision"}), \code{requester_committees},
+and \code{requester_members} (semicolon-separated).
+
+\strong{Indicator columns} (0/1): 31 \verb{topic_*} columns, 50 \verb{agency_*}
+columns for the most frequently reviewed agencies, plus
+\code{agency_other}. Matching is exact per semicolon-delimited item;
+indicators are \code{NA} where the source field is missing.
+
+\strong{Derived covariates:} \code{issuing_division} (the GAO unit decoded from
+the report ID; \code{NA} for old numeric IDs), \code{product_type} (\code{"report"},
+\code{"testimony"}, \code{"correspondence"}, \code{"legal_decision"}, or
+\code{"legal_other"}), \code{pub_month}, \code{pub_dow} (1 = Monday),
+\code{pub_fiscal_year} and \code{fiscal_quarter} (federal fiscal year, which
+starts in October), \code{election_year}, \code{release_lag_days}, \code{n_topics},
 \code{n_subject_terms}, and requester party covariates \code{requester_party}
-(\code{"R"}/\code{"D"}/\code{"Other"}/\code{"mixed"}/\code{NA}, where \code{"Other"} marks a lone
-independent/third-party requester), \code{requester_majority_status}
-(\code{"majority"}/\code{"minority"}/\code{"mixed"}/\code{NA}), \code{requester_chamber}
-(\code{"House"}/\code{"Senate"}/\code{"both"}/\code{NA}), and \code{requester_bipartisan}
-(logical). Requester party is resolved by matching parsed member names
-against a bundled VoteView crosswalk for the Congress active at
-publication (chamber-aware, so House/Senate namesakes do not collide);
-it is populated only for reports that name individual requesters. Majority
-status is computed against the requester's own chamber, and for
-independents is resolved via the party they caucus with.
+(\code{"R"}, \code{"D"}, \code{"Other"}, \code{"mixed"}, or \code{NA}),
+\code{requester_majority_status}, \code{requester_chamber}, and
+\code{requester_bipartisan}. Party covariates are resolved by matching
+requester names against congressional membership data from
+\href{https://voteview.com/}{Voteview} for the Congress active at
+publication; they are populated only for reports that name individual
+members of Congress as requesters.
 }
 \description{
-Returns a data.frame of GAO report metadata. Checks for a user-local
-cache (written by \code{\link[=gao_update_data]{gao_update_data()}}) first, then falls back to the
-bundled dataset. Indicator columns (82 one-hot columns for topics and
-agencies) are computed on the fly and cached in memory.
+Returns the full GAO report dataset as a data.frame: one row per report,
+with metadata from gao.gov plus ready-made indicator and covariate
+columns for analysis. The newest data available locally is used: the
+cache written by \code{\link[=gao_update_data]{gao_update_data()}} if present, otherwise the dataset
+bundled with the package. The result is kept in memory, so repeated
+calls are fast.
 }
 \examples{
 reports <- gao_links()

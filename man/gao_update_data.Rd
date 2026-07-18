@@ -15,7 +15,7 @@ Invisible path to the cached RDS file.
 \description{
 Downloads the latest \code{gao_links.rds} from the package's GitHub
 Releases and caches it locally. Subsequent calls to \code{\link[=gao_links]{gao_links()}}
-will use the updated data. Uses base R \code{\link[=download.file]{download.file()}} — no
+will use the updated data. Uses base R \code{\link[=download.file]{download.file()}} -- no
 \code{curl-impersonate} needed.
 }
 \examples{

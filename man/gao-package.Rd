@@ -17,9 +17,12 @@ Accountability Office. All data is obtained from public web pages at
 }
 \section{System requirements}{
 
-Requires \href{https://github.com/lexiforest/curl-impersonate}{curl-impersonate}
-to be installed. GAO.gov uses TLS fingerprint filtering that blocks
-standard HTTP clients.
+Browsing the bundled dataset, exporting metadata, and extracting text
+from PDFs work out of the box. Downloading report files from gao.gov
+additionally requires
+\href{https://github.com/lexiforest/curl-impersonate}{curl-impersonate},
+a variant of curl that gao.gov's servers accept; functions that need it
+print installation instructions if it is missing.
 }
 
 \seealso{

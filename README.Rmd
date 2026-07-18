@@ -21,9 +21,16 @@ knitr::opts_chunk$set(
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-`gao` provides tools for downloading reports and associated metadata published by the United States Government Accountability Office (GAO). It ships with a bundled dataset covering over 55,000 reports (1921--present, updated daily) and a one-step function for batch downloading reports as PDF, HTML, or both.
+The U.S. Government Accountability Office (GAO) is the audit and
+investigative arm of Congress. Since 1921 it has published tens of
+thousands of reports on how the federal government spends money and how
+well its programs work.
 
-**Disclaimer:** This package is not affiliated with, endorsed by, or in any way officially connected to the U.S. Government Accountability Office. All data is obtained from public web pages at [gao.gov](https://www.gao.gov). 
+`gao` puts that entire library at your fingertips in R. It ships with a
+built-in dataset covering every GAO report --- metadata, topics,
+agencies, congressional requesters, and more --- updated daily, and it
+can batch-download the full reports as PDF or HTML.
+
 ## Installation
 
 ```r
@@ -35,11 +42,54 @@ install.packages("gao")
 pak::pak("CetiAlphaFive/gao")
 ```
 
-The bundled dataset, metadata exports, and `extract_text()` work with no system dependencies.
+## Quick start
 
-### Optional: live downloads from gao.gov
+The dataset is bundled with the package, so browsing it works
+immediately --- no internet connection or extra software needed:
 
-Downloading PDFs or HTML directly from gao.gov (`auto_download(format = "pdf" | "html" | "both")`) requires [curl-impersonate](https://github.com/lexiforest/curl-impersonate), since GAO.gov uses TLS fingerprint filtering that blocks standard HTTP clients.
+```{r, message = FALSE}
+library(gao)
+
+reports <- gao_links()
+nrow(reports)
+
+# GAO reports on health care from fiscal year 2024
+subset(reports, pub_fiscal_year == 2024 & topic_health_care == 1,
+       select = c(report_id, published, title)) |>
+  head(3)
+```
+
+Each row is one GAO product, with `r ncol(reports)` columns of metadata:
+title, dates, summary, page count, topics, agencies reviewed,
+recommendation counts, who in Congress requested the report, and
+ready-made indicator and covariate columns for analysis (for example,
+`topic_health_care`, `pub_fiscal_year`, `requester_party`).
+
+To download the actual reports, use `auto_download()`:
+
+```{r, eval = FALSE}
+# Interactive --- prompts for format and year range
+auto_download()
+
+# Or specify everything up front
+auto_download(format = "pdf", year = 2020:2024, confirm = FALSE)
+```
+
+This filters the dataset by fiscal year and saves the files into
+`gao_reports/pdf/` and `gao_reports/html/` in your working directory.
+
+The package has three main functions:
+
+- **`auto_download()`** --- download reports as PDF, HTML, or both (or export the metadata as CSV)
+- **`gao_links()`** --- access the full metadata dataset
+- **`extract_text()`** --- pull plain text out of downloaded PDFs, ready for text analysis
+
+## Downloading reports from gao.gov
+
+Everything above works out of the box. Downloading report files directly
+from gao.gov is the one feature that needs a helper program:
+[curl-impersonate](https://github.com/lexiforest/curl-impersonate), a
+drop-in variant of curl that gao.gov's servers accept.
 
 ```bash
 # Arch Linux
@@ -49,26 +99,30 @@ sudo pacman -S curl-impersonate
 brew install lexiforest/curl-impersonate/curl-impersonate
 ```
 
-Functions that need it will print install instructions if it is missing. Without it, you can still browse the bundled dataset, export metadata, and use `gao_update_data()` to fetch the latest dataset from GitHub Releases.
+Any function that needs it will tell you and print these instructions if
+it is missing.
 
-## Quick start
+## Keeping the data current
+
+New GAO reports are added to the dataset every day. To get the latest
+version without waiting for a new package release:
 
 ```{r, eval = FALSE}
-library(gao)
-
-# Interactive --- prompts for format and year range
-auto_download()
-
-# Or specify everything up front
-auto_download(format = "pdf", year = 2020:2024, confirm = FALSE)
+gao_update_data()
 ```
 
-`auto_download()` loads the bundled dataset, filters by fiscal year, and downloads PDFs, HTMLs, or both into `gao_reports/pdf/` and `gao_reports/html/`.
+This downloads the freshest dataset (a few MB) and caches it locally;
+`gao_links()` uses it automatically from then on.
 
-The package has three main functions:
+## Learn more
 
-- **`gao_links()`** --- access the bundled dataset (56,000+ reports with metadata and one-hot indicator columns)
-- **`auto_download()`** --- download reports as PDF, HTML, or both (or export metadata as CSV)
-- **`extract_text()`** --- extract text from downloaded PDFs via `pdftools`
+- [The GAO report dataset](https://cetialphafive.github.io/gao/articles/gao-dataset.html) --- every column explained, with worked examples
+- [Downloading reports and extracting text](https://cetialphafive.github.io/gao/articles/downloading-reports.html) --- from bulk download to text analysis
+- [Function reference](https://cetialphafive.github.io/gao/reference/index.html)
 
+## Disclaimer
 
+This package is not affiliated with, endorsed by, or in any way
+officially connected to the U.S. Government Accountability Office. All
+data is obtained from public web pages at
+[gao.gov](https://www.gao.gov).

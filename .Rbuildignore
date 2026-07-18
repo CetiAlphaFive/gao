@@ -13,3 +13,4 @@
 ^cran-comments\.md$
 ^CITATION\.cff$
 ^NEWS\.md$
+^vignettes$

@@ -34,15 +34,15 @@
 #' nchar(texts$text[1])
 #' }
 extract_text <- function(pdf_dir, pattern = "\\.pdf$", verbose = TRUE) {
-  if (!requireNamespace("pdftools", quietly = TRUE)) {
-    stop("Package 'pdftools' is required. Install it with: ",
-         "install.packages(\"pdftools\")", call. = FALSE)
-  }
   if (!is.character(pdf_dir) || length(pdf_dir) != 1) {
     stop("pdf_dir must be a single directory path", call. = FALSE)
   }
   if (!dir.exists(pdf_dir)) {
     stop("Directory not found: ", pdf_dir, call. = FALSE)
+  }
+  if (!requireNamespace("pdftools", quietly = TRUE)) {
+    stop("Package 'pdftools' is required. Install it with: ",
+         "install.packages(\"pdftools\")", call. = FALSE)
   }
 
   files <- list.files(pdf_dir, pattern = pattern, full.names = FALSE)

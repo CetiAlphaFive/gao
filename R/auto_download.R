@@ -5,11 +5,6 @@
 #' `format = "metadata"` to export a CSV of report metadata without
 #' downloading any files.
 #'
-#' PDF URLs are constructed directly from report IDs (e.g.,
-#' `/products/gao-24-106198` becomes `/assets/gao-24-106198.pdf`) rather than
-#' scraping each report page, so no extra HTTP requests are needed for
-#' link extraction.
-#'
 #' @section System requirements:
 #' `format = "pdf"`, `"html"`, or `"both"` downloads files from
 #' \url{https://www.gao.gov} and requires

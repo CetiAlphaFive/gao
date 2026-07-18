@@ -189,48 +189,44 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
 
 #' Get GAO Report Data
 #'
-#' Returns a data.frame of GAO report metadata. Checks for a user-local
-#' cache (written by [gao_update_data()]) first, then falls back to the
-#' bundled dataset. Indicator columns (82 one-hot columns for topics and
-#' agencies) are computed on the fly and cached in memory.
+#' Returns the full GAO report dataset as a data.frame: one row per report,
+#' with metadata from gao.gov plus ready-made indicator and covariate
+#' columns for analysis. The newest data available locally is used: the
+#' cache written by [gao_update_data()] if present, otherwise the dataset
+#' bundled with the package. The result is kept in memory, so repeated
+#' calls are fast.
 #'
-#' @return A data.frame with columns: url, title, report_id, published,
-#'   released, summary, page_count (integer, may be `NA` for reports
-#'   without a matching PDF in the bundled archive), topics,
-#'   subject_terms, has_recommendations (logical), n_recommendations
-#'   (integer), has_matters (logical), n_matters (integer),
-#'   agencies_affected (character, semicolon-separated),
-#'   requester_type (character: `"congressional_request"`,
+#' @return A data.frame with one row per GAO report and three groups of
+#'   columns:
+#'
+#'   **Core metadata:** `url`, `title`, `report_id`, `published`,
+#'   `released`, `summary`, `page_count` (`NA` when no PDF is available),
+#'   `topics`, `subject_terms`, `agencies_affected` (semicolon-separated),
+#'   `has_recommendations` / `n_recommendations`, `has_matters` /
+#'   `n_matters`, `requester_type` (`"congressional_request"`,
 #'   `"statutory_mandate"`, `"cg_initiated"`, `"testimony"`,
-#'   `"correspondence"`, or `"legal_decision"`),
-#'   requester_committees (character, semicolon-separated committee names
-#'   with chamber), requester_members (character, semicolon-separated
-#'   member names with roles), plus 82 integer indicator columns:
-#'   31 `topic_*` columns (one per topic), 50 `agency_*` columns
-#'   (one per top-50 agency), and `agency_other` (1 if any non-top-50
-#'   agency appears). Matching is exact per semicolon-delimited item.
-#'   Indicator columns are `NA_integer_` where the source field is
-#'   missing or empty.
+#'   `"correspondence"`, or `"legal_decision"`), `requester_committees`,
+#'   and `requester_members` (semicolon-separated).
 #'
-#'   Additional derived covariates are computed on the fly:
-#'   `issuing_division` (GAO producing unit decoded from the report-ID prefix,
-#'   e.g. `"National Security & International Affairs"`; `NA` for pure-numeric
-#'   legacy IDs), `product_type` (`"report"`, `"testimony"`,
-#'   `"correspondence"`, `"legal_decision"`, or `"legal_other"`), `pub_month`
-#'   (1-12), `pub_dow` (1=Mon..7=Sun), `pub_fiscal_year`, `fiscal_quarter`
-#'   (federal FY, starts October), `election_year` (1 if even calendar year),
-#'   `release_lag_days` (`released - published`), `n_topics`,
+#'   **Indicator columns** (0/1): 31 `topic_*` columns, 50 `agency_*`
+#'   columns for the most frequently reviewed agencies, plus
+#'   `agency_other`. Matching is exact per semicolon-delimited item;
+#'   indicators are `NA` where the source field is missing.
+#'
+#'   **Derived covariates:** `issuing_division` (the GAO unit decoded from
+#'   the report ID; `NA` for old numeric IDs), `product_type` (`"report"`,
+#'   `"testimony"`, `"correspondence"`, `"legal_decision"`, or
+#'   `"legal_other"`), `pub_month`, `pub_dow` (1 = Monday),
+#'   `pub_fiscal_year` and `fiscal_quarter` (federal fiscal year, which
+#'   starts in October), `election_year`, `release_lag_days`, `n_topics`,
 #'   `n_subject_terms`, and requester party covariates `requester_party`
-#'   (`"R"`/`"D"`/`"Other"`/`"mixed"`/`NA`, where `"Other"` marks a lone
-#'   independent/third-party requester), `requester_majority_status`
-#'   (`"majority"`/`"minority"`/`"mixed"`/`NA`), `requester_chamber`
-#'   (`"House"`/`"Senate"`/`"both"`/`NA`), and `requester_bipartisan`
-#'   (logical). Requester party is resolved by matching parsed member names
-#'   against a bundled VoteView crosswalk for the Congress active at
-#'   publication (chamber-aware, so House/Senate namesakes do not collide);
-#'   it is populated only for reports that name individual requesters. Majority
-#'   status is computed against the requester's own chamber, and for
-#'   independents is resolved via the party they caucus with.
+#'   (`"R"`, `"D"`, `"Other"`, `"mixed"`, or `NA`),
+#'   `requester_majority_status`, `requester_chamber`, and
+#'   `requester_bipartisan`. Party covariates are resolved by matching
+#'   requester names against congressional membership data from
+#'   [Voteview](https://voteview.com/) for the Congress active at
+#'   publication; they are populated only for reports that name individual
+#'   members of Congress as requesters.
 #' @export
 #' @examples
 #' reports <- gao_links()
