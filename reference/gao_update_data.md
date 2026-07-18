@@ -4,7 +4,7 @@ Downloads the latest `gao_links.rds` from the package's GitHub Releases
 and caches it locally. Subsequent calls to
 [`gao_links()`](https://cetialphafive.github.io/gao/reference/gao_links.md)
 will use the updated data. Uses base R
-[`download.file()`](https://rdrr.io/r/utils/download.file.html) — no
+[`download.file()`](https://rdrr.io/r/utils/download.file.html) – no
 `curl-impersonate` needed.
 
 ## Usage

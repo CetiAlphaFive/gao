@@ -1,0 +1,125 @@
+# Downloading reports and extracting text
+
+Browsing the metadata needs nothing beyond the package itself. This
+article covers the next step: downloading the actual report files in
+bulk and turning them into analyzable text.
+
+## One-time setup: curl-impersonate
+
+gao.gov’s servers reject requests from ordinary download tools, so the
+package uses
+[curl-impersonate](https://github.com/lexiforest/curl-impersonate), a
+variant of curl that gao.gov accepts. Install it once:
+
+``` bash
+# Arch Linux
+sudo pacman -S curl-impersonate
+
+# macOS
+brew install lexiforest/curl-impersonate/curl-impersonate
+```
+
+For other platforms, prebuilt binaries are available from the
+[curl-impersonate releases
+page](https://github.com/lexiforest/curl-impersonate/releases). If the
+binary has a different name or location on your system, point the
+package at it with `options(gao.curl_bin = "/path/to/curl_firefox147")`.
+
+Everything else in the package works without it, and any function that
+needs it will remind you with these instructions.
+
+## Downloading reports
+
+[`auto_download()`](https://cetialphafive.github.io/gao/reference/auto_download.md)
+is the one-stop function. Called with no arguments in an interactive
+session, it walks you through the choices — format, year range, and a
+confirmation with the total file count before anything is downloaded:
+
+``` r
+
+library(gao)
+
+auto_download()
+```
+
+Or specify everything up front, for scripts:
+
+``` r
+
+# All reports from fiscal years 2023-2024, as PDF
+auto_download(format = "pdf", year = 2023:2024, confirm = FALSE)
+```
+
+Files land in your working directory:
+
+    gao_reports/
+    ├── pdf/
+    │   ├── gao-23-105043.pdf
+    │   ├── gao-23-105177.pdf
+    │   └── ...
+    └── html/        (with format = "html" or "both")
+
+Downloads pause for one second between files (adjustable via
+`sleep_time`) to be polite to gao.gov. A full fiscal year is typically a
+few hundred reports, so plan for several minutes per year and a few
+hundred MB of disk space.
+
+### Metadata only, no downloads
+
+`format = "metadata"` skips the downloads entirely and writes the
+filtered metadata to a CSV — useful when you only need the report list
+in a spreadsheet or another language:
+
+``` r
+
+auto_download(format = "metadata", year = 2020:2024, confirm = FALSE)
+```
+
+## Extracting text
+
+Once you have PDFs,
+[`extract_text()`](https://cetialphafive.github.io/gao/reference/extract_text.md)
+reads a whole directory into a data.frame — one row per file, with the
+full text of all pages in one string. It requires the `pdftools` package
+(`install.packages("pdftools")`).
+
+``` r
+
+texts <- extract_text("gao_reports/pdf")
+
+nrow(texts)          # one row per PDF
+texts$file[1]        # the filename
+texts$pages[1]       # its page count
+substr(texts$text[1], 1, 200)  # the first 200 characters of text
+```
+
+From here you are ready for standard text-analysis tools — for example,
+counting term mentions across reports:
+
+``` r
+
+mentions <- grepl("climate change", texts$text, ignore.case = TRUE)
+sum(mentions)
+```
+
+Very old reports are scanned images rather than digital text; those
+yield `NA` text (with a warning listing the affected files), so filter
+with `is.na(texts$text)` before analysis.
+
+## Joining text back to metadata
+
+Filenames follow the report URL slug, so you can connect extracted text
+back to the metadata in
+[`gao_links()`](https://cetialphafive.github.io/gao/reference/gao_links.md):
+
+``` r
+
+reports <- gao_links()
+reports$file <- paste0(basename(reports$url), ".pdf")
+
+full <- merge(texts, reports, by = "file")
+```
+
+Now every report’s text sits alongside its topics, agencies, requesters,
+and the rest of the metadata — ready for whatever question you are
+asking.

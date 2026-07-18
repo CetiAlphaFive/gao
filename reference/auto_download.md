@@ -45,7 +45,7 @@ auto_download(
 
   Logical. If `TRUE` (default), prompts for confirmation before
   downloading. In non-interactive sessions, `confirm = TRUE` raises an
-  error to prevent accidental mass downloads — set `confirm = FALSE`
+  error to prevent accidental mass downloads – set `confirm = FALSE`
   explicitly.
 
 ## Value
@@ -53,13 +53,6 @@ auto_download(
 For `"pdf"`, `"html"`, or `"both"`: invisible character vector of
 downloaded file paths. For `"metadata"`: invisible path to the written
 CSV.
-
-## Details
-
-PDF URLs are constructed directly from report IDs (e.g.,
-`/products/gao-24-106198` becomes `/assets/gao-24-106198.pdf`) rather
-than scraping each report page, so no extra HTTP requests are needed for
-link extraction.
 
 ## System requirements
 
