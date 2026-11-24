@@ -208,4 +208,4 @@
 #' @return A length-1 integer.
 #' @keywords internal
 #' @noRd
-.gao_schema_version <- function() 2L
+.gao_schema_version <- function() 3L

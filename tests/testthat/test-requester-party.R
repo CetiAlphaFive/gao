@@ -122,3 +122,84 @@ test_that("independents are labeled 'Other' with caucus-based majority (A5)", {
   expect_equal(ak$requester_majority_status, "minority")
 })
 
+
+test_that("accented VoteView names match plain GAO spellings", {
+  expect_equal(.ascii_name("GONZÁLEZ, Henry Barbosa"), "GONZALEZ, Henry Barbosa")
+  expect_equal(.normalize_member_name("GONZÁLEZ, Henry Barbosa", lastfirst = TRUE),
+               .normalize_member_name("Henry B. Gonzalez"))
+  f <- .requester_party_features("Henry B. Gonzalez", "Committee on Banking (House)",
+                                 "1993-06-01")
+  expect_equal(f$requester_party, "D")
+})
+
+test_that("nicknames and middle names resolve", {
+  lk <- .build_party_lookups()
+  party <- function(m, d) .requester_party_features(m, NA_character_, d, lk)$requester_party
+  expect_equal(party("Bob Dole (Senate)",       "1995-06-01"), "R")  # (Bob)
+  expect_equal(party("Bill Bradley (Senate)",   "1995-06-01"), "D")  # William
+  expect_equal(party("Strom Thurmond (Senate)", "1995-06-01"), "R")  # middle name
+  expect_equal(party("Mitch McConnell (Senate)", "2001-04-30"), "R")
+  expect_equal(party("Ted Cruz (Senate)",       "2015-06-01"), "R")
+})
+
+test_that("first-name keys beat middle-name keys; true namesakes stay NA", {
+  lk <- .build_party_lookups()
+  # Denny Smith (R-OR) shares "smith d" only with colleagues' middle names.
+  ds <- .requester_party_features("Denny Smith (House)", NA_character_,
+                                  "1985-05-20", lk)
+  expect_equal(ds$requester_party, "R")
+  # 109th House: Jerry Lewis "(Jerry)" and John Lewis both go by "lewis j".
+  jl <- .requester_party_features("Jerry Lewis", "Committee on X (House)",
+                                  "2005-06-01", lk)
+  expect_true(is.na(jl$requester_party))
+  expect_false(jl$requester_party_complete %in% TRUE)
+})
+
+test_that("party switchers keep their end-of-Congress affiliation", {
+  lk <- .build_party_lookups()
+  jj <- .requester_party_features("James M. Jeffords (Senate)", NA_character_,
+                                  "2002-03-29", lk)
+  expect_equal(jj$requester_party, "Other")             # I, caucusing D
+  expect_equal(jj$requester_majority_status, "majority") # D-run 107th Senate
+  as <- .requester_party_features("Arlen Specter (Senate)", NA_character_,
+                                  "2009-09-01", lk)
+  expect_equal(as$requester_party, "D")
+})
+
+test_that("member chamber annotations set requester_chamber", {
+  f <- .requester_party_features("Zzyzx Q. Nobody (House)", NA_character_,
+                                 "2010-06-01")
+  expect_equal(f$requester_chamber, "House")
+  expect_true(is.na(f$requester_party))
+  g <- .requester_party_features("Bob Dole (Senate); Zzyzx Nobody (House)",
+                                 NA_character_, "1995-06-01")
+  expect_equal(g$requester_chamber, "both")
+})
+
+test_that("requester_party_complete flags partially resolved requester lists", {
+  lk <- .build_party_lookups()
+  full <- .requester_party_features("Richard G. Lugar, Chairman; Chairman",
+                                    NA_character_, "1995-06-01", lk)
+  expect_true(full$requester_party_complete)   # role-only item is ignored
+  part <- .requester_party_features("Richard G. Lugar; Zzyzx Nobody",
+                                    NA_character_, "1995-06-01", lk)
+  expect_equal(part$requester_party, "R")
+  expect_false(part$requester_party_complete)
+  none <- .requester_party_features(NA_character_, NA_character_, "1995-06-01", lk)
+  expect_true(is.na(none$requester_party_complete))
+})
+
+test_that("non-caucusing independents get no majority status", {
+  # Justin Amash left the GOP in July 2019 and caucused with neither party.
+  f <- .requester_party_features("Justin Amash (House)", NA_character_,
+                                 "2019-09-01")
+  expect_equal(f$requester_party, "Other")
+  expect_true(is.na(f$requester_majority_status))
+})
+
+test_that("one-word name fragments are unresolved, not matched as surnames", {
+  f <- .requester_party_features("Lloyd", "Committee on Finance (Senate)",
+                                 "1990-06-01")
+  expect_true(is.na(f$requester_party))
+  expect_false(f$requester_party_complete %in% TRUE)
+})

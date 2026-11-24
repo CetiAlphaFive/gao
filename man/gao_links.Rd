@@ -32,12 +32,19 @@ the report ID; \code{NA} for old numeric IDs), \code{product_type} (\code{"repor
 starts in October), \code{election_year}, \code{release_lag_days}, \code{n_topics},
 \code{n_subject_terms}, and requester party covariates \code{requester_party}
 (\code{"R"}, \code{"D"}, \code{"Other"}, \code{"mixed"}, or \code{NA}),
-\code{requester_majority_status}, \code{requester_chamber}, and
-\code{requester_bipartisan}. Party covariates are resolved by matching
-requester names against congressional membership data from
+\code{requester_majority_status}, \code{requester_chamber},
+\code{requester_bipartisan}, and \code{requester_party_complete}. Party covariates
+are resolved by matching requester names (including nicknames, middle
+names, and accented spellings) against congressional membership data from
 \href{https://voteview.com/}{Voteview} for the Congress active at
 publication; they are populated only for reports that name individual
-members of Congress as requesters.
+members of Congress as requesters. A name that matches more than one
+member of that Congress is left unresolved rather than guessed, and
+\code{requester_party_complete} is \code{FALSE} when the party covariates were
+computed from only some of the named members. A member who switched
+parties mid-Congress is coded with the affiliation held at the end of
+that Congress. \code{requester_chamber} combines committee and member
+chamber annotations.
 }
 \description{
 Returns the full GAO report dataset as a data.frame: one row per report,

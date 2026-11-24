@@ -37,7 +37,7 @@
 #' @noRd
 .normalize_member_name <- function(name, lastfirst = FALSE) {
   suffix.re <- "^(JR|SR|II|III|IV|2ND|3RD|4TH)$"
-  vapply(name, function(nm) {
+  vapply(.ascii_name(name), function(nm) {
     if (is.na(nm) || !nzchar(trimws(nm))) return(NA_character_)
     x <- gsub("\\([^)]*\\)", " ", nm)                # drop parenthetical chamber/nickname
     if (lastfirst) {                                 # "LAST, First Middle"
@@ -68,6 +68,24 @@
   }, character(1), USE.NAMES = FALSE)
 }
 
+#' Transliterate accented letters to plain ASCII
+#'
+#' VoteView spells "GONZALEZ" with an accented A; GAO writes "Henry B.
+#' Gonzalez". Without this the accent becomes a token break ("gonz lez") and
+#' the keys never meet. Marks that some platforms' iconv leaves behind
+#' (apostrophe inside a word, caret, tilde, double quote, backtick) are
+#' removed so they cannot split a name either.
+#'
+#' @keywords internal
+#' @noRd
+.ascii_name <- function(x) {
+  x <- as.character(x)
+  out <- iconv(enc2utf8(x), "UTF-8", "ASCII//TRANSLIT", sub = "")
+  bad <- is.na(out) & !is.na(x)
+  out[bad] <- x[bad]
+  gsub("[`^~\"]|(?<=[A-Za-z])'(?=[a-z])", "", out, perl = TRUE)
+}
+
 #' Build hashed lookups from the bundled crosswalk
 #'
 #' Returns environments for O(1) party / caucus / chamber / majority lookups, so
@@ -95,29 +113,44 @@
   maj        <- new_env()
 
   # Chamber-aware party/caucus (skip rows with NA party / NA caucus).
-  ck <- paste(mp$congress, mp$chamber, mp$match_key, sep = "|")
-  for (i in which(!is.na(mp$party))) {
-    assign(ck[i], mp$party[i], envir = party_ch)
-    if (!is.na(mp$caucus[i])) assign(ck[i], mp$caucus[i], envir = caucus_ch)
+  # Vectorized throughout: a per-group R loop over ~90k keys (with by-name
+  # list indexing, which is a linear scan) took minutes.
+  fill <- function(env, keys, values) {
+    names(values) <- keys
+    list2env(as.list(values), envir = env)
+  }
+  # Keys whose (deduplicated) value is unique and non-NA within the key.
+  unique_value <- function(keys, values) {
+    keep <- !duplicated(paste(keys, values, sep = "\r"))
+    k <- keys[keep]
+    v <- values[keep]
+    id <- match(k, k)                      # first position of each key
+    n <- tabulate(id, nbins = length(k))[id]
+    sel <- n == 1L & !is.na(v)
+    list(keys = k[sel], values = v[sel])
   }
 
-  # Chamber-less unambiguous party/caucus/chamber.
+  # Chamber-aware party/caucus (skip rows with NA party / NA caucus).
+  ck <- paste(mp$congress, mp$chamber, mp$match_key, sep = "|")
+  ok <- !is.na(mp$party)
+  fill(party_ch, ck[ok], mp$party[ok])
+  okc <- ok & !is.na(mp$caucus)
+  fill(caucus_ch, ck[okc], mp$caucus[okc])
+
+  # Chamber-less unambiguous party/caucus/chamber, over the best-ranked keys
+  # only (a House member's first-name key beats a senator's middle-name key).
   nk <- paste(mp$congress, mp$match_key, sep = "|")
-  groups <- split(seq_len(nrow(mp)), nk)
-  for (g in names(groups)) {
-    idx <- groups[[g]]
-    up <- unique(mp$party[idx])
-    if (length(up) == 1L && !is.na(up)) assign(g, up, envir = party_nc)
-    uc <- unique(mp$caucus[idx])
-    if (length(uc) == 1L && !is.na(uc)) assign(g, uc, envir = caucus_nc)
-    uch <- unique(mp$chamber[idx])
-    if (length(uch) == 1L) assign(g, uch, envir = chamber_nc)
+  rk <- if ("rank" %in% names(mp)) mp$rank else rep(1L, nrow(mp))
+  best <- rk == 1L | !(nk %in% nk[rk == 1L])   # ranks are 1 or 2
+  for (spec in list(list(party_nc, mp$party), list(caucus_nc, mp$caucus),
+                    list(chamber_nc, mp$chamber))) {
+    a <- unique_value(nk[best], spec[[2]][best])
+    fill(spec[[1]], a$keys, a$values)
   }
 
   # Majority party per (congress, chamber).
   mj <- .majority_by_congress
-  mk <- paste(mj$congress, mj$chamber, sep = "|")
-  for (i in seq_len(nrow(mj))) assign(mk[i], mj$majority_party[i], envir = maj)
+  fill(maj, paste(mj$congress, mj$chamber, sep = "|"), mj$majority_party)
 
   list(party_ch = party_ch, caucus_ch = caucus_ch,
        party_nc = party_nc, caucus_nc = caucus_nc,
@@ -127,8 +160,7 @@
 #' Requester party / chamber / majority / bipartisan for one report
 #'
 #' @param members Character scalar: semicolon-delimited requester member string.
-#' @param committees Character scalar: semicolon-delimited committee string
-#'   (used only to infer chamber when member names are absent).
+#' @param committees Character scalar: semicolon-delimited committee string.
 #' @param published Character/Date scalar publication date.
 #' @param lookups Optional list from [.build_party_lookups()]. Built on demand if
 #'   `NULL` (fine for single calls; pass a shared one for batch use).
@@ -136,8 +168,12 @@
 #'   `"Other"` = a lone independent/third-party requester),
 #'   `requester_majority_status` ("majority"/"minority"/"mixed"/NA; resolved via
 #'   the member's caucus so independents count with the party they caucus with),
-#'   `requester_chamber` ("House"/"Senate"/"both"/NA),
-#'   `requester_bipartisan` (logical).
+#'   `requester_chamber` ("House"/"Senate"/"both"/NA; the union of committee
+#'   annotations, member "(House)"/"(Senate)" annotations, and the chamber of
+#'   each resolved member), `requester_bipartisan` (logical), and
+#'   `requester_party_complete` (logical: `TRUE` when every named member was
+#'   resolved, `FALSE` when party/bipartisan/majority were computed from only
+#'   some of them, `NA` when no member is named).
 #' @keywords internal
 #' @noRd
 .requester_party_features <- function(members, committees, published,
@@ -145,20 +181,28 @@
   if (is.null(lookups)) lookups <- .build_party_lookups()
   cong <- .congress_for_date(published)
 
-  # --- report-level chamber from committee annotations "(Senate)"/"(House)" ---
-  chamber <- NA_character_
+  # --- committee-level chamber from "(Senate)"/"(House)" annotations ---
+  comm.ch <- character(0)
   if (!is.na(committees) && nzchar(committees)) {
-    has.sen <- grepl("Senate", committees)
-    has.hou <- grepl("House",  committees)
-    chamber <- if (has.sen && has.hou) "both"
-               else if (has.sen) "Senate"
-               else if (has.hou) "House" else NA_character_
+    if (grepl("Senate", committees)) comm.ch <- c(comm.ch, "Senate")
+    if (grepl("House",  committees)) comm.ch <- c(comm.ch, "House")
+  }
+  # single-chamber committee context, used as each member's candidate chamber
+  comm.single <- if (length(comm.ch) == 1L) comm.ch else NA_character_
+  chambers <- comm.ch
+
+  collapse_chamber <- function(ch) {
+    ch <- unique(ch[!is.na(ch)])
+    if (length(ch) == 0L) NA_character_
+    else if (length(ch) > 1L) "both"
+    else ch
   }
 
   none <- list(requester_party = NA_character_,
                requester_majority_status = NA_character_,
-               requester_chamber = chamber,
-               requester_bipartisan = NA)
+               requester_chamber = collapse_chamber(chambers),
+               requester_bipartisan = NA,
+               requester_party_complete = NA)
 
   if (is.na(cong) || is.na(members) || !nzchar(members)) return(none)
 
@@ -166,23 +210,31 @@
 
   parties <- character(0)   # display party per resolved member
   in.maj  <- logical(0)     # majority membership per resolved member (NA allowed)
+  n.named <- 0L
+
+  # An item that is only a role word ("Chairman", "Ranking Member") is parser
+  # residue, not a person; it neither resolves nor counts as unresolved.
+  role.only <- "^(the )?(vice )?(chair(man|woman|person)?|ranking (minority )?member|member|co-?chair(man)?)$"
 
   for (ms in member.strs) {
     if (!nzchar(ms)) next
+    nm.part <- trimws(gsub("\\([^)]*\\)", " ", sub(",.*$", "", ms)))
+    if (grepl(role.only, tolower(nm.part))) next
 
-    # per-member candidate chamber: parenthetical annotation, else the report
-    # chamber when it is a single chamber.
-    cand <- NA_character_
+    # explicit per-member chamber annotation, e.g. "Jane Doe (House)"
     pm <- regmatches(ms, regexec("\\(\\s*(Senate|House)\\s*\\)", ms,
                                  perl = TRUE))[[1]]
-    if (length(pm) >= 2L) {
-      cand <- pm[2]
-    } else if (!is.na(chamber) && chamber %in% c("House", "Senate")) {
-      cand <- chamber
-    }
+    annot <- if (length(pm) >= 2L) pm[2] else NA_character_
+    if (!is.na(annot)) chambers <- c(chambers, annot)
+    cand <- if (!is.na(annot)) annot else comm.single
 
     key <- .normalize_member_name(ms)
     if (is.na(key)) next
+    n.named <- n.named + 1L
+    # A one-word fragment ("Lloyd", "Daniel") is a mangled name, not a full
+    # one; matching it as a surname finds the wrong person (Marilyn Lloyd for
+    # a split "Lloyd Bentsen"), so it counts as named but unresolved.
+    if (length(strsplit(trimws(gsub("[^A-Za-z]+", " ", nm.part)), " ")[[1]]) < 2L) next
 
     party <- NA_character_
     caucus <- NA_character_
@@ -196,7 +248,7 @@
         party  <- p
         cc <- get0(paste(cong, cand, key, sep = "|"), envir = lookups$caucus_ch,
                    inherits = FALSE, ifnotfound = NA_character_)
-        caucus <- if (!is.na(cc)) cc else p
+        caucus <- if (!is.na(cc)) cc else if (p %in% c("D", "R")) p else NA_character_
         res_chamber <- cand
         got <- TRUE
       }
@@ -206,18 +258,21 @@
                     inherits = FALSE, ifnotfound = NA_character_)
       cc <- get0(paste(cong, key, sep = "|"), envir = lookups$caucus_nc,
                  inherits = FALSE, ifnotfound = NA_character_)
-      caucus <- if (!is.na(cc)) cc else if (!is.na(party)) party else NA_character_
+      caucus <- if (!is.na(cc)) cc else if (party %in% c("D", "R")) party else NA_character_
       res_chamber <- get0(paste(cong, key, sep = "|"), envir = lookups$chamber_nc,
                           inherits = FALSE, ifnotfound = NA_character_)
     }
 
-    if (is.na(party)) next   # unresolved member contributes nothing
+    if (is.na(party)) next   # unresolved: counted in n.named, not in parties
 
     parties <- c(parties, party)
+    chambers <- c(chambers, res_chamber)
 
-    # majority status for this member, keyed on the effective (caucusing) party.
-    eff <- if (!is.na(caucus)) caucus else party
-    m <- if (!is.na(res_chamber)) {
+    # majority status for this member, keyed on the caucusing party. An
+    # independent who caucuses with no one (Amash, Barkley) has no majority
+    # status, rather than being counted as minority.
+    eff <- caucus
+    m <- if (!is.na(res_chamber) && !is.na(eff)) {
       get0(paste(cong, res_chamber, sep = "|"), envir = lookups$maj,
            inherits = FALSE, ifnotfound = NA_character_)
     } else {
@@ -226,7 +281,10 @@
     in.maj <- c(in.maj, if (is.na(m)) NA else (eff == m))
   }
 
-  if (length(parties) == 0L) return(none)
+  if (length(parties) == 0L) {
+    none$requester_chamber <- collapse_chamber(chambers)
+    return(none)
+  }
 
   uniq <- unique(parties)
   req.party <- if (length(uniq) == 1L) uniq else "mixed"
@@ -245,6 +303,7 @@
 
   list(requester_party = req.party,
        requester_majority_status = maj.status,
-       requester_chamber = chamber,
-       requester_bipartisan = bipartisan)
+       requester_chamber = collapse_chamber(chambers),
+       requester_bipartisan = bipartisan,
+       requester_party_complete = length(parties) == n.named)
 }

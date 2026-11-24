@@ -123,6 +123,7 @@
   maj   <- rep(NA_character_, n)
   cham  <- rep(NA_character_, n)
   bip   <- rep(NA, n)
+  cmpl  <- rep(NA, n)
 
   has.req <- all(c("requester_members", "requester_committees") %in% names(df))
   if (has.req && n > 0) {
@@ -146,6 +147,7 @@
         maj[i]   <- r$requester_majority_status
         cham[i]  <- r$requester_chamber
         bip[i]   <- r$requester_bipartisan
+        cmpl[i]  <- r$requester_party_complete
       }
     }
   }
@@ -154,6 +156,7 @@
   df$requester_majority_status <- maj
   df$requester_chamber         <- cham
   df$requester_bipartisan      <- bip
+  df$requester_party_complete  <- cmpl
 
   # This is the last expansion step, so stamp the schema version to mark the
   # frame as fully derived (see [.ensure_expanded()]).

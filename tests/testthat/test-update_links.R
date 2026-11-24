@@ -56,7 +56,8 @@ test_that("the empty fallback frame carries the full derived schema (C5)", {
                     "pub_fiscal_year", "fiscal_quarter", "election_year",
                     "release_lag_days", "n_topics", "n_subject_terms",
                     "requester_party", "requester_majority_status",
-                    "requester_chamber", "requester_bipartisan")
+                    "requester_chamber", "requester_bipartisan",
+                    "requester_party_complete")
   expect_equal(nrow(empty), 0L)
   expect_named(empty, c(base.cols, .indicator_colnames(), feature.cols))
 })

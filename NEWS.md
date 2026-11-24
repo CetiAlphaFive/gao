@@ -1,3 +1,22 @@
+# gao (development version)
+
+* Requester party covariates resolve many more members of Congress. The
+  match now handles nicknames (Bob Dole, Ted Cruz), members known by their
+  middle names (Strom Thurmond, Trent Lott), and accented spellings
+  (Henry B. Gonzalez). Members who switched parties mid-Congress (Jeffords,
+  Specter, Manchin) are no longer dropped; they are coded with the
+  affiliation they held at the end of that Congress.
+* A requester name that matches more than one member of the same Congress
+  is left `NA`. Two members are only a match conflict when both go by that
+  name: a first name or nickname beats another member's middle name.
+
+* `requester_chamber` now uses the "(House)"/"(Senate)" notes on member
+  names, not only committee names. It was `NA` for about 1,450 reports that
+  named their members' chamber.
+* New column `requester_party_complete`: `FALSE` when `requester_party`,
+  `requester_bipartisan`, and `requester_majority_status` were computed
+  from only some of a report's named requesters.
+
 # gao 0.6.1
 
 * Fixed daily data updates: new reports are now discovered through GAO's

@@ -175,7 +175,8 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
             "pub_fiscal_year", "fiscal_quarter", "election_year",
             "release_lag_days", "n_topics", "n_subject_terms",
             "requester_party", "requester_majority_status",
-            "requester_chamber", "requester_bipartisan")
+            "requester_chamber", "requester_bipartisan",
+            "requester_party_complete")
   d <- d[, setdiff(names(d), drop), drop = FALSE]
   if (!"requester_type" %in% names(d)) {
     d$requester_type <- NA_character_
@@ -221,12 +222,19 @@ update_links <- function(verbose = TRUE, sleep_time = 1) {
 #'   starts in October), `election_year`, `release_lag_days`, `n_topics`,
 #'   `n_subject_terms`, and requester party covariates `requester_party`
 #'   (`"R"`, `"D"`, `"Other"`, `"mixed"`, or `NA`),
-#'   `requester_majority_status`, `requester_chamber`, and
-#'   `requester_bipartisan`. Party covariates are resolved by matching
-#'   requester names against congressional membership data from
+#'   `requester_majority_status`, `requester_chamber`,
+#'   `requester_bipartisan`, and `requester_party_complete`. Party covariates
+#'   are resolved by matching requester names (including nicknames, middle
+#'   names, and accented spellings) against congressional membership data from
 #'   [Voteview](https://voteview.com/) for the Congress active at
 #'   publication; they are populated only for reports that name individual
-#'   members of Congress as requesters.
+#'   members of Congress as requesters. A name that matches more than one
+#'   member of that Congress is left unresolved rather than guessed, and
+#'   `requester_party_complete` is `FALSE` when the party covariates were
+#'   computed from only some of the named members. A member who switched
+#'   parties mid-Congress is coded with the affiliation held at the end of
+#'   that Congress. `requester_chamber` combines committee and member
+#'   chamber annotations.
 #' @export
 #' @examples
 #' reports <- gao_links()

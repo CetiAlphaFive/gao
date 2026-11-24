@@ -92,7 +92,9 @@ table(reports$product_type)
   `requester_majority_status`, `requester_bipartisan` --- who in
   Congress requested the report, resolved against
   [Voteview](https://voteview.com/) membership data. These are only
-  populated for reports that name individual members as requesters:
+  populated for reports that name individual members as requesters.
+  `requester_party_complete` is `FALSE` when these were computed from
+  only some of a report's named members:
 
 ```{r}
 table(reports$requester_party)
