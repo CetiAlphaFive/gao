@@ -40,18 +40,25 @@ and `fiscal_quarter` (federal fiscal year, which starts in October),
 `election_year`, `release_lag_days`, `n_topics`, `n_subject_terms`, and
 requester party covariates `requester_party` (`"R"`, `"D"`, `"Other"`,
 `"mixed"`, or `NA`), `requester_majority_status`, `requester_chamber`,
-and `requester_bipartisan`. Party covariates are resolved by matching
-requester names against congressional membership data from
-[Voteview](https://voteview.com/) for the Congress active at
+`requester_bipartisan`, and `requester_party_complete`. Party covariates
+are resolved by matching requester names (including nicknames, middle
+names, and accented spellings) against congressional membership data
+from [Voteview](https://voteview.com/) for the Congress active at
 publication; they are populated only for reports that name individual
-members of Congress as requesters.
+members of Congress as requesters. A name that matches more than one
+member of that Congress is left unresolved rather than guessed, and
+`requester_party_complete` is `FALSE` when the party covariates were
+computed from only some of the named members. A member who switched
+parties mid-Congress is coded with the affiliation held at the end of
+that Congress. `requester_chamber` combines committee and member chamber
+annotations.
 
 ## Examples
 
 ``` r
 reports <- gao_links()
 nrow(reports)
-#> [1] 56422
+#> [1] 56666
 head(reports)
 #>                                   url
 #> 1 https://www.gao.gov/products/087286
@@ -445,4 +452,11 @@ head(reports)
 #> 4                      <NA>              <NA>                   NA
 #> 5                      <NA>              <NA>                   NA
 #> 6                      <NA>              <NA>                   NA
+#>   requester_party_complete
+#> 1                       NA
+#> 2                       NA
+#> 3                       NA
+#> 4                       NA
+#> 5                       NA
+#> 6                       NA
 ```

@@ -15,7 +15,7 @@ library(gao)
 
 reports <- gao_links()
 dim(reports)
-#> [1] 56422   113
+#> [1] 56666   114
 ```
 
 One row per GAO product. Here is a recent slice:
@@ -70,13 +70,13 @@ subset(reports,
        select = c(report_id, published, title)) |>
   head(3)
 #>        report_id  published
-#> 21729 GAO-05-632 2005-07-14
-#> 27087 GAO-12-676 2012-08-28
-#> 27314 GAO-12-919 2012-09-20
+#> 21732 GAO-05-632 2005-07-14
+#> 27090 GAO-12-676 2012-08-28
+#> 27317 GAO-12-919 2012-09-20
 #>                                                                                                                                                                    title
-#> 21729 Defense Health Care: Improvements Needed in Occupational and Environmental Health Surveillance During Deployments to Address Immediate and Long-Term Health Issues
-#> 27087                                                                      Military Disability System: Improved Monitoring Needed to Better Track and Manage Performance
-#> 27314                                                                      Strategic Sourcing: Improved and Expanded Use Could Save Billions in Annual Procurement Costs
+#> 21732 Defense Health Care: Improvements Needed in Occupational and Environmental Health Surveillance During Deployments to Address Immediate and Long-Term Health Issues
+#> 27090                                                                      Military Disability System: Improved Monitoring Needed to Better Track and Manage Performance
+#> 27317                                                                      Strategic Sourcing: Improved and Expanded Use Could Save Billions in Annual Procurement Costs
 ```
 
 Indicators are `NA` (not 0) when the underlying field is missing, which
@@ -93,7 +93,7 @@ Columns computed from the metadata that are handy for analysis:
 table(reports$product_type)
 #> 
 #> correspondence legal_decision    legal_other         report      testimony 
-#>           4268           6566            551          38650           6386
+#>           4268           6566            551          38891           6386
 ```
 
 - `pub_fiscal_year`, `fiscal_quarter`, `pub_month`, `pub_dow`,
@@ -106,14 +106,15 @@ table(reports$product_type)
   `requester_bipartisan` — who in Congress requested the report,
   resolved against [Voteview](https://voteview.com/) membership data.
   These are only populated for reports that name individual members as
-  requesters:
+  requesters. `requester_party_complete` is `FALSE` when these were
+  computed from only some of a report’s named members:
 
 ``` r
 
 table(reports$requester_party)
 #> 
 #>     D mixed Other     R 
-#>  2465   230     3   688
+#>  2531   258     4   746
 ```
 
 ## A quick look at the whole library
